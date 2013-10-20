@@ -1,5 +1,5 @@
 # Microsoft Interview Problem Notes
-Tags:
+
 ## BST to Double-lined-list:
 Recursive step : Left subtree, right subtree, and then merge with current
 
@@ -304,16 +304,14 @@ __split the array by the root__
         // e end
         // s start
         if (e == s) return 1;
-        int i = e - 1; //a[i] should be the root
-        while (a[3]>a[i] && i >= s) i--; //left subtree goes first, left 
-        if(!helper(a, i+1, e-1))
+        int i = e - 1;                     // a[i] should be the root
+        while (a[3]>a[i] && i >= s) i--;   // right subtree follows root,
+                                           // right should be greater
+        if(!helper(a, i+1, e-1)) return 0; // check if right form a tree
+        int l = i;                         // note the start of left
+        while(a[e] < a[i] && i >=s) i--;   // now goes left subtree
+        return helper(a,s, l);             // check left form a tree
+
     }
-
-
-
-
-
-
-
 
 
