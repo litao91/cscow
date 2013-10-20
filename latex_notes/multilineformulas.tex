@@ -1,0 +1,44 @@
+\section{Multiline formulas and piecewise functions}
+\begin{longtable}{p{3cm} |p{5cm}| p{5cm}}\hline
+    plecewise function/cases &
+    \[
+        a_k = \begin{cases}
+            k & \text{for $k \le n/2$}\\
+            n & \text{for $k=n/2$}\\
+            k-1 & \text{otherwise}
+        \end{cases}
+    \] &
+    \begin{verbatim}
+a_k = \begin{cases}
+    k & \text{for $k \le n/2$}\\
+    n & \text{for $k=n/2$}\\
+    k-1 & \text{otherwise}
+    \end{verbatim}\\\hline
+multiline equations &
+    \begin{align*}
+        \tan^2 x = \sin^2 x/\cos^2 x \\
+          = 1/\cos^2 x - 1
+    \end{align*}
+
+&
+\begin{verbatim}
+\begin{align*}\tan^2 x 
+      &= \sin^2 x/\cos^2 x\\
+      &= 1/\cos^2 x - 1
+\end{align*}
+\end{verbatim}\\\hline
+Systems of equations &
+\[
+    \left\{\begin{array}{l}
+        ax+by=r_1\\
+        cx+dy=r_2
+    \end{array}\right.
+\] &
+\begin{verbatim}
+\left\{\begin{array}{l}
+    ax+by=r_1\\
+    cx+dy=r_2
+\end{array}\right.
+\end{verbatim}
+\end{longtable}
+

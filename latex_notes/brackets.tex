@@ -1,0 +1,55 @@
+\section{Brackets}
+\begin{longtable}{p{3cm} |p{5cm}| p{5cm}}\hline
+pairing brackets & 
+\[
+     (\;), [ \; ], \{ \; \}
+ \]
+ \[
+    \lvert\;\rvert, \lVert\;\rVert
+\]
+\[
+    \lceil\;\rceil, \lfloor\;\rfloor
+\]
+\[
+    \langle\;\rangle
+\] &
+\begin{verbatim}
+( \; ), [ \; ], \{ \; \}
+\lvert\;\rvert, \lVert\;\rVert
+\lceil\;\rceil, \lfloor\;\rfloor
+\end{verbatim}\\\hline
+Bracket size can be specified explicitly &
+\[
+\Biggl( \biggl( \Bigl( \bigl( \quad
+\Biggr\} \biggr\} \Bigr\} \bigr\}
+\] &
+\begin{verbatim}
+\Biggl( \biggl( \Bigl( \bigl( \quad
+\Biggr\} \biggr\} \Bigr\} \bigr\}
+\end{verbatim}\\\hline
+visually to large &
+\[
+\left[ \sum_j
+    \left|\sum_i x_{ij}\right|^2
+\right]^{1/2}
+\] &
+\begin{verbatim}
+\left[ \sum_j
+    \left|\sum_i x_{ij}\right|^2
+\right]^{1/2}
+\end{verbatim}\\\hline
+manually-sized &
+\[
+    \biggl[ \sum_j
+        \Bigl|\sum_i x_{ij}\Bigr|^2
+    \biggr]^{1/2}
+\] &
+\begin{verbatim}
+\biggl[ \sum_j
+    \Bigl|\sum_i x_{ij}\Bigr|^2
+\biggr]^{1/2}
+\end{verbatim}
+\\\hline
+\end{longtable}
+
+
