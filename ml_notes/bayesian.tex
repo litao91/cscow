@@ -1,0 +1,38 @@
+\chapter{Bayesian Decision Theory}
+\begin{description}
+\item[Bernoulli]: $P(X) = p_0^X(1-p_0)^{1-X}$, $p_0$ is the param.
+\item Estimation of $p_0$ form $\cX = \{x^{(l)}\}^N_{l=1}$:\\ $\hat{p_0} =
+\frac{\mbox{\#heads}}{\mbox{\#tosses}} = \frac{\sum^N_{l=1}x^{(l)}}{N}$
+\item Predict outcome = head if $P_0 > 1/2$, tail otherwise.
+\item [Baye's Rule]:\\ $\mbox{Posterior}P(C|\x) = \frac{\mbox{likelihood}\times
+\mbox{prior}}{\mbox{evidence}} = \frac{p(\x|C)P(C)}{p(\x)}$
+\item Baye for $K>2$ classes: \\
+$P(C_i|\x) =  \frac{p(\x|C_i)P(C_i)}{\sum^K_{k=1}p(\x|C_k)P(C_k)}$
+\item Optimal decision: Choose $C_i$ if $P(C_i|\x) = \max_k(C_k|\x)$
+\item [Losses and Risks]: \\
+$R(\alpha_i|\x) = \sum^K_{k=1} \lambda_{ik}P(C_k|\x) $,\\
+$\alpha_i$ the action assigned to class 
+$C_i$, $\lambda_{ik}$ loss for $\alpha_i$ if $C_k$
+\item Optimal:$\alpha_i$ if $R(\alpha_i|\x) = \min_k R(\alpha_k|\x) $
+\item [0-1 loss]: $R(\alpha_i|\x) = \sum_{k=1}^K\lambda_{ik}P(C_k|\x) =
+    1-P(C_i|\x)$,\\$\lambda_{ik} = 1$ if $i\neq k$, $0$ otherwise
+\item [Reject Option]: Loss: \[ \lambda_{ik} = \begin{cases} 
+    1  &\mbox{if } i = k   \\
+    \lambda & \mbox{if } i = K+1 \\
+    0 & \mbox{otherwise } \end{cases}\]
+$\lambda$ is the loss for choosing reject.
+\item Expected risk:\[R(\alpha_i|\x) = 
+\begin{cases}
+    \sum_{k=1}^K\lambda P(C_k|\x) = \lambda  & \mbox{if } i = K+1\\
+    \sum_{k\neq 1}P(C_k|\x) = 1 - P(C_i|\x)  & \mbox{if } i \in {1,\dots,K}
+\end{cases}
+\]
+\item Optimal Decision: choose $C_i$ if \\$R(\alpha_i|x) = \min_{1\leq k\leq
+K}R(\alpha_i|\x) < R(\alpha_{K+1} | \x)$, \\Reject otherwise.
+\item [Discriminant Functions]: choose $C_i$ if $g_i(\x) = \max_k g_k(x)$
+\item $g_i(\x) = -R(\alpha_i|x) = P(C_i|\x) = p(\x|C_i)P(C_i)$
+\item Two class may define single discriminant functions: $g(\x) = g_1(\x) -
+g_2(\x)$, choose $C_i$ if it greater than zero.
+\item [Decision Regions] $\mathcal{R}_i = \{\x|g_i(\x) = \max_k g_k(\x)\}$
+\item[Bayesian Network] joint:\\ $P(X_1,\dots, X_d) = \prod_{i=1}^d P(X_i|parents(X_i))$
+\end{description}

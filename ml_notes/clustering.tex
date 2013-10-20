@@ -1,0 +1,83 @@
+\chapter{Clustering}
+\begin{description}
+    \item[Mixture Densities] $p(\bx) = \sum_{i=1}^K p(\bx|\cG_i)P(\cG_i)$
+        $\cG_i$ mixture components, $p(\bx|\cG_i)$ component densities,
+        $P(\cG_i)$ mixing proportions
+
+        Gaussian mixture: $p(\bx|\cG_i)  = \cN(\bmu_i, \bSig_i)$, 
+        
+        parameters
+        $\bPhi  = \left\{ p(\cG_i), \bmu_i, \bSig_i \right\}^k_{i=1}$
+    \item[k-Means ] 
+        Initialize $m_i, i = 1, \dots, k$ (random)\\
+        Repeat\\
+        For all $\bx \in \cX$
+        \[
+            b_i^{(l)} = 
+            \begin{cases}
+                1 & \mbox{if } i = arg\min_j \|\bxl - \mathbf{m}_j\| \\
+                0 & \mbox{otherwise}
+            \end{cases}
+        \]
+        For all $\mathbf{m}_i, i =1, \dots, k$
+        \[\mathbf{m}_i = \frac{\sum_l b_i^{(l)}\bxl}{\sum_l b_i^{(l)}} \]
+        Until $\mathbf{m}_i$ converges
+    \item[EM Algorithm] 
+    \item[] Log likelihood:
+        \[ \cL(\bPhi|\cX) = \log \prod_l p(\bxl|\bPhi) = \sum_l \log\sum_l^k
+            p(\bxl|\cG_i)P(\cG_i)
+        \]
+        where $\bPhi$ include $P(\cG_i)$ and sufficient statistic
+        $\boldsymbol\Theta_i$ of $p(\bxl|\cG_i)$
+    \item[] Complete-data likelihood: $\mathcal{L}_C(\bPhi|\cX,
+        \mathcal{Z})$, $\mathcal{Z}$ hidden variables (not observable)
+    \item[] Expectation of complete data likelihood given $\cX$ and the current
+        (iteration $t$) parameter val $\bPhi^t$(E-step)\\
+        $
+            \mathcal{Q}(\bPhi|\bPhi^t) = E\left[ \cL_C(\bPhi|\cX,
+            \mathcal{Z})|\cX, \bPhi^t \right]  =\\
+            \sum_{\mathcal{Z}}p(\mathcal{Z}|\cX,\bPhi^t)\log p(\cX,\mathcal{Z}|\bPhi)
+            $
+    \item[] m-step:$\bPhi^{t+1} = arg\max_{\bPhi} \mathcal{Q}(\bPhi, \bPhi^t)$
+    \item[EM in Gaussian Mixtures] Indicator $\mathbf{z}^{(l)} $, $z_i^{(l)} =
+        1$ if $\bxl$ belongs to cluster $\mathcal{G}_i$
+    \item[] Gaussian Component densities: $p_i(\bxl) = p(\bx|\cG_i) = \cN(\bmu_i, \bSig_i)$
+    \item[] Prior $P(\cG_i) = \pi_i$, so: $p(\bz^{(l)}) =
+        \prod^k_{i=1}\pi_i^{z_i^{(l)}}$
+    \item[] probability given hidden:
+        $p(\bx|\mathbf{z}^{(l)}) = \prod_{i=1}^k p_i(\bxl)^{z_i^{(l)}}$
+    \item[] Joint density: $p(\bxl, \bzl) = P(\bzl)p(\bxl|\bzl)$
+    \item[] Complete log: 
+        \begin{align*}
+            \cL_C(\bPhi|\cX, \mathcal{Z}) & = \prod_l p(\bxl, \bzl|\bPhi)\\
+            & = \sum_l\sum_i z_i^{(l)}\left[ \log\pi_i + \log p_i(\bxl|\bPhi) \right]
+        \end{align*}
+    \item[] \[\mathcal{Q}(\bPhi|\bPhi^t) = \sum_l\sum_i E\left[ z_i^{(l)}|\cX,
+        \bPhi^t \right]\left[ \log\pi_i + \log p_i(\bxl|\bPhi) \right] \]
+        where $E\left[ z_i^{(l)}|\cX, \bPhi^t \right] = E\left[
+        z_i^{(l)}|\bxl,\bPhi^t \right] = \\
+        \frac{p(\bx|\cG_i,\bPhi^t)P(\cG_i)}{\sum_j
+        p(\bxl|\cG_j,\bPhi^t)P(\cG_j)} = 
+        P(\mathcal{G}_i|\bxl,\bPhi^t) = h_i^{(l)}$
+    \item[] For Gaussian components, $\hat{p}_i(\bxl|\boldsymbol\Theta_i) =
+        \cN(\mathbf{m}_i, \mathbf{S}_i)$, so 
+        \[ h_i^{(l)} = \frac{\pi_i|\bS_i|^{-1/2}\exp\left[ -\frac{1}{2}(\bxl -
+        \mathbf{m}_i)^T\bS_i^{-1}(\bxl-\mathbf{m}_i) \right]}{\sum_j
+            \pi_j|\bS_j|^{-1/2}\exp\left[
+            -\frac{1}{2}(\bxl-\mathbf{m}_j)^T\bS_j^{-1}(\bxl-\mathbf{m}_j)
+        \right]}
+        \]
+    \item[] Max Step: $\bPhi^{t+1} = \\
+            arg\max_{\bPhi}\left[ \sum_l\sum_i h_i^{(l)}\log\pi_i + \sum_l \sum_i
+            h_i^{(l)} \log p_i(\bxl|\bPhi) \right]$
+    \item[] Using constraint $\sum_i \pi_i = 1$ :
+        \[
+            \Delta_{\pi_i} \left[ \sum_l \sum_i h_i^{(l)}\log \pi_i
+            -\lambda(\sum_i \pi_i - 1) \right] = 0\]
+        we get $\pi_i = \frac{\sum_l h_i^{(l)}}{N}$
+    \item[] Then solve for $\Delta_{\boldsymbol\Theta_i}\sum_l \sum_i
+        h_i^{(l)}\log p_i(\bxl|\bPhi) = 0$
+    \item[] For Gaussian component, $\hat{p}_i(\bxl|\boldsymbol\Theta_i) =
+        \cN(\mathbf{m}_i, \bS_i)$, so $\mathbf{m}_i^{t+1}$ and $S_i^{t+1}$ is
+        estimator with value in $t$-th iteration.
+\end{description}

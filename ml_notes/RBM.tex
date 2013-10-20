@@ -1,0 +1,282 @@
+\chapter{Restricted Boltzmann Machines}
+\section{Energy-Based Models (EBM)}
+\begin{itemize}
+    \item Associate a scalar energy to each configuration of the variables
+    \item Learning: modify that energy so that its shape has desired
+        properties.
+\end{itemize}
+Define a probability distribution through an energy function as follows:
+\[
+    p(x) = \frac{e^{-E(x)}}{Z}
+\]
+The normal factor $Z$ -- partition function
+
+\[ Z = \sum_x e^{-E(x)}\]
+
+
+An EBM can be learnt by performing stochastic gradient descent on the
+empirical negative log-likelihood
+
+As for logistic regression, log-likelihood:
+\[ \mathcal{L}(\theta, \mathcal{D})  = \frac{1}{N} \sum_{x^{(i)}\in
+\mathcal{D}}\log p(x^{(i)}\]
+Loss function as being the negative log-likelihood:
+\[ l(\theta, \mathcal{D}) = -\mathcal{L}(\theta, \mathcal{D})\]
+
+Using the stochastic gradient: 
+\[ - \frac{\partial \log p(x^{(i)}}{\partial \theta}\]
+\subsection{EBMs with Hidden Units}
+Consider an observed part $x$ and a hidden part $h$:
+\[ P(x) = \sum_h P(x,h) = \sum_h \frac{e^{-E(x,h)}}{Z}\]
+
+\textbf{Free Energy}
+\[ \mathcal{F}(x) = -\log\sum_h e^{-E(x,h)}\]
+Then
+\[ P(x) = \frac{e^{-\mathcal{F}(x)}}{Z}
+\]
+with $Z = \sum_x e^{-\mathcal{F}(x)}$
+
+Negative log-likelihood gradient:
+\[ -\frac{\partial \log{p(x)}}{\partial \theta} = \frac{\partial
+    \mathcal{F}(x)}{\partial \theta} -
+    \sum_{\hat{x}}p(\hat{x})\frac{\partial\mathcal{F}(\hat{x})}{\partial
+    \theta}
+\]
+
+The positive and negative phase reflect their effect on the probability of
+training data.
+
+It is usually difficult to determine this gradient analytically, as it
+involves the computation of $E_p\left[ \frac{\partial
+\mathcal{F}(x)}{\partial \theta} \right]$, an expectation over all
+possible configuration of the input $x$.
+
+Making this computation tractable is to \textbf{estimate the expectation} using a
+fixed number of model samples.
+\begin{itemize}
+    \item Samples used to estimate the negative phase gradient are
+        referred to as negative particles, denoted as $\mathcal{N}$
+    \item The gradient can be written as:
+        \[ 
+            -\frac{\partial\log{p(x)}}{\partial \theta}\approx
+            \frac{\partial \mathcal{F}(x)}{\partial \theta} -
+            \frac{1}{|\mathcal{N}|}\sum_{\hat{x}\in\mathcal{N}}\frac{\partial
+                \mathcal{F}(\hat{x})}{\partial \theta}
+            \]
+\end{itemize}
+
+\section{Restricted Boltzmann Machines (RBM)}
+A particular form of log-linear Markov Random Field, for which the
+\textbf{energy function is linear} in its free parameters.
+
+Two-layer network, in which stochastic, binary \emph{feature detectors}
+using weighted connections.
+
+\begin{itemize}
+    \item The pixels correspond to visible units
+    \item The feature detectors correspond to hidden units
+\end{itemize}
+
+Assume that the hidden and visible variables are binary.
+
+\begin{enumerate}
+    \item \textbf{Energy} Joint Configuration $(\mathbf{v}, \mathbf{h})$  (visible and
+        hidden)
+        \[ E(\mathbf{v,h}) = -\sum_{i\in visible}a_i v_i - \sum_{j\in hidden}b_j
+        h_j - \sum_{i,j}v_ih_jw_{ij}\]
+        $a_i$ and $b_j$ are bias and $w_{ij}$ is the weight
+    \item  Probability to every pair of a visible and a hidden vector:
+        \[ p(\bv) = \sum_{\bh} p(\bv, \bh) = \frac{1}{Z}\sum_{\bh} e^{-E(\bv,
+        \bh)}\]
+        Z is given by:
+        \[ Z = \sum_{\bv, \bh} e^{-E(\bv,\bh)}\]
+    \item Network assigns to a visible vector $\mathbf{v}$:
+        \[
+            p(\bv) = \frac{1}{Z}\sum_{\bh} e^{-E(\bv, \bh)}
+        \]
+    \item Raise the probability of the network assigns a training image:
+        lower the energy of that image and raise the energy of other images
+        \verb|=>| By adjusting the weights and biases.
+    \item Derivative of the log probability:
+        \[\frac{\partial \log{p(\bv})}{\partial w_{ij}} = \langle
+        v_ih_j\rangle_{data} - \langle v_i h_j\rangle_{model}\]
+        Angle brackets denote expectations under the distribution specified by the
+        subscript that follows
+    \item 
+        The learning rule:
+        \[ \Delta w_{ij} = \epsilon(\langle
+            v_ih_j\rangle_{data} - \langle v_i h_j\rangle_{model})
+        \]
+        Where $\epsilon$ is the learning rate.
+    \item Ease to get a unbiased sample of $\langle v_ih_j \rangle$
+        \begin{equation*}
+            p(h_j = 1|\bv)  =  \sigma(b_j + \sum_i v_i w_{ij} \\
+            p(v_i = 1|\bh)  =  \sigma(a_i + \sum_j h_j w_{ij}
+        \end{equation*}
+\end{enumerate}
+
+
+
+Energy function:
+\[ E(v, h) = -b'v - c'h - h'Wv\]
+$W$ -- The weights connecting hidden and visible units and \\
+$b$, $c$ -- the offsets of the visible and hidden layers respectively.
+
+Free energy formula:
+\[ 
+    \mathcal{F}(v) = -b'v - \sum_i \log \sum_{h_i} e^{h_i(c_i+W_i v)}
+\]
+
+Visible and hidden units are conditionally independent given one-another:
+\begin{equation*}
+    p(h|v) = \prod_{i}p(h_i|v) \\
+    p(v|h) = \prod_j p(v_j|h)
+\end{equation*}
+
+\subsection{Binary Units}
+In the case of binary units $v_j, h_i \in \left\{ 0, 1 \right\}$:
+\begin{equation*}
+    P(h_i = 1| v) = sigm(c_i + W_i v)\\
+    P(v_j = 1|h) = sigm(b_j + W'_j h)
+\end{equation*}
+Free energy can be simplifies to:
+\[ \mathcal{F}(v) = - b'v - \sum_i \log(1 + e^{c_i + W_j v)}\]
+
+\section{Contrastive divergence multi-layer RBMs}
+\subsection{Boltzmann machines}
+$X$ observed and $H$ hidden. Their joint given by Boltzmann distribution
+associate with energy:
+\[ P(X = x, H= h) = \frac{\exp{[-E(x,h)]}}{Z} \]
+$Z$ is the appropriate normalization constant:
+\[ Z = \sum_{x,h}\exp{(-E(x,h))}\]
+
+Energy function is a quadratic polynomial, $z=(x,h)$
+\[ E(z) = -\sum_i b_i z_i - \sum_{ij}w_{ij}z_i z_j\]
+$z_i \in {0, 1}$
+
+If $X = x$ observed, $H$ remains hidden, the likelihood involves a sum
+over all configurations of $H$:
+\[ P(X = x) = \sum_h P(X = x, H = h) = \sum_h
+    \frac{\exp{(-E(x,y))}}{Z}
+\]
+
+Summing over $h$ and $x$ (in denominator $Z$) are both
+intractable.
+
+Restricted Boltzmann Machine: interactions between hidden units are
+removed, so the sum over $h$ becomes tractable.
+
+Derivatives(non-tractable):
+\begin{eqnarray*}
+    \frac{\partial -\log P(x)}{\partial \theta} &=&
+    \frac{\partial -\log \sum_h \frac{\exp (-E)}{Z}}{\partial \theta} \\
+    &=&\frac{\partial \left\{ -\log[\sum_h\exp (-E)]+\log Z
+    \right\}}{\partial \theta} \\
+    &=& \sum_h \frac{exp(-E)}{\sum_h \exp(-E)} \cdot
+    \frac{\partial E}{\partial \theta} - \frac{1}{Z}\sum_{x,h} \exp\left[
+    -E(x,h) \right]\frac{\partial E}{\partial \theta} \\
+    &=&\sum_h \left[ \frac{\exp(-E)}{\sum_h
+    \exp(-E)}\frac{\partial E}{\partial H}\right] \frac{\partial
+    E}{\partial \theta} - \sum_{x,h} \frac{\exp[-E(x,h)]}{Z}\frac{\partial
+    E}{\partial \theta} \\
+ &=& \sum_h P(H=h|X=x)
+    \frac{\partial E(h,x)}{\partial \theta} \mbox{ [this is the POSITIVE
+    phase contribution] }\\  & &- \sum_{h,x}  P(H=h,X=x) \frac{\partial
+    E(h,x)}{\partial \theta} \mbox{ [this is the NEGATIVE phase
+    contribution] } 
+\end{eqnarray*}
+
+The standard way to estimate the gradient, is to avoid perform an MCMC
+scheme to obtain one or more samples from $P(h|x)$
+scheme
+\subsection{Restricted Boltzmann Machines}
+If we set the weight between $h_i$ and $h_j$ and the weight between $x_i$
+and $x_j$ we obtain a RBM.
+
+All the $H_i$'s become independent when conditioning on X, and all the
+$X_i$ become independent when conditioning on $H$.
+
+\subsection{Energy functions for RBM}
+Note that $w_{ij} = w_{ji}$
+
+Energy term for binomial unit $i$ with value $v_i$ and inputs
+    $u_j$.
+    \[
+        E(v_i, u_j) = -b_i v_i - \sum_j w_{ij} v_i u_j 
+    \]
+    \[ ==> P(v_i=1 | u) = \frac{exp(b_i + \sum_j w_{ij} u_j) }{ 1 +
+    exp(b_i + \sum_j w_{ij} u_j) } = sigmoid\left(b_i + \sum_j w_{ij}
+    u_j\right) \]
+
+Energy term for fixed-variance Gaussian unit $i$ with value
+    $v_i$ and inputs $u_i$:
+    \[ a_i^2 v_i^2 - b_i v_i - \sum_j w_{ij} v_i u_j\]
+    \[ P(y|x) = \frac{\exp(-E(x,y)) }{ \sum_y \exp(-E(x,y)) } \]
+
+\subsection{Update Rule}
+Use $Z = \sum_{x,y} \exp[-E(x,y)]$:
+\[P(x,y) = \frac{\exp[-E(x,y)]}{Z} \]
+
+For any energy-based Boltzmann distribution:
+\begin{eqnarray*}
+      \frac{\partial}{\partial \theta}(-\log P(x) ) &=&
+    \frac{\partial}{\partial \theta} \left(- \log \sum_y P(x,y)\right) \\
+     &=& \frac{\partial}{\partial \theta}\left(- \log
+    \sum_y \frac{\exp(-E(x,y))}{Z}\right) \\
+    &=&  - \frac{Z}{\sum_y \exp[-E(x,y)]}
+    \left( \sum_y \frac{1}{Z} \frac{\partial \exp[-E(x,y)]}{\partial
+    \theta} - \sum_y \frac{\exp[-E(x,y)]}{Z^2} \frac{\partial Z}{\partial
+    \theta}\right) \\
+    &=&  \sum_y
+    \left(\frac{\exp[-E(x,y)]}{\sum_{\hat y} \exp[-E(x,\hat y)]}
+    \frac{\partial E(x,y)}{\partial \theta}\right) + \frac{1}{Z}
+    \frac{\partial Z}{\partial \theta} \\
+    &=& \sum_y P(y|x) \frac{\partial E(x,y)}{\partial \theta} -
+    \frac{1}{Z} \sum_{x,y} \exp[-E(x,y)] \frac{\partial
+    E(x,y)}{\partial \theta} \\
+    &=& \sum_y P(y|x) \frac{\partial
+    E(x,y)}{\partial \theta} - \sum_{x,y} P(x,y) \frac{\partial
+    E(x,y)}{\partial \theta} \\
+    &=& \mathbb{E}\left[\left. \frac{\partial
+    E(x,y)}{\partial \theta} \right| x \right] - \mathbb{E}\left[ \frac{\partial
+    E(x,y)}{\partial \theta} \right] 
+    &=& \mbox{positive phase contribution} - \mbox{negative phase
+    contribution}
+\end{eqnarray*}
+
+\[ \sum_y P(y|x) \frac{\partial E(x,y)}{\partial \theta_i} =
+\sum_{y_i}P(y_i|x) \frac{\partial E_i(x,y_i)}{\partial \theta_i}\]
+with $\theta$ the parameters associated with $y_i$
+
+\subsubsection{Sampling in an RBM}
+Samples of $p(x)$ can be obtained by running a Markov chain to convergence,
+using Gibbs sampling as the transition operator.
+
+Gibbs sampling of the joint of $N$ variables $S = (S_1, \dots, S_N)$ si
+done through a sequence of $N$ sampling substeps of the form $S_i \sim
+p(S_i|S_{-i})$ where $S_{-i}$ contains the $N-1$ other random variable in
+the $S$ excluding $S_i$.
+
+For RBM:
+\begin{itemize}
+    \item $S$ consists of visible and hidden units.
+    \item Since they are conditionally independent, one can perform block
+        Gibbs sampling. In this setting, visible units are sampled
+        simultaneously given fixed values of hidden units.
+     \item Markov Chain:
+         \begin{eqnarray*}
+             h^{(n+1)} &\sim & sigm(W' v^{(n)} + c) \\
+             v^{(n+1)} & \sim & sigm(W h^{(n+1)} + b)
+         \end{eqnarray*}
+         $h^{(n)}$ refers to the set of all hidden units at the n-th step
+         of the Markov chain.
+
+         What it means: $h_i^{(n+1)}$ is chosen to be $1$ with probability
+         $sigm(W_i' v^{(n)} + c_i)$ and $v_j^{(n+1}$ is chosen to be $1$
+         with probability
+         $sigm(W_{\cdot j}h^{(n+1)} + b_j$
+
+         As $t \rightarrow \infty$ samples $(v^{(t)}, h^{(t)})$ are
+         guaranteed to be accurate samples of $p(v,h)$.
+
+\end{itemize}

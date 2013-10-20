@@ -1,0 +1,113 @@
+\chapter{Multilayer Perceptrons}
+\section{Perceptron}
+    The output $y$ is a \textbf{weighted sum} of the input $\bx
+        = (x_0,x_1,\dots, x_d)^T$:
+        \[y = \sum^d_{j=1}w_j x_j + w_0 = \bw^T\bx \]
+        where $x_0$ is a special \emph{bias unit} with $x_0 = 1$ and $\bw =
+        (x_0, w_1, \dots, w_d)^T$ are called \textbf{connection weight or
+        synaptic weights}
+
+    To implement a linear discriminant function, we need threshold
+        function:
+        \[ s(a) = \begin{cases} 1 & \mbox{if } a> 0 \\
+                0 & \mbox{otherwise} \end{cases}
+        \]
+        to define the following decision rule:
+        \[
+            \mbox{Choose}
+            \begin{cases}
+                C_1 & \mbox{if } s(\bw^T\bx)  = 1 \\
+                C-2 & \mbox{otherwise}
+            \end{cases}
+        \]
+
+    Use \textbf{sigmoid} instead of threshold to gain differentiability:
+        \[y =sigmoid(\bw^T\bx)\mbox{, where } sigmoid(a) = \frac{1}{1+\exp(-a)}
+        \]
+        The output may be interpreted as the \emph{posterior probability}
+        that the input $\bx$ belongs to $C_1$
+
+    \subsection{$K>2$ Outputs} $K$ perceptrons, each with a weight vector $\bw_i$, 
+        \[ y_i = \sum_{j=1}^d w_{ij}x_j + w_{i0} = \bw_i^T\bx \mbox{, or }
+            \mathbf{y} = \mathbf{W}\bx \]
+        where $w_{ij}$ is the weight from input $x_j$ to output $y_i$ and
+        each row of the $K\times(d+1)$ matrix $\mathbf{W}$ is the weight
+        vector of one perceptron. 
+
+    Choose $C_i$ if $y_i = \max_{k} y_k$
+
+    \paragraph{Posterior probability}
+    Use softmax to define $y_i$ as:
+        \[ y_i = \frac{\exp(\bw_i^T)}{\sum_{k=1}^K \exp(\bw_k^T\bx)} \]
+    \subsection{Stochastic Gradient Descent} 
+        
+        Gradient descent for online learning, for regression, the error on a
+        single instance \[E^{(l)}(\bw|\bxl, r^{(l)}) =
+        \frac{1}{2}(r^{(l)} - y^{(l)})^2 = \frac{1}{2}\left[ r^{(l)}-(\bw^T\bxl)
+        \right]^2\] 
+        gives the online update rule: 
+        \[\Delta w_j^{(l)} =
+        \eta(r^{(l)}-y^{(l)})x_j^{(l)}\] 
+        where $\eta$ is step size.
+
+        For Binary classification:
+
+        Likelihood: \[L = (y^{(l)})^{r^{(l)}}(1-y^{l})^{1-r^{(l)}}\]
+
+        Cross Entropy: \[E^{(l)} (\bw|\bxl, \rl) =\\ -\log L = -\rl\log\yl -
+        (1-\rl)\log(1-\yl)\]
+
+        Online update rule: \[\Delta w_j^{(l)} = \eta(\rl -
+        \yl)x_j^{(l)}\]
+
+    \paragraph{$K>2$} 
+    \[\yil = \frac{\exp(\bw_i^T\bxl)}{\sum_k \exp(\bw_k^T\bxl)}\]
+        Likelihood: \[L = \prod_i(y_i^{(l)})^{\rl_i}\]
+        Cross Entropy: \[E^{(l)}(\left\{ \bw_i\right\}|\bxl,\brl ) =
+        -\sum_i \rl_i\log \yil\] 
+        Online update rule: \[\Delta w_{ij}^{(l)} =
+        \eta(\rl_i-\yl)x_j^{(l)}\]
+    \section{Multilayer Perception} MLP has a hidden layer between the input and
+        output.
+
+        Input to hidden: 
+        \[z_h = sigmoid(\bw_h^T\bx) = \frac{1}{1+\exp\left[
+            -(\sum_{j=1}^d w_{hj}x_j + w_{h0}
+        \right]}\]\\
+
+        Hidden to output: \[y_i = \mathbf{v}_i^T\mathbf{z} =
+        \sum_{h=1}^Hv_{ih}z_h + v_{i0}\]\\
+
+        Backward, hidden-to-output weight: treating hidden unit as input
+
+        Input-to-hidden, chain rule: \[\frac{\partial E}{\partial w_{hj}} =
+        \frac{\partial E}{\partial y_i} \frac{\partial y_i}{\partial
+        z_h}\frac{\partial z_h}{\partial w_{hj}}\]
+
+    \subsection{MLP for Nonlinear Regression(Multi output)} 
+        outputs: 
+        \begin{eqnarray*}
+            \yl_i &=& \sum_{h=1}^H v_{ih} z_h^{(l)} + v_{i0} \\
+             z_h^{(l)} &=& sigmoid(\bw_h^T\bxl)
+         \end{eqnarray*}
+        Error function: \[E(\bW, \mathbf{v}|\cX) = \frac{1}{2}\sum_l\sum_i(\rl_i -
+        \yl_i)^2\]
+
+        Update rule for second layer: \[\Delta v_{ih} = \eta \sum_l(\rl_i - \yl_i)
+        z_h^{(l)}\]
+
+        Update rule for first layer: 
+        \[
+        \Delta w_{hj} = -\eta \frac{\partial
+        E}{\partial w_{hj}} =\\ \eta \sum_l\left[\sum_i(\rl_i -
+        \yl_i)v_{ih}\right]z_h^{(l)}(1-z_h^{(l)}(1-z_h^{(l)})x_j^{(l)}\]
+
+    \subsection{MLP for NonLinear Multi-class Discrimination}
+        Outputs: \[\yil = \frac{\exp(o_i^{(l)})}{\sum_k \exp(o_k^{(l)})}\],
+        \[o_i^{(l)} = \sum_h^Hv_{ih}z_h^{(l)} + v_{i0}\]
+
+
+        Error Function: \[E(\bW, \mathbf{V}|\cX) = -\sum_l\sum_i
+        r_i^{(l)}\log\yil\], update rules are the same us regression.
+
+

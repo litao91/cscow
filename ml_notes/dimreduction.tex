@@ -1,0 +1,94 @@
+\chapter{Dimensionality reduction}
+\begin{description}
+    \item[Forward Search] Start with no features, add them one by one, at each
+        step adding the one that decreases most.
+    \item[Backward Search] Start with all features and so a similar process
+         
+    \item[Principle Component Analysis]
+    Projection of $\bx$ on the direction of $\mathbf{w}$: $z = \mathbf{w}^T
+    \mathbf{x}$
+
+    Finding the first principle component $\mathbf{w_1}$ such that $Var(z_1)$ is
+    maximized:
+    \begin{align*} 
+    Var(z_1) & = Var(\mathbf{w}^T\mathbf{x}) = E[(\mathbf{w}^T\mathbf{x} - \mathbf{w}^T\mathbf{\bmu})^2]  \\
+    & = \mathbf{w}^TE[(\mathbf{x}-\mathbf{\bmu})(\mathbf{x}-\mathbf{\bmu})^T] \mathbf{w} = \mathbf{w}^T\bSig \mathbf{w} 
+    \end{align*}
+    $Cov(\mathbf{x}) = E[(\mathbf{x}-\mathbf{\bmu})(\mathbf{x}-\mathbf{\bmu})^T] = \bSig$ 
+
+    Lagrangian: $\bw_1^T\bSig \bw_1 - \alpha(\bw_1^T\bw_1 -1)$ 
+
+    Taking derivative:$\bSig \bw_1 = \alpha \bw_1$ (eigenvalue equation)
+    $\bw_1^T \bSig \bw_1 = \alpha \bw_1^T\bw_1 = \alpha$($\bw_1$ is unit)
+
+    We choose the eigenvector with the largest eigenvalue for the variance to be
+    maximum.
+
+    Second PC: $\bw_2^T\bSig \bw_2 - \alpha(\bw_2^T\bw_2 -1)  - \beta( \bw_2^T \bw_1 -0) $
+
+    Derivative: $2\bSig \bw_2 - 2\alpha \bw_2 - \beta \bw_1 = 0$ (times $\bw_1 ^T$ on both
+    side, $\bw_1 ^T\bw_2 = 0$
+
+    Then $\Sigma \bw_2 = \alpha \bw_2$, $\bw_2$ is the second largest eigenvalue.
+
+    Proportion of variance (PoV) Explained:$\frac{\lambda_1,
+    \dots,\lambda_k}{\lambda_1, \dots, \lambda_d}$
+    
+    \item[Factor Analysis] Assume latent factors $z_j$
+        Sample $\cX = \left\{ \bxl \right\}$, $E(\bx) = \bmu$, $Cov(\bx) =
+        \bSig$\\
+        Factors $z_j$, $E[z_j] = 0$, $Var(z_j) =1 $\\
+        Noise: $\epsilon_i$: $E[\epsilon_i] = 0$, $Var(\epsilon_i) =\Psi_i$,
+        $Cov(\epsilon_i, \epsilon_j) = 0$\\
+        $x_i -  \mu_i = \sum_{j=1}^k v_{ij}z_j + \epsilon_i$, assume $\bmu=0$,
+        $v_{ij}$ are called factor loading\\
+        $Var(x_i) = \sum_{j=1}^k v_{ij}^2Var(z_j) + Var(\epsilon_i) =
+        \sum_{j=1}^k v_{ij}^2 + \Psi_i$\\
+        Covariance Matrix: $\bSig = Cov(\mathbf{V}\bz + \boldsymbol\epsilon) =
+        \mathbf{VV}^T+\boldsymbol\Psi$\\Factor loading: $Cov(\bx,
+        \mathbf{z}) = \mathbf{V}$\\
+        Dim reduc: Given $\mathbf{S}$ as the estimator of $\bSig$, we want to find
+        $\mathbf{V}$ and $\boldsymbol \Psi$ s.t.\ $\mathbf{S} = \mathbf{VV}^T +
+        \boldsymbol\Psi$, $\boldsymbol\Psi = diag(\Psi_i)$
+
+    \item[Multidimensional Scaling] lower dimension preserve pairwise distances.
+        \\
+        Sample $\cX = \left\{ \bxl \in \mathbb{R}^d \right\}^N_{l=1}$\\
+        Squared Euclidean distance between point r and s: \[
+            d_{rs}^2 = \sum_{j=1}^d(x_j^{(r)}-x_j^{(s)})^2 = b_{rr} +b_{ss}
+        -2b_{rs}\]
+        $b_{rs} = \sum_{j=1}^d x_j^{(r)}x_j^{(s)}$, or matrix form $\mathbf{B} =
+        \mathbf{X}\mathbf{X}^T$\\
+        Constraint: $\sum_l^N x_j^{(l)}=0,\forall j$, define:
+        $T=\sum_{l=1}^N b_{ll}$\\
+        Then $\sum_r d_{rs}^2 = T + N b_{ss}$, $\sum_r\sum_s = d^2_{rs} = 2NT$\\
+        defining:\\ $d_{*s}^2 = \frac{1}{N}\sum_r d_{rs}^2$, $d_{r*} =
+        \frac{1}{N}\sum_s d_{rs}^2$, $d_{**}^2 = \frac{1}{N^2}\sum_r 
+        \sum_s d_{rs}^2$\\
+        So $b_{rs} = \frac{1}{2}(d_{r*}^2 + d_{*s}^2 - d_{**}^2 - d_{rs}^2)$
+        $\mathbf{B} = \mathbf{XX}^T$ is p.s.d.\ :\[
+            \mathbf{B} = \mathbf{CDC}^T =
+        (\mathbf{CD}^{1/2})(\mathbf{CD}^{1/2})^T\]
+        Ignore small eigenvalues, let $\mathbf{c}_j$ be the $k$ eigenvectors chosen with eigenvalues
+        $\lambda_j$, the new dimensions:$z_j^{(l)} = \sqrt{\lambda_j} c_j^{(l)}$
+    \item[LDA] Sample mean after projection: 
+        \[ m_1 = \bw^T \bm_1, m_2 = \bw^T\bm_2 \]
+        Between class scatter: $(m_1 - m_2) = \bw^T\bS_B\bw$, $\bS_B = (\bm_1
+        -\bm_2)(\bm_1 - \bm_2)^T$\\
+        Within Class Scatter: $s_1^2 = \bw^T\bS_1 \bw$, $\bS_1 = \sum_l
+        (\bxl-\bm_1)(\bxl-\bm_1)^T y^{(l)}$, similarly $\bS_2 = \sum_l (\bxl
+        -\bm_2)(\bxl - \bm_2)^T(1-y^{(l)})$, so \[ s_1^2 + s_2^2 =
+        \bw^T\bS_w\bw\], $\bS_w = \bS_1+\bS_2$
+    \item[Fisher's LD] $J(\bw) = \frac{(m_1-m_2)^2}{s_1^2 + s_2^2} =
+        \frac{\bw^T\bS_B\bw}{\bw^T\bS_W\bw} $, take derivative of $J$ w.r.t.\
+        $\bw$ setting it to 0: $\bS_B\bw = \lambda\bS_W\bw$ , \\ or
+        $\bS_W^{-1}\bS_B\bw = \lambda\bw$ (Eigen equation)
+    \item[$K > 2$] Within-class scatter
+        $\bS_i = \sum_l y_i^{(l)}(\bxl -
+        \bm_i)(\bxl-\bm_i)^T$, $y_i^{(l)}=1$ if $\bxl\in C_i$\\
+        Total class scatter: $\bS_W = \sum_{i=1}^K\bS_i$\\
+        Between Class Scatter: $\bS_B = \sum_{i=1}^K N_i(\bm_i - \bm)(\bm_i -
+        \bm)^T$\\
+        Optimal is $\bW$ that max: $J(\bW) = \frac{Tr(\bW^T\bS_B\bW)}{Tr(\bW^T\bS_W\bW)}$
+        Corresponds to eigenvectors of $\bS_W^{-1}\bS_B$ 
+\end{description}

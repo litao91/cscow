@@ -1,0 +1,162 @@
+\chapter{Linear Model}
+\section{Linear Discriminant functions}
+A discriminant is a function that take an input vector $\bx$ and assignes
+it to one of $K$ classes:
+\[g_i(\bx|\bw_i, w_{i0}) =\bw_i^T\bx + w_{i0}\] generalized use base
+function $g_i(\bx) = \sum_{j=1}^k w_j \phi_{ij}(\bx)$
+\subsection{Two classes}
+\[g(\bx) = g_1(\bx) - g_2(\bx) \], $C_1$ if $g(\bx)>0$
+
+\subsection{Geometry Interpretation}
+The decision boundary is defined by 
+\[ g(\bx) = 0\]
+Corresponds to a $(D-1)$ dimensional hyperplane within the $D$-dimensional
+space.
+
+    Express any point as 
+    \[\bx = \bx_p  + r\frac{\bw}{\|\bw\|}\]
+    where $x_p$ is the  projection of $\bx$ onto hyperplane. $r$ distance
+    from $\bx$ to hyper plane.plane, we have $r=\frac{g(\bx)}{\|\bw\|}$
+\subsection{Multi classes} 
+K discriminant:
+\[g_i(\bx |\bw_i, w_{i0}) = \bw_i^T + w_{i0}\]
+Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
+        C_i$
+        
+        Choose $C_i$ if \[g_i(\bx) = \max_{j=1}^Kg_i(\bx)\]
+
+\subsection{Pairwise Separation} 
+    Discriminant function for class $i$ and $j$:
+        \[
+            g_{ij} (\x|\bw_{ij}, w_{ij0}) = \bw_{ij}^T\x + w_{ij0} =
+            \begin{cases}
+                > 0 & \mbox{if } \x \in C_i\\
+                \leq 0 & \mbox{if } \x \in C_j\\
+                \mbox{don't care} & \mbox{if } \x \in C_k, k\neq i, k\neq j
+            \end{cases} \]
+\section{Logistic Discrimination}
+\subsection{Two classes}
+     Assume that the log likelihood ratio is linear:
+        \[\log\frac{p(\x|C_1)}{p(\x|C_2)} = \bw^T\x + w_0^o \]
+
+    Using Baye's rule we have;
+        \begin{align*}
+            logit(P(C_1|x)) & = \log\frac{p(C_1|\x)}{1 - p(C_1|\x)} \\
+            & = \log\frac{p(\x|C_1)}{p(\x|C_2)} + \log\frac{p(C_1)}{p(C_2)} \\
+            & = \w^T\x + w_0
+        \end{align*}
+        where $w_0 = w_0^o + \log\frac{P(C_1)}{P(C_2)}$
+
+       Rearranging terms: 
+        \begin{align*} y  & = sigmoid(\w^T\x + w_0) \\
+            & =  \hat{P}(C_1|\x) = \frac{1}{1 + \exp\left[-(\w^T\x + w_0 )\right]}
+        \end{align*}
+        As our estimator of $P(C_1|\x)$
+
+        \subsubsection{Gradient Decent}
+    In the discriminant-based approach, the parameters are those of the
+        discriminants, and they are \emph{optimized to minimize the
+        classification error}
+        \begin{description}
+    \item[Error]$\bw$ denotes the set of parameters and $E(\bw|\cX)$ is the
+        error parameters $\bw$ on the given training set 
+        $\cX$, we look for: 
+        \[ \bw*= arg\min_{\bw}E(\bw|\cX)\]
+        No analytical solution
+    \item[Gradient Vector] When $E(\bw)$ is a differentiable function of a
+        vector of variables, we have the gradient vector composed of the
+           partial derivatives:
+            \[ \nabla_\bw E = \left[ \frac{\partial E}{\partial w_1},
+                \frac{\partial E}{\partial w_2}, \dots, \frac{\partial
+                E}{\partial w_d} \right]^T
+                \]
+            \item [Gradient Descent] starts from a \emph{random} $\bw$, at each
+                step, update $w$ in a \emph{opposite direction} of the gradient:
+                \[\Delta w_i = - \eta\frac{\partial E}{\partial w_i}, \forall i
+                    \]
+                \[ w_i = w_i + \Delta w_i \]
+                $\eta$ is \emph{step size}, or \emph{learning factor}
+
+                When we get to minimum, the derivative is 0 and the procedure
+                terminates.
+
+            \item This indicates that the procedure finds the nearest minimum
+                that can be \emph{local minimum}. There is no guarantee of
+                finds the nearest minimum that can be a local minimum
+    \item [Learning parameters]
+        Given a sample of two classes, $\mathcal{X} = {\x^{(l)}, \r^{(l)}}$, where $\r^{(l)}
+        = 1$ if $\x\in C_1$
+
+        We assume $\r^{(l)}$, given $\x^{(l)}$ is Bernoulli with probability $y^{(l)} =
+        p(C_1|\x^{(l)})$ :
+        \[\r^{(l)}|\x^{(l)} \sim Bernoulli(y^{(l)}) \]
+        Note that in this discriminant-based approach, we model directly $\r|\x$
+        The sample likelihood is:
+        \[ L(\w,w_0|\cX) = \prod_t(y^{(l)})^{(r^{(l)})}(1-y^{(l)})^{1-r^{(l)}}
+            \]
+        We can always turn it in an error function to minimize: $E = -\log L$
+        So we have \emph{cross-entropy}:
+        \[ E(\w, w_0| \cX) = -\sum_t \r^{(l)}\log y^{(l)} + (1-r^{(l)})\log(1 - y^{(l)}) \]
+
+        We use gradient descent to minimize cross-entropy 
+        If $y = sigmoid(a) = \frac{1}{1 + exp(-a)}$, its derivative is given as:
+        \[ \frac{dy}{da} = y(1-y) \]
+        and we get the following update equations:
+        \begin{align*}
+            \Delta w_j & = -\eta \frac{\partial E}{\partial w_j} = \eta \sum_t
+            ({\frac{r^{(l)}}{y^{(l)}}} - \frac{1-r^{(l)}}{1-y^{(l)}}x^{(l)}_j \\
+            & = \eta \sum(r^{(l)} - y^{(l)}) x^{(l)}_j\mbox{, }= 1,\dots, d 
+        \end{align*}
+        \[
+            \Delta w_0 = -\eta \frac{\partial E}{\partial w_0} = \eta\sum(r^{(l)} -
+            y^{(l)}) 
+        \]
+\end{description}
+\subsection{Multiple Classes}
+\subsubsection{Generalization of sigmoid}
+    Take one of the classes $C_k$, as reference class
+        and assume that: \\
+        $ \log\frac{p(\x|C_i)}{p(\x|C_K)} = \w_i^T\x+ w_{i0}^o $,
+        $i=1,\dots,K-1$\\
+        Then we have:
+        \[ \frac{P(C_i|\x)}{P(C_K|\x)} = \exp[\w_i^T\x+w_{i0}] \]
+        With $w_{i0} = w_{i0}^o + \log\frac{P(C_i)}{P(C_K)}$
+
+     Summing over $i$ we can deduce: 
+         \[P(C_K|\bx) =
+         \frac{1}{1+\sum_{i=1}^{K-1}\exp(\bw_i^T\bx + w_{i0})}\]
+        \[P(C_i|\bx)
+        =\frac{\exp(\bw_i^T+w_{i0})}{1+\sum_{j=1}^{K-1}\exp(\bw_j^T\bx+w_{j0})}\],
+    where $k=1,\dots, K-1$
+\subsubsection{Softmax}
+    Treat all classes uniformly\\ $y_i = \hat{P}(C_i|\bx) =
+        \frac{\exp(\bw_i^T+w_{i0})}{\sum_{j=1}^K\exp(\bw_j^T+w_{j0})}$,
+        $i=1,\dots, K$
+    \paragraph{Learning} 
+        \[\frac{\partial y_i}{\partial a_j} = y_i (\delta_{ij}-y_i)\]
+        $\Delta\bw_j = \eta\sum_l(r_j^{(l)}-y_j^{(l)})\bxl$, $
+        \Delta w_{j0} = \eta\sum_l(r_j^{(l)}-y_j^{(l))}$
+    \paragraph{Regression for two-class Classification} $r^{(l)} = y^{(l)}+\epsilon$,
+        $r^{(l)}\in \left\{ 0,1 \right\}, \epsilon \sim \cN(0, \sigma^2)$,
+        $y^{(l)} = sigmoid(\bw^T\bxl+w_0)$,
+
+        Likelihood:$L(\bw, w_0|\cX) =
+        \prod_l\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left[
+        -\frac{(\rl-\yl)^2}{2\sigma^2} \right]$, 
+
+        Error: $E(\left\{ \bw_i, w_{i0} \right\}_i|\cX) =
+        \frac{1}{2}\sum_l(r^{(l)}-\yl)^2$, 
+
+        Learning $\Delta \bw = \eta\sum_l(\rl - \yl)\yl(1-\yl)\bxl$, \\$\Delta
+        w_0 = \eta\sum_l(\rl-\yl)\yl(1-\yl)$
+    \paragraph{$K>2$ classes} $\brl = \byl +\boldsymbol\epsilon$, \\$\epsilon\sim
+        \cN_K(0, \sigma^2\mathbf{I}_K)$, $\yil = \frac{1}{1+\exp\left[
+            -(\bw_i^T\bxl + w_{i0})
+        \right]}$, \\
+        Likelihood:\\$L(\{\bw_i, w_{i0}\}_i|\cX) =
+        \prod_l\frac{1}{(2\pi)^{K/2}|\bSig|^{1/2}}\exp\left[ -\frac{\|\brl -
+        \byl\|^2}{2\sigma^2} \right]$\\
+        Error Func: $E(\{\bw_i, w_{i0}\}|\cX) =
+        \frac{1}{2}\sum_l\|\brl-\byl\|^2$\\
+        Learning $\Delta \bw_i = \eta\sum_l(\rl_i - \yl_i)\yl_i(1-\yl_i)\bxl$,\\ $\Delta
+        w_0 = \eta\sum_l(\rl_i-\yl_i)\yl_i(1-\yl_i)$

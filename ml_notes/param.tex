@@ -1,0 +1,129 @@
+\chapter{Parameter Estimation}
+\begin{description}
+\item[Setting] Assume data follow a distribution model.$\mathcal{X}=\{\x^{(l)}\}$, 
+$\x^{l}\sim p(\x)$, Assume some
+parametric form for $p(\x|\theta)$, $\theta$ is estimated using $\mathcal{X}$
+\item[Param Approach to classification] In Baye's rule for classification,
+$p(\x|C_i) \mbox{(likelihood) and } P(C_i)$ (prior) need to be estimated from the sample 
+$\mathcal{X}$
+\item[MLE] seeks to find $\theta$ that makes sampling from $p(\x|\theta)$ as
+likely as possible
+\item likelihood:\\$L(\theta|\mathcal{X}) \equiv p(\mathcal{X}|\theta) =
+\prod^N_{l=1}p(\x^{(l)}|\theta)$
+\item log likelihood: $\mathcal{L} \equiv \log L(\theta|X) = \sum^N_{l=1}\log
+p(\x^{(l)}|\theta)$
+    \item Max Likelihood estimate: $\hat{\theta} =
+    arg\max_{\theta}\mathcal{L}(\theta|\mathcal{X})$
+\item[Bernoulli] $x \in\{0, 1\}, P(x=1)$ for $p(C_1)$,\\ $P(x|p_0) =
+p_0^x(1-p_0)^{1-x}$
+\item[] Log Likelihood:\\ $\mathcal{L}(p_0|\cX) = \sum_{l=1}^N[x^{(l)}\log
+        p_0+(1-x^{(l)})\log(1-p_0)]$
+    \item[] ML estimation: $\hat{p_0} = \frac{1}{N}\sum_{l=1}^N x^{(l)}$
+\item[Multinomial]Ran Var. $\x$ with $K\geq 2$ possible value
+\item Indicator var: $x_i = 1 \mbox{ if outcome is state }i \mbox{, } 0 \mbox{
+if not}$
+\item $P(\x|\theta) = P(X_1,\dots, x_K|p_1,\dots, p_K) =
+    \prod^K_{i=1}p_i^{x_i}$, $\sum_{i=1}^K p_i = 1$
+\item[] Log likelihood: $\cL (p_0|\cX) = \sum_l^N\sum_{i=1}^K x_i^{(l)} \log p_i$
+\item[] ML estimate: $\hat{p_i} = \frac{1}{N}\sumln \xil$
+\item[Normal] pdf: $p(x|\mu, \sigma ) =
+    \frac{1}{\sqrt{2\pi\sigma^2}}\exp[-\frac{(x-\mu)^2}{2\sigma^2}]$
+\item[] $\cL(\mu, \sigma|\cX) = -\frac{N}{2}\log(2\pi) - N\log\sigma -
+    \frac{1}{2\sigma^2}\sumln(\xl - \mu)^2$
+\item ML Estimates: $\hat{\mu} = \frac{1}{N}\sumln \xl$\\
+    $\hat{\sigma^2} = \frac{1}{N}\sumln (\xl - \hat{\mu})^2$
+\item[Multivariable Normal] $\mathcal{N}(\bmu,\bSig)$, $\bmu$ mean vec, $\bSig$
+    covariance matrix
+\item[] $p(\x|\bmu, \bSig) = \frac{1}{(2\pi)^{d/2}|\bSig|^{1/2}}
+    \exp[-\frac{1}{2}(\x -\bmu)^T\bSig^{-1}(\x - \bmu)]$
+\item $\cL (\bmu,\bSig|\cX) = \frac{Nd}{2}\log(2\pi) - \frac{N}{2}\log|\bSig|
+    -\frac{1}{2}\sumln(\bxl - \bmu)^T\bSig^{-1}(\bxl - \bmu)$
+\item[] ML estimates: $\hat{\bmu} = \frac{1}{N}\sumln \bxl$, \\
+    $\hat{\bSig} = \frac{1}{N}\sumln(\bxl - \hat{\bmu})(\bxl - \hat{\bmu})^T$
+\item[Bias and Variance] Bias: $b_\theta(d) = E[d] - \theta$
+    \\Variance: $E[d-E[d]^2]$(d is estimator of param $\theta$)
+\item[] Mean Squared error: \\
+    $r(d,\theta) = E[(d-\theta)^2]= \mbox{bias}^2 + \mbox{variance}^2$
+\item[Bayesian Estimation] Treat $\theta$ as a Ran Var. Prior $p(\theta)$
+\item[] Posterior: \\
+    $p(\theta|\cX) = \frac{p(\cX|\theta)p(\theta)}{p(\cX)} =
+    \frac{p(\cX|\theta)p(\theta)}{ \int p(\cX|\theta')p(\theta')d\theta'}$
+\item[] Estimation of density at $x$: \\
+    $p(x|\cX) = \int p(x|\theta)p(\theta|\cX)d\theta$
+\item[] Regression $y = g(x|\theta)$:
+    $ y = \int g(x|\theta)p(\theta|\cX)d\theta $
+\item[Computational Considerations] 
+\item[] Max a posteriori (MAP): $\theta_{MAP}=arg\max_{\theta}p(\theta|\cX)$,\\
+    $p(x|\cX) \approx p(x|\theta_{MAP)}$, $y\approx y_{MAP} =
+    g(x|\theta_{MAP}$)
+
+    ML estimation: $\theta_{ML} = arg \max_{\theta} p(\theta|\cX)$
+
+    Bayes' estimation -- expectation w.r.t.\ posterior density:
+    \[ \theta_{Bayes} = E[\theta|\cX] = \int \theta p(\theta|\cX)d\theta\]
+\item[] Example: Bayesian estimation with known $\mu$, $\sigma$ and $\sigma_0$\\
+        $x^{(l)} \sim \mathcal{N}(\theta, \sigma_0^2)$, 
+        $\theta  \sim \mathcal{N}(\mu, \sigma^2)$\\
+         MLE: $\theta_{ML} = \frac{1}{N}\sumln\x^{(l)}=m$ \\
+         $\theta_{Map} = \theta_{Bayes}  =E(\theta|\cX) = 
+            \frac{N/\sigma_0^2}{N/\sigma_0^2+1/\sigma^2} m +
+            \frac{1/\sigma^2}{N/\sigma_0^2 + 1/\sigma^2} \mu$
+
+\item[Classification with Discriminant Functions] 
+    Gaussian density for each class: $p(x|C_i) = \frac{1}{\sqrt{2\pi
+    \sigma^2_i}} \exp\left[ -\frac{(x-\mu_i)^2}{2\sigma_i^2} \right] $
+
+    Discriminant functions:
+    $g_i(x) = \log\left[ p(x|C_i)p(C_i) \right] = -\frac{1}{2}\log 2\pi -
+    \log\sigma_i -\frac{(x-\mu_i)^2}{2\sigma^2_i} +\log P(C_i)$
+
+    Sample $\cX = \left\{ (\xl, \mathbf{y}^{(l)}) \right\}^N_{l=1}$($y_i^{(l)} = 1$ if
+    $x^{(l)}\in C_i$)
+
+    ML Estimates: $\hat{P}(C_i) = \frac{1}{N}\sumln\yil$\\
+    $m_i = \frac{\sumln \xl \yil}{\sumln\yil} \hspace{0.5cm} s_i^2=  \frac{\sumln
+    (\xl - m_i)^2\yil}{\sumln\yil} $
+
+    Discriminant Functions: \[g_i(x) = -\log s_i - \frac{(x-m_i)^2}{2s_i^2} +
+    \log \hat{P}(C_i)\]
+\item[Additive Parametric Model] Functional relationship in additive form:
+    $r = f(x) + \epsilon$
+
+    Parametric modeling: $f(x) \approx g(x|\theta)$, $\epsilon \sim \cN(0,
+    \sigma^2)$
+
+    Conditional probability of output given input:
+    \[p(r|x) \sim \cN(g(x|\theta), \sigma^2)\]
+    Log likelihood given: $\cX = \left\{ (\xl, \rl) \right\}$:
+    \[
+        \cL(\theta|\cX) = \log \prod_{l=1}^N p(\xl, \rl) =
+        \frac{1}{2\sigma^2}\sumln\left[ \rl - g(\xl|\theta) \right]^2 +
+        \mbox{const}
+    \]
+
+    Equivalent to minimizing error function:
+    \[
+        E(\theta|\cX) = \frac{1}{2}\sumln\left[ \rl - g(\xl|\theta) \right]^2
+    \]
+    Called least squares estimates
+\item[Polynomial Regression] 
+    \[ g(\xl|w_0, w_1, \dots, w_k) = w_k(\xl)^k + \dots + w_2(\xl)^2 + w_1\xl
+        + w_0 \]
+        Least square estimate: $\hat{\bw} = (\bD^T\bD)^{-1}\bD^T\mathbf{r}$,
+        where:
+        \[ D = \begin{bmatrix}
+            1 & x^{(1)} & (x^{(1)})^2  & \dots & (x^{(l)})^k \\
+            1 & x^{(2)} & (x^{(2)})^2  & \dots & (x^{(l)})^k \\
+            \dots\\
+            1 & x^{(N)} & (x^{(N)})^N  & \dots & (x^{(l)})^k \\
+        \end{bmatrix}
+    \]
+    \[ \mathbf{r} = \left( r^{(1)}, r^{(2)},\dots,r^{(N)} \right)^T \]
+\item[Bias and Variance] Expected squared error of sample $\cX$
+    $E\left[ (r-g(x))^2|x \right] = \left( E\left[ r|x \right] - g(x) \right)^2+E\left[
+        (r-E\left[ r|x \right])^2|x \right] = \mbox{squared err}+\mbox{noise}$\\
+        Average over $\cX$: $E_{\cX} = \left[ (E[r|x]-g(x))^2|x\right] = \left(
+        E[r|x]-E_{\cX}[g(x)]\right)^2 + E_{\cX}\left[ (g(x)-E_{\cX}[g(x)])^2
+    \right] = \mbox{bias}+\mbox{variance}$
+
+\end{description}

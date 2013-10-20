@@ -1,0 +1,78 @@
+\chapter{Multivariate Method}
+\begin{description}
+    \item[Multivariate Data]N i.i.d.\ instances:
+        \[
+            \mathbf{X} = \begin{bmatrix}
+                x_1^{(1)}& x_2^{(1)} & \dots x_d^{(1)} \\
+                x_1^{(2)} & x_2^{(2)} & \dots x_d^{(2)} \\
+                \dots \\
+                x_1^{(N)} & x_2^{(N)} & \dots x_d^{(N)}
+            \end{bmatrix}
+        \]
+    \item[Parameters] Mean Vector: $E[x] = \mu = (\mu_1, \dots, \mu_d)^T$
+
+        Covariance of $x_i$ and $x_j$: \[\sigma_{ij} = E\left[ (x_i -
+        \mu_i)(x_j-\mu_j) \right] = E[x_i x_j] -\mu_i \mu_j\]
+
+        Variance of $x_i$: $\sigma_i^2 = E\left[ (x_i - \mu_i)^2 \right]$
+
+        Covariance matrix:
+        \begin{align*}
+         \bSig & = Cov(\bx) = E\left[ (\bx -\bmu)(\bx-\bmu)^T \right] \\ &=
+            \begin{bmatrix} \sigma_1^2 & \sigma_{12} & \dots & \sigma_{1d} \\
+                \sigma_{21} & \sigma_2^2 & \dots  & \sigma_{2d} \\
+                \dots\\
+                \sigma_{d1} & \sigma_{d2} & \dots & \sigma_d^2
+            \end{bmatrix}
+        \end{align*}
+        Correlation: $\rho_{ij} = \frac{\sigma_{ij}}{\sigma_i \sigma_j} $
+
+        $x_i$ and $x_j$ are independent $\Rightarrow \sigma_{ij} = \rho_{ij} =
+        0$
+    \item[Parameter Estimation] 
+        Sample Mean $\mathbf{m} = \frac{1}{N}\sum_{l=1}^N \bx^{(l)}$
+
+        Sam.\ Cov.: $\mathbf{S} = [s_{ij}]^d_{i,j=1} = \frac{1}{N}
+        \sum_{l=1}^N(\bxl -  \bm)(\bxl - \bm)^T$
+        
+    \item[Multivariate Normal Distribution] $\bx \sim \cN_d(\bmu, \bSig)$
+
+        $p(x) = \frac{1}{(2\pi)^{d/2}|\bSig|^{1/2}}\exp\left[
+        -\frac{1}{2}(\bx-\bmu)^T\bSig^{-1}(\bx-\bmu) \right]$
+
+        Mahalanobis distance: $(\bx - \bmu)^T\bSig^{-1}(\bx-\bmu)$(d-dimensional
+        hyperellipsoid.)
+    \item[Bivariate Normal Distribution] Covariance matrix:
+        \[\bSig = \begin{bmatrix}
+                \sigma_1^2 & \rho\sigma_1\sigma_2 \\
+                \rho\sigma_1\sigma_2 & \sigma_2^2 \end{bmatrix}
+        \]
+
+         $p(x_1, x_2) =
+        \frac{1}{2\pi\sigma_1\sigma_2\sqrt{1-\rho^2}}\exp\left[
+        -\frac{1}{2(1-\rho^2)}(z_1^2 - 2\rho z_1 z_2 + z^2_2)  \right]$, where
+        $z_i  = \frac{x_i - \mu_i}{\sigma_i}$
+    \item[Parametric Classification] Class-conditional densities:$p(\bx|C_i) \sim \cN_d(\bmu_i, \bSig_i)$:
+        \[p(\bx|C_i) = \frac{1}{(2\pi)^{d/2}|\bSig_i|^{1/2}}\exp\left[
+            -\frac{1}{2}(\bx - \bmu_i)^T\bSig_i^{-1}(\bx - \bmu_i)
+        \right] \]
+
+        Discriminant functions:
+        $g_i(\bx)  = \log p(\bx|C_i) + \log P(C_i)\\
+                  = -\frac{1}{2}\log 2\pi - \frac{1}{2}\log|\bSig_i| -
+                 \frac{1}{2}(\bx - \bmu_i)^T\bSig^{-1}_i(\bx - \bmu_i) +
+                 \log P(C_i)$
+    \item[Estimation of Parameters] 
+     $       \hat{P}(C_i)  = \frac{1}{N}\sum_l r_i^{(l)}\\
+            \mathbf{m}_i = \frac{\sum_l r_i^{(l)}\bxl}{\sum_l r_i^{(l)}} \\
+            \mathbf{S}_i = \frac{\sum_l r_i^{(l)}r_i^{(l)}(\bxl -
+            \bm_i)(\bxl-\bm_i)^T}{\sum_l r^{(l)}_i}$
+    \item[Quadratic Discriminant Functions] 
+        \[g_i(\bx) = \bx^T\mathbf{W}_i \bx + \mathbf{w}_i^T\bx + w_0\]
+        where
+            $\mathbf{W}_i = -\frac{1}{2}\mathbf{S}^{-1}_i \\
+            \mathbf{w}_i  = \mathbf{S}_i^{-1}\mathbf{m}_i \\
+            w_{i0} = -\frac{1}{2}\mathbf{m}_i^T\mathbf{S}_i^{-1}\mathbf{m}_i -
+            \frac{1}{2}\log|\mathbf{S}_i| + \log \hat{P}(C_i)$
+\end{description}
+

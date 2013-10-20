@@ -1,0 +1,65 @@
+\chapter{Denoising Autoencoders}
+An extension of a classical autoencoder and it was introduced as a
+building block for deep networks. 
+\section{Autoencoders}
+An auto-encoder is trained to encode the input $\bx$ into some
+representation $\mathbf{c}(\bx)$ so that the input can be reconstructed
+from that representation. Hence the target output of the auto-encoder is
+the auto-encoder input itself.
+
+An autoencoder takes an input $ \bx\in [0,1]^d$
+
+First maps it with an encoder to a hidden representation $\bf y \in [ 0,
+1]^{d'}$ through a deterministic mapping:
+\[ \by = s(\bW\bx + \mathbf{b}) \]
+Where $s$ is a non-linearity such as the sigmoid. 
+
+The latent representation $\bf y$, or \textbf{code} is then mapped back
+(with a decorder ) into a \textbf{reconstruction} $\bf z$ of same shape as
+$\bx$ though a similar transformation:
+\[ \mathbf{z}= s(\bW' \by + \mathbf{b}')\].
+Where $'$ does NOT indicate transpose, and $\mathbf{z}$ should be seen as
+prediction of $\mathbf{x}$, given the code $\by$
+
+The parameter of the model $W$ are optimized such that \textbf{the average
+reconstruction error is minimized}. 
+
+Measure the reconstruction error using the traditional squared error
+$L(\bx, \mathbf{z}) = \|\bx - \mathbf{z}\|$
+
+If the input is interpreted as either bit vectors or vectors of bit
+probability by the reconstruction cross-entropy defined as (if $\bx|\by$
+is in Gaussian):
+\[ L_H(\bx, \mathbf{z}) = -\log P(\bx|\by) = -\sum_{k=1}^d\left[ \bx_k\log
+\mathbf{z}_k + (1-\mathbf{x}_k)\log (1-\mathbf{z}_k)\right]\]
+
+The hope: $\by$ is a distributed representation that captures the
+coordinates along the main factors of variation in the data.
+
+\section{Denoising Autoencoder}
+The idea behind denoising autoencoders is that in order to force the
+hidden layer to discover more robust features and prevent it from simply
+learning the identity (copy the input to output), we train the autoencoder
+to reconstruct the input from a corrupted version of it.
+
+The denoising auto-encoder is a stochastic version of the auto encoder.
+It does two things:
+\begin{itemize}
+    \item Try to encode the input (preserve the information)
+    \item Try to undo the effect of a corruption process stochastically
+        applied to the input of the auto-encoder.
+\end{itemize}
+
+The stochastic corruption process consists in randomly setting some of
+the inputs (as many as half of them) to zero. Hence the denoising
+auto-encoder is trying to \textbf{predict corrupted values from the
+uncorrupted values}, for randomly selected subsets of missing patterns.
+Note how being able to predict any subset of variables from the rest is a
+sufficient condition for completely capturing the joint distribution
+between a set of variables.
+
+To convert the autodecoder class into a denoising autoencoder class, all
+we need to do is to add a stochastic corruption step operating on the
+input.
+
+

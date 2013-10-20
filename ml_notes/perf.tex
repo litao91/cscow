@@ -1,0 +1,108 @@
+\chapter{Performance Evaluation and Comparison}
+\begin{description}
+    \item[K-Fold Cross Validation] The data set $\cX$ is randomly partitioned
+        into $K$ equal-sized subsets $\cX_i$, \textbf{Stratification} the class
+        distribution different subsets are kept roughly the same.\\
+        Use $\cX_1, \dots, \cX_K$ as validation sets, and the remaining as
+        training respectively.\\
+        If $N$ is small, $K$ should be large to allow large
+        enough training sets. \\
+        Leave one out: one instance if left out as validation and $N-1$ for
+        training.
+    \item[$5\times 2$ Cross Validation] For each fold $i$, Split into two equal-sized parts,
+        $\cX_i^{(1)}$, $\cX_i^{(2)}$, 10 training/validation set pairs: $\cT_1 =
+        \cX_1^{(1)}, \cV_1 = \cX_1^{(2)}, \cT_2 = \cX_1^{(2)}, \cV_2 =
+        \cX_1^{(1)}, \cT_3 = \cX_2^{(1)}, \cV_3 = \cX_2^{(2)}, \cT_4 =
+        \cX_2^{(2)}, \cV_4 = \cX_2^{(1)}, \dots$
+    \item[Bootstrapping] Generates new samples, each of size $N$, by drawing
+        randomly with replacement. Multiple bootstrap sammples are used to max the
+        change that the system is trained on all instances.
+    \item[Error Measure] TP: True positive, FP: False postivie, FN:False
+        Negative, TN: True Negative, Error rate:
+        $\frac{|FN|+|FP|}{N}$
+    \item[Receiver Operating characteristics curve] Hit rate:
+        $\frac{|TP|}{|TP|+|FN|}$ False alarm rate: $\frac{|FP|}{|FP|+|TN|}$,
+        area under the curve is often used.
+    \item[Point vs Interval estimator] Point specifies a value for $\theta$,
+        intervale specifies an interval within which $\theta$ lines with a
+        certain degree of confidence.
+    \item[Confidence Interval] Define $z_{\alpha}$,\\
+        Two sided:
+        $P(\mathcal{Z}>z_{\alpha}) = \alpha$, then for level of confidence
+        $1-\alpha$, \[P(-z_{\alpha/2}<\sqrt{N}\frac{m-\mu}{\sigma}<z_{\alpha/2})
+        = 1-\alpha\]
+        One-sided $P(m-z_{alpha}\frac{\sigma}{\sqrt{N}}<\mu) = 1-\alpha$
+    \item[t Distribution] $\sigma^2$ replaced by sample var $S^2 = \frac{\sum_l
+        (\xl - m)^2}{N-1}$, $\sqrt{N}(m-\mu)/S$ follows a t distribution with
+        $N-1$ degree of freedom: $\sqrt{N}\frac{m-\mu}{S} \sim t_{N-1}$
+        For $\alpha\in(0,1/2)$, 
+
+        \[P(m-t_{\alpha/2, N-1}\frac{S}{\sqrt{N}} < \mu < m + t_{\alpha/2,
+        N-1}\frac{S}{\sqrt{N}}) = 1-\alpha\]
+    \item[Hypothesis Testing] Test some hypothesis concerning the parameters.
+        \begin{enumerate}
+            \item Define a statistics obey a certain distribution
+            \item Random sample is consistent with the hypothesis under
+                consideration, accept(not reject)
+            \item Otherwise reject
+        \end{enumerate}
+    Given normal $\cN(\mu, \sigma^2)$, $\sigma$ known, $\mu$ unknown.
+    \textbf{Null Hypothesis}:$H_0:\mu = \mu_0$, $H_1: \mu \neq \mu_0$
+    Accept $H_0$ if the sample mean is not too far from $\mu_0$. Accept $H_0$
+    with level of significance $\alpha$ if $\mu_0$ lies in the $100(1-\alpha)$,
+    \[\sqrt{N}\frac{m-\mu_0}{\sigma}\in (-z_{\alpha/2}, z_{\alpha/2})\]
+    \item[Error] Type I, rejected when it is correct, $\alpha$ defines how much type
+        I can tolerate. Type II accepted when incorrect.
+    \item[One Sided] $H_0: \mu\leq \mu_0$, $H_1: \mu > \mu_0$, accept
+        $\frac{\sqrt{N}(m-\mu_0)}{\sigma} \in (-\infty, z_{\alpha})$
+    \item[t-test] If $\sigma^2$ is not known, $H_0: \mu = \mu_0$, $H_1: \mu\neq
+        \mu_0$, accept at $\alpha$ if \[\sqrt{N}\frac{m-\mu_0)}{S}\in
+        (-t_{\alpha,N-1}, t_{\alpha, N-1}) \]
+    \item[Binomial Test] 
+        Single test/validation:Classifier is trained on a training set $\cT$ and
+        tested on validation set $\cV$. $p$ be the probability that the
+        classifier makes a misclassification error..Define $\xl$ as a B ernoulli
+        variable to denote the correctness, $\xl =1$ with probability $p$ and
+        $\xl =0$ with probability $1-p$, point estimation: $\hat{p} =
+        \frac{\sum_l \xl}{|\cV|} = \frac{\sum_l \xl}{N}$
+
+        Hypothesis test: $H_0: p\leq p_0$ vs.\ $H_1: p> p_0$, $X = \sumln \xl$
+        denote the number of errors on $\cV$., \[P(X=j) ={ N\choose{j}}
+        p^j(1-p)^{N-j}\]
+        Under the null hypothesis $p\leq p_0$, so the probability that there are
+        e errors or less is:
+        \[
+        P(X\leq e) = \sum_{j=1}^e {N\choose{j}}p_0^j(1-p_0)^{N-j}\]
+        Binomial test: accept $H_0$ if $P(X\leq e)<1-\alpha$
+    \item[Paired t Test] Multiple training/validation set pairs: run the
+        algorithm $K$ times on $K$ T/V set pairs, we get $K$ error
+        probabilities, $p_i, i = 1, \dots, K$ on K validation sets.
+
+        Paired t test to determine whether to accept the null hypothesis $H_0$
+        that the classifier has error probability $p_0$ or less at significane
+        level $\alpha$.
+        \[
+            \xil = \begin{cases} 1 & \mbox{if classifier trained on }\cV_i \mbox{
+                makes an error on instance} l\mbox{ of } \cV_i\\
+                0 & \mbox{otherwise}
+            \end{cases}
+            \]
+            Test statistic: $\sqrt{K}\frac{(m-p_0)}{S} \sim t_{K-1}$, where $p_i
+            = \frac{\sumln \xil}{N}$, $m=\frac{\sum_{i=1}^Kp_i}{K}$, $S^2 =
+            \frac{\sum_{i=1}^K(p_i-m)^2}{K-1}$
+    \item[K-Fold Cross-Validated Paired $t$ Test] Given two classification
+        algorithms and a data set, we want to compare and test whether the two
+        algorithms constuct classifiers that have the same expected error rate
+        on a new instance.
+
+        K-fold cross validation is used to obtain $K$ training/validation set
+        pairs $\left\{ (\cT_i, \cV_i) \right\}^K_{i=1}$, run two algorithms,
+        error probabilities $p_i^1$ and $p_i^2$, define $p_i = p_i^1 - p_i^2$,
+        $p_i$ with mean $\mu$
+
+        $H_0 = \mu = 1$, $H_1 = \mu\neq 0$. Test statistic:
+        $\sqrt{K}\frac{(m-0)}{S} \sim t_{K-1}$, where $m = \frac{\sum_{i=1}^K
+    p_i}{K}$, $S^2 = \frac{\sum_{i=1}^K(p_i - m)^2}{K-1}$, accept $H_0$ at
+    significance level $\alpha$ if $\sqrt{K}m/S \in{-t_(\alpha/2, K-1},
+    t_{\alpha/2, K-1})$
+\end{description}

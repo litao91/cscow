@@ -1,0 +1,51 @@
+\chapter{Non Parametric Method}
+\begin{description}
+    \item[Nonparametric Density Estimation]
+    Sample: $\mathcal{X} = \{x^{(l)}\}^N_{l=1}$, 
+    Probability density: $p(X)$, cumulative distribution: $F(X)$
+
+    Estimator of $F(X)$:  $\hat{F}(x) = \frac{ \#\{x^{(l)} leq x)\}}{N}$
+
+    Estimator of $p(X)$: $\hat{p}(x) = \frac{1}{h} [\frac{\#\{x^{(l)} + h \leq x\} -
+    \#\{x^{(l)}  \leq x\} }{N}]$ , where $h$ is the interval and instances $x^{(l)}$
+    that fall in this interval are assumed to be close enough
+
+    \item[Histogram Estimator]
+        bin: $[x_0 + mh, x_0 + (m+1)h]$, $x_0 \mbox{ origin, } h \mbox{ bin width }$
+
+    $\hat{p}(x) = \frac{\#\{x^{(l)} \mbox{in the same bin as x}\}}{Nh}$
+
+    Naive Estimator:
+    $\hat{p}(x) = \frac{\#\{ x - h/2 < x^{(l)} \leq x + h/2\}}{Nh}$ 
+
+    Alternative form: $\hat{p}(x) = \frac{1}{Nh} \sum^N_{t=1} w(\frac{x-x^{(l)}}{h})$
+    with weight function \[w = \begin{cases} 1 & if |u| < 1/2 \\ 0 & otherwise
+        \end{cases}\]
+
+    \item[Kernel Estimator] Kernel $K(u) =
+        \frac{1}{2\pi}\exp(-\frac{u^2}{2})$,\\
+        Estimator:$\hat{p} = \frac{1}{Nh}\sumln K(\frac{x-\xl}{h})$
+    \item[KNN] $\hat{p}(x) = \frac{k}{2Nd_k(x)}$, $d_k(x)$ is the distance from
+        x to the kth nearest instannce.
+
+        KNN with kernel:$\hat{p}(\bx) = \frac{1}{Nh^d}\sumln
+        K(\frac{\bx-\bxl}{h})$, with $\int_{\mathbb{R}^d}K(\bx)d\bx = 1$,
+
+        Multivariate ellipsoidal Gaussin kernel: \\$K(\mathbf{u}) =
+        \frac{1}{(2\pi)^{d/2}|\mathbf{S}|^{1/2}}\exp\left( -\frac{1}{2}
+        \mathbf{u}^T\mathbf{S}^T\mathbf{u} \right)$
+    \item[Nonparammetric Classification] 
+        Kernel estimator of class-conditional densities: $\hat{p}(\bx|C_i) =
+        \frac{1}{N_ih^d}\sumln K(\frac{\bx-\bxl}{h})\yil$, $\yil = 1$ if $\bxl$
+        is in $C_i$, and $N=\sum_l \yil$, $\hat{P}(C_i) = \frac{N_i}{N}$
+        
+        Discriminant: \\$g_i(\bx) = \hat{p}(\bx|C_i)\hat{P}(C_i) =
+        \frac{1}{Nh^d}\sumln K(\frac{\bx-\bxl}{h})\yil$
+    \item[KNN classifier] $\hat{p}(\bx|C_i) = \frac{k_i}{N_iV^k(\bx)}$,
+        $\hat{P}(C_i|\bx) = \frac{k_i}{k}$, Choose $C_i$ if $i=arg
+        \max_j\hat{P}(C_j|\bx) = arg \max_j k_j$
+    \item[Non param regression] $\yl=g(\bxl)+\epsilon$, \\ $\hat{g}(x) = \frac{\sumln
+            K(\frac{x-\xl}{h})\yl}{\sumln K(\frac{x-\xl)}{h}}$
+        \item[Regularized cost function] balance bias and variance:\\$\sum_l\left[ \yl-\hat{g}(\xl)
+            \right]^2+\lambda\int^b_a [\hat{g}''(x)]^2 dx$
+\end{description}

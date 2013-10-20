@@ -1,0 +1,98 @@
+\chapter{Support Vector Machine}
+
+\section{Preliminary}
+\begin{description}
+    \item[Margin of a separating hyperplane] distance from hyperplane to
+        the nearest data point. (largest margin generalizes best)
+    \item[Hard-margin case] points are \textbf{linearly separable}
+             with proper scaling of $\bw$ and $w_0$, the points closest to
+                the hyper plane satisfy $|\bw^T\bx + w_0|=1$ $\Rightarrow$ \textbf{canoical
+                separating hyperplane.}
+
+             The one max the margin: \textbf{canonical optimal separating
+                hyperplane}
+
+             $\bx^{(1)}\mbox{ and }\bx^{(2)}$ be two closest point on each
+                side:
+                \[ \bw^T\bx^{(1)} + w_0=+1\]
+                \[\bw^T\bx^{(2)} + w_0 = -1\]
+                So $\bw^T(x^{(1)}-\bw^{(2)}) = 2$, the margin is given by:
+                \[\gamma = \frac{1}{2}
+                    \frac{\bw^T(\bx^{(1)}-\bx^{(2)})}{\|\bw\|} =
+                    \frac{1}{\|\bw\|}\] 
+
+             Maximizing the margin is equivalent to minimizing $\|\bw\|$
+    \item[Inequality constraint] 
+        \[
+             \bw^T\bx^{(l)} + w_0 \begin{cases} \geq +1 & \mbox{if } y^{(l)} =
+                 +1 \\ \leq -1 & \mbox{if } y^{(l)} = -1 \end{cases} \]
+             Equivalent to:
+             \[ y^{(l)}(\bw^T\bx^{(l)} + w_0) \geq 1 \]
+     \item[Primal Optimization]  
+         \begin{align*}
+             \mbox{Minimize }& \hspace{0.5cm} \frac{1}{2}\|\bw\|^2 \\
+             \mbox{Subject to } & \hspace{0.5cm} y^{(l)}(\bw^T\bx^{(l)} +
+             w_0) \geq 1 , \forall l
+         \end{align*}
+     \item[Lagrangian] \begin{align*} L_p(\bw, w_), {\alpha_l}) & =
+             \frac{1}{2}\|\bw\|^2 - \sum_{l =1}^N \alpha_l\left[
+                 y^{(l)}(\bw^T\bx^{(l)} + w_0) -1
+                 \right] \\
+                 & = \frac{1}{2}\bw^T\bw - \bw^T\sum_l\alpha_l y^{(l)}\bx^{(l)}
+                 - w_0\sum_l \alpha_l y^{(l)} + \sum_l \alpha_l
+             \end{align*}
+         \item[Eliminating Primal Var]\[ \frac{\partial L_p }{\partial \bw} = 0
+             \Rightarrow \bw = \sum_l \alpha_l\yl\bxl\]
+             \[\frac{\partial L_p)}{\partial w_0} = 0 \Rightarrow \sum_l
+             \alpha_l\yl = 0\]
+         \item[Dual Optimization Problem] Setting gradient of $L_p$ w.r.t. $\bw$
+             and $w_0$ to 0, then plugging, we get duel optimization problem:
+             \begin{align*}
+                 \mbox{Maximize}&\hspace{0.5cm} \sum_l\alpha_l -
+                 \frac{1}{2}\sum_l\sum_{l'}\alpha_l\alpha_{l'}y^{(l)}y{(l')}(\bx^{(l)})^T\bx^{(l')}
+                 \\
+                 \mbox{subject to }&\hspace{0.5cm} \sum_l \alpha_ly^{(l)} = 0
+                 \mbox{and }\alpha_l \geq 0, \forall l
+             \end{align*}
+         \item[Support Vector] Most of the Dual Variables vanish with $\alpha_l
+             = 0$. They are points lying beyond the margin, Support vectors:
+             $\bxl$ with $\alpha_l > 0$. \\
+             Computation of primal variables: $\bw = \sum_{l=1}^N
+             \alpha_l\yl\bxl = \sum_{\bxl\in SV}\alpha_l\yl\bxl$\\
+             Support vector on margin:$\yl(\bw^T\bxl + w_0) =1$ or $w_0 =
+             \yl-\bw^T\bxl$, Then:\[w_0 = \frac{1}{|SV|}\sum_{\xl\in SV}(\yl -
+             \bw^T\bxl)\]
+         \item[Discriminant Function] $g(\bx) = \bw^T\bx + w_0$ (plug in $\bw$
+             and $w_0$ above), choose $C_1$ if $g(\bx) > 0$
+         \item[$K>2$] An SVM $g_i(\bx)$ is learned for each two-class problem.
+             Choose $C_j$ if $j=arg\max_k g_k(\bx)$
+         \item[Slack Variables] Relaxed constraint: \\$\yl(\bw^T\bxl + w_0) \geq
+             1-\zeta_l$, \\minimize: $C\sum_l\zeta_l + \frac{1}{2}\|\bw\|^2$ \\
+             Lagrangian(Primal):\\
+             $L_p = \frac{1}{2}\|\bw\|^2 + \\C\sum_l\zeta_l -
+             \sum_{l=1}^N\alpha_l\left[ y^{(l)}(\bw^T\bxl + w_0)-1+\zeta_l
+             \right] - \sum\mu_l\zeta_l$, \\$C$ is the regularization parameter,
+             $\mu_l$ is the new Lagrange multipiler to guarantee that
+             $\zeta\geq0$\\
+             Dual: Max $\sum_l\alpha_l-\frac{1}{2}\sum_l
+             \sum_{l'}\alpha_l\alpha_{l'}\yl y^{(l')}(\bxl)^T\bx^{(l')}$\\
+             subject to: $\sum_l\alpha_l \yl = 0$ and $0\leq \alpha_l \leq C,
+             \forall l$
+         \item[Kernel Functions] Dual Problem:\\
+             Max: $\sum_l \alpha_l -\frac{1}{2}\sum_l \sum_{l'}\alpha_l
+             \alpha_{l'}\yl y^{(l')}\phi(\bxl)^T\phi(\bx^{(l')})$\\
+         subject to: $\sum_l\yl =0$ and $0\leq \alpha_l \leq C, \forall l$\\
+         Kernel: $K(\bxl,\bx^{(l')} = \phi(\bxl)^T\phi(\bx^{(l')})$
+     \item[$\epsilon-Insensitive Loss$] 
+         \[\varepsilon_{\epsilon}(\yl, f(\bxl) = \begin{cases} 0 & \mbox{if }
+                 |\yl - f(\bxl)|\leq \epsilon \\
+             |\yl-f(\bxl)|-\epsilon & otherwise
+     \end{cases} \]
+     Primal: Max $\frac{1}{2}\|\bw\|^2 + C\sum_l(\zeta^+_l+\zeta^-_l)$\\
+     Subject to: $\yl - (\bw^T\bxl+w_0)\leq \epsilon + \zeta^+_l, \forall l$\\
+     $(\bw^T\bxl+w_0)-\yl\leq \epsilon + \zeta^-_l, \forall l$, $\zeta_l^+,
+     \zeta_l^-\geq 0, \forall l$\\
+     Two slack variables: $\zeta^+_l$ such that $\yl  - (\bw^T\bxl + w_0)>
+     \epsilon$, $\zeta^-_l$ such that $(\bw^T\bxl + w_0)-\yl> \epsilon$
+\end{description}
+

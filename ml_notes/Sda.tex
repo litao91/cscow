@@ -1,0 +1,28 @@
+\chapter{Stacked Denoising Autoencoders(SDA)}
+The denoising autoencoders can be stacked into form a deep network by
+\textbf{feeding the latent representation(output code)} of the denoising
+autoencoder found on the layer below as input to the current layer.
+
+The unsupervised pre-training of such an architecture is done one layer at
+a time. 
+
+Each layer is trained as a denoising auto-encoder by minimizing
+the reconstruction of its input (output code of the previous layer).
+
+Once the first $k$-layers are trained, we can train the $(k+1)$-th layer
+because we can now compute the code (latent representation) from the layer
+below.
+
+Once all layers are pre-trained, the network goes through a second stage
+of training called \textbf{fine-tuning}.
+
+\paragraph{Supervised fine-tuning} Minimize the prediction error on a
+supervised task. 
+\begin{enumerate}
+    \item Add a logistic regression layer on top of the network (the out
+        put code of the output layer)
+    \item Train the entire network as we would train a multilayer
+        perceptron. 
+    \item At this point, we only consider the encoding parts of each
+        auto-encoder.
+\end{enumerate}

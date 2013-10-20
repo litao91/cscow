@@ -1,0 +1,27 @@
+\section{Kernel Methods}
+Linear parametric models: after training, the training data is then
+discarded, and predictions from new inputs are based purely on the learned
+parameters. This methods also used in nonlinear such as neural networks.
+
+There is a class of techniques, in which the training data points or a
+subset of them, are kept and used also during the prediction phase.
+
+The kernel is a symmetric function of its arguments so that 
+\[ k(\bx, \bx') = k(\bx', \bx)\]
+
+The general ideal is that, if we have an algorithm formulated in such a
+way that the input vector $\bx$ enters only in the form of scalar
+products, then we can replace that scalar product with some other choice
+of kernel. 
+
+Key ideal of kernel methods:
+\begin{itemize}
+    \item Instead of defining a nonlinear model in the original input
+        space, the problem is mapped to a new feature space. 
+    \item The new space is produced by performing a nonlinear
+        transformation using suitably chosen \textbf{basis functions}
+    \item A linear model is then applied to a new nonlinear-transformed
+        space
+    \item The basis functions are often defined implicitly via defining
+        \textbf{kernel functions directly}
+\end{itemize}
