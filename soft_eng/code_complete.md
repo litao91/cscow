@@ -62,7 +62,7 @@ highly intricate, interlocking set of concepts.
 * Low-to-medium fan-out: having a given class use a low-to-medium number
   of other classes. (less than 7)
 * Portability
-* Leanness: A system that has no extra parts. __Finished not when more can
+* Leanness: A system that has no extra parts. __Finished not when no more can
   be added but when nothing more can be taken away.__
 * Stratification: keep the levels of decomposition stratified so that you
   can view the system at any single level and get a consistent view. 

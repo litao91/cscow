@@ -46,10 +46,10 @@ The bad-character rule consider the character in T at which the comparison proce
         }
     }
 
-### Find repeated number
+# Find repeated number
 假设你有一个用 1001 个整数组成的数组，这些整数是任意排列的，但是你知道所有的整 数都在 1 到 1000(包括 1000)之间。此外，除一个数字出现两次外，其他所有数字只出现一 次。假设你只能对这个数组做一次处理，用一种算法找出重复的那个数字。如果你在运算中 使用了辅助的存储方式，那么你能找到不用这种方式的算法吗
 
-Sum up all the numbers, then subtract the sum from 1001*1002/2
+Sum up all the numbers, then subtract the sum from 1001\*1002/2
 
 Another way, use A XOR A XOR B = B
 
@@ -60,4 +60,5 @@ Another way, use A XOR A XOR B = B
         }
         return k;
     }
+
 
