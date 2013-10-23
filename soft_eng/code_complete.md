@@ -46,25 +46,25 @@ highly intricate, interlocking set of concepts.
 
 ### Desirable Characteristics of a Desgin
 
-* Minimal complexity
-* Ease of Maintenance
-* Minimal connectedness: hold connections among different parts of program
+* __Minimal complexity__
+* __Ease of Maintenance__
+* __Minimal connectedness__: hold connections among different parts of program
   to a minimum.
     - Strong cohesion
     - Loose coupling
     - Information hiding
-* Extensibility
+* __Extensibility__
     - Enhance without causing violence to the underlying structure.
 * Reusability
 * High fan-in: Have a high number of classes that use a given class.
   Implies that your system has been designed to make good use of utility
   classes at the lower levels in the system
-* Low-to-medium fan-out: having a given class use a low-to-medium number
+* __Low-to-medium fan-out__: having a given class use a low-to-medium number
   of other classes. (less than 7)
-* Portability
-* Leanness: A system that has no extra parts. __Finished not when no more can
+* __Portability__
+* __Leanness__: A system that has no extra parts. __Finished not when no more can
   be added but when nothing more can be taken away.__
-* Stratification: keep the levels of decomposition stratified so that you
+* __Stratification__: keep the levels of decomposition stratified so that you
   can view the system at any single level and get a consistent view. 
     - If you are writing a modern system that has to use a lot of older
       poorly designed code, write a layer of the new system that's
@@ -74,7 +74,38 @@ highly intricate, interlocking set of concepts.
     - Compartmentalizes the messiness of the bad code
     - Jettison the old code don't need to modify the new code except the
       interface layer.
-* Standard techniques: the more a system relies on exotic pieces, the more
+* __Standard techniques__: the more a system relies on exotic pieces, the more
   intimidating it will for someone try to understand it first time.
-    
+### Levels of Design
+* __Software system__: The entire system
+* __Division into Sybsystems or Packages__
+    - All major subsystems
+    - How to partition the program into major subsystems
+    - How each subsystem is allowed to use each other subsystems
+    - Particular importance: how various subsystems can communicate. If
+      all subsystems can communicate with all other subsystems, you lose
+      the benefit of separating them at all.
+    - A system-level diagram should be an acyclic graph. A program
+      shouldn't contain any circular relationships in which Class A uses
+      class B uses class C, and class C uses Class A
+
+    Common subsystems:
+    - Business Logic
+    - User Interface
+    - Database access
+    - System dependencies
+* Division into classes
+* Division into routines
+* Internal routine design: laying out the detailed functionality of the
+  individual routines.
+
+### Abstraction v.s. Encapsulate
+
+Abstraction: "You're allowed to look at an object at a high level of
+detail
+
+Encapsulation: you aren't allow to look at an object at any other level of
+detail
+
+
 
