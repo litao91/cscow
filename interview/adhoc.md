@@ -78,5 +78,38 @@ optimal
 
 Note: Note sure about this solution
 
+Delete number of m
+=================
+Given n numbers 
+
+    (0, 1, ..., n-1)
+
+Form a circle, each time delete the m-th number, and then, from the next
+number, delete the m th number again. 
+
+Goal: find the remaining number 
+
+Analysis
+---------
+1. If we shift the ids by k, namely, start from k instead of 0, we should
+   add the result by k%n
+* After the first round, we start from k+1 (possibly %n) with n-1
+  elements, that is equal to an (n-1) problem start from (k+1)th element
+  instead of 0, so the answer is (f(n-1,m)+k+1)%n
+* k = m-1, so f(n,m) = (f(n-1,m)+m)%n
+* Finally f(1,m) = 0
+
+Make use of dynamic programming
+
+A O(n) solution:
+
+    int joseph(int n, int m) {
+        int fn = 0;
+        for(int i = 2; i <= n; i++) {
+            fn = (fn+m)%i;
+        }
+        return fn;
+    }
+
 
 
