@@ -111,5 +111,44 @@ A O(n) solution:
         return fn;
     }
 
+Number of ways to jump 
+======================
+n level of stairs, you can jump 1 level or two each time, how many ways
+you can jump.
 
+Dynamic programming:
+    
+    f(n) = f(n-1) + f(n-2)
+    f(0) = 1
+    f(1) = 1
+    f(2) = 2
+    then f(n) = fibo(n-1)
+
+Number of 1's in bit representation
+==================================
+Use the equation
+
+    xxxxxx10000 & (xxxxxx10000 -1 ) = xxxxxx00000
+
+Because 
+    
+    xxxxxx100000 - 1 = xxxxxx011111
+
+The basic idea of the algorithm is each time the operation of 
+    
+    n & n-1
+
+Flip a 1 to zero, and we keep flipping until everything is zero.
+
+Solution:
+    
+    int count_of_1(int n) {
+        int c = 0;
+        while(n!=0) {
+            n = n & n-1
+            c++;
+        }
+        return c;
+    }
+        
 

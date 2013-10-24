@@ -107,5 +107,10 @@ detail
 Encapsulation: you aren't allow to look at an object at any other level of
 detail
 
+### Inheritance
+* Works synergistically with the notion of abstraction.
+* Abstraction deals with objects at *different levels of detail*
+
+
 
 
