@@ -159,3 +159,91 @@ Dynamic programming.
 Suppose we have N = ABCDEFG
 * If G<1, # of 1's in the units digits is ABCDEF, else ABCDEF +1
 * If F<1, # of 1's in 
+
+Print combination of 1 to n
+============================
+Criteria: minimize the space usage.
+
+A very intuitive way of this problem is to use recursion. To save space,
+probably use bit-wise operation?
+
+Okay, give a normal solution first.
+
+    #include <stdlib.h>
+    #include <stdio.h>
+    static int* stack = NULL ;
+    static int top = 0;
+    void print_combination(int n) {
+        //Initialize the stack at the first time
+        if (stack == NULL) {
+            stack = malloc(sizeof(int)*n);
+        }
+        if(n <= 0 && top >=2) {
+            int i = 0;
+            for(i=0; i<top; i++) {
+                printf("%d, ", stack[i]);
+            }
+            printf("\n");
+            return;
+        } else if(n <=0) {
+            return;
+        }
+
+        stack[top++] = n;
+        print_combination(n-1);
+        top--;
+        print_combination(n-1);
+    }
+
+    int main() {
+        print_combination(16);
+        free(stack);
+    }
+
+
+The bit-wise operation method, basically use a bit to indicate pick a
+number or not
+
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    static char* bit_flags = NULL;
+    static int size = -1;
+
+    #define INIT_BIT(n) bit_flags = malloc(sizeof(char)*(n/8+1))
+    #define SET_BIT(n, k) bit_flags[k/8] |= ((char)1) << (8-k%8)
+    #define CLEAR_BIT(n,k) bit_flags[k/8] &= ~((char)1<< (8-k%8))
+    #define GET_BIT(n,k) (bit_flags[k/8]&((char)1<< (8-k%8)))
+
+
+    void print_combination(int n) {
+        if(bit_flags == NULL) {
+            size = (n/8+1)*8;
+            INIT_BIT(n);
+        }
+
+        //Initialize the stack at the first time
+        if(n <= 0) {
+            int i = 0;
+            for(i = 0; i < size; i++) {
+
+                if(GET_BIT(size, i)) {
+                    printf("%d, ", i+1);
+                }
+            }
+            printf("\n");
+            return;
+        } else if(n <=0) {
+            return;
+        }
+
+        SET_BIT(size, n);
+        print_combination(n-1);
+        CLEAR_BIT(size,n);
+        print_combination(n-1);
+    }
+
+    int main() {
+        print_combination(16);
+        free(bit_flags);
+    }
