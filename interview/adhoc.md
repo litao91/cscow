@@ -152,3 +152,10 @@ Solution:
     }
         
 
+Number of 1's occur from 1 to n
+=========================
+Dynamic programming.
+
+Suppose we have N = ABCDEFG
+* If G<1, # of 1's in the units digits is ABCDEF, else ABCDEF +1
+* If F<1, # of 1's in 

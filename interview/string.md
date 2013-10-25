@@ -62,3 +62,89 @@ Another way, use A XOR A XOR B = B
     }
 
 
+Find the max repeated string
+=============================
+Analysis 1: A stupid dynamic programming method(BY LI TAO)
+------------------------------------------------
+Firstly, for a string with length of n, suppose that we already know that
+the n-1 string has a max repeated substring has length k. Then for the
+n-string, We claim that it either has a max repeated substring k or k+1.
+Since a repeated max substr in the n-1 string also a repeated substr in
+the n string , so the max mast be greater than or equal to k. Then since
+the n-string only has one more char at the end, the only possible way to
+have a k+1 max repeated is that the repeated pattern is at the end, otherwise
+the n-1 string will have k+1 max pattern. 
+
+In conclusion
+
+    f(n) = max(f(n-1), fsuffix(n))
+
+* f(n) -- the max repeated pattern of the string from str[0] to str[n-1]
+* fuffix(n) -- max repeated with pattern at the end (suffix)
+
+Base on this analysis, an intuitive method is each time going from f(n) to
+f(n-1) we compare the last k+1 with the prefix, with a pattern matching
+algorithm, such as BM. 
+
+This is a O(n^2) stupid method. 
+
+To improve it, it's possible to build a suffix table, showing at each
+position, how long is the max pattern. It seems this also a DP problem,
+and it seems it can use a method similar to KMP with O(n) time. BUT,
+cannot think of a way to do it up to now......Sigh!!!! I will write the
+code later. (无药可救了，还是回家种田吧)
+
+Analysis 2: A stupid has map method(LI TAO)
+----------------------------------
+Use a hash map, the key is each character, value is a list of positions
+for example, if we have abcdefghabc, the table
+
+    a -> 0,8
+    b -> 1,9
+    c -> 2, 10
+    d -> 3
+    e -> 4 
+    ....
+
+So each time, we find a begin char, for example, we find then compare all
+the pattern start with a, and compare the pattern. 
+
+It seems this method is even more stupid, it seems it cannot finish at
+polynomial time. (not sure about that)
+
+Analysis 3:  Use suffix array (From internet)
+---------------------------------------------
+Compute the suffix array, for example, the string
+
+    abcdefghabcbc
+
+Then the suffix array
+    
+    a->abcdefghabcbc
+    b->bcdefghabcbc
+    ...
+    a->abcbc
+    b->bcbc
+
+Then sort the arrays
+
+    a -> abcdefgabcbc
+    a -> abcbc
+    b -> bcdefgabcbc
+    b -> bcbc
+
+And then compare the consecutive ones. 
+
+It seems no better than my solution......
+
+Similar problem: Longest Non repeated pattern
+=============================
+Any two character cannot be the same in the sub string.
+Analysis: Use hash
+--------------------
+Traverse the pattern starting with each character, with the help of hash,
+find the longest non repeated pattern.
+
+Analysis: DP
+------------
+Quite similar the DP analysis of the previous problem, omit here.
