@@ -157,11 +157,57 @@ Number of 1's occur from 1 to n
 Dynamic programming.
 
 Suppose we have N = ABCDEFG
-* If G<1, # of 1's in the units digits is ABCDEF, else ABCDEF +1
-* If F<1, # of 1's in 
+* First digit:
+    - If G<1, # of 1's in the units digits is ABCDEF, because the prefix can
+      from 0 to ABCDEF-1, coming with a 1 at the end,  
+    -else ABCDEF +1, the prefix can be from 0 to ABCDEF, coming with 1
+* Second digit:
+    - If F<1, # of 1's in the digit of tens is (ABCDE)\*10, 
+    - else if F==1: (ABCDE)\*G + G+1
+    - else (ABCDE+1)\*10
+* Third digit:
+    - if E<1, # of 1's in 3rd digit is (ABCD)\*100, 
+    - else if E==1: (ABCD)\*100+FG+1
+    - else (ABCD+1)\*10
+* If A=1, # of 1 in this digit is BCDEFG+1, else it's 1\*100
+
+    int cntof1(int n) {
+        //A length of 10 is enough for a 32 bit integer
+        int prefix[10];
+        int suffix[10];
+        int digit[10];
+        int i = 0;
+        int base = 1;
+        while(base < n) {
+            suffix[i] = n % base;
+            digit[i]  = ((n % (base*10))-suffix[i])/base;
+            prefix[i] = (n-suffix[i] - digit[i]*base)/(base*10);
+            i++;
+            base*=10;
+        }
+
+        int count = 0;
+        int j = 0;
+        base = 1;
+        for( j = 0; j<i;j++) {
+            if(digit[j]<1) {
+                count += prefix[j] * base;
+            } else if (digit[j] == 1) {
+                count += prefix[j]*base+suffix[j]+1;
+            } else {
+                count += (prefix[j]+1)*base;
+            }
+            base*=10;
+        }
+        return count;
+    }
+
+
 
 Print combination of 1 to n
 ============================
+Analysis: Print all
+-------------------
 Criteria: minimize the space usage.
 
 A very intuitive way of this problem is to use recursion. To save space,
@@ -247,3 +293,7 @@ number or not
         print_combination(16);
         free(bit_flags);
     }
+
+Analysis: Fixed 16 bits 
+-----------------------------------
+Randomly generate a 16 bit pattern, and output according to 0 and 1
