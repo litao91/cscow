@@ -297,3 +297,90 @@ number or not
 Analysis: Fixed 16 bits 
 -----------------------------------
 Randomly generate a 16 bit pattern, and output according to 0 and 1
+
+Buy drinks (1.6 of The beauty of coding)
+===========
+
+This problem is basically the same as knapsack problem. We redo it here
+just for review.
+
+There are n kinds of drinks, for each drink i, we have volume Vi and
+satisfaction value Hi, than we want to maximize the sum of satisfaction
+while don't exceed the max total volume V. Suppose we buy Bi for the ith
+drink, the problem is 
+    
+    Maximize sum(Hi*Bi)
+    Subject to sum(Vi*Bi) <= V
+
+Use Opt(V', i) denote from i to n-1 drinks, the total volume is less than
+V', with max satisfaction. Then what we want to find is Opt(V,n)
+
+So, dynamic progrmming
+    
+    Opt(V', i) = max{k*Hi+Opt(V'-Vi*k, i-1)}
+    { k = 0, 1, ....Ci, i = 0, 1, ..., n-1}
+
+Ci is the maximum volume i can buy.
+
+    opt[0][T] = 0;                           // T types of drinks
+    for(int i = 1; i <= V; i++) {
+        opt[i][T] = -INF;
+    }
+
+    for(int j  = T-1; j>=0; j--) {           // pick From j to (T-1)th drink
+        for(int i = 0; i <= V; i++) {        // For all volume, from 0 to V
+            opt[i][j] = -INF;
+            for(int k = 0; k <= C[j]; k++) { // all possible volume for i
+                if(i <= k*V[j]) {            // Cannot exceed the current limit i
+                    break;
+                }
+                int x = opt[i-k*V[j]][j+1]; 
+                if( x != -INF) {
+                    x += H[j] * k;
+                    if (x > opt[i][j]) {
+                        opt[i][j] = x;
+                    }
+                }
+
+            }
+
+        }
+    }
+    return opt[V][0];
+
+
+Another way, variation of DP
+----------------------------
+
+    int[V+1][T+1] opt;
+
+    int Cal(int V, int type) {
+        if(type == T) {
+            if (V== 0) {
+                return 0;
+            } else {
+                return -INF;
+            }
+        }
+        if(V<0){
+            return -INF;
+        }else if(V==0) {
+            return 0;
+        }else if(opt[V][type]!=-1) { //the sub program has been solved
+            return opt[V][type];
+        }
+
+        //The subproblem have not been solved
+        int ret  = -INF;
+        for(int i = 0; i <= C[type]; i++) {
+            int temp = Cal(V-i*C[type], type+1);
+            if(temp != -INF) {
+                temp+= H[type]*i;
+                if(temp > ret) {
+                    ret temp;
+                }
+            }
+        }
+        retrun opt[V][type] = ret;
+    }
+
