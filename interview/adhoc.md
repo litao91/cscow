@@ -384,3 +384,111 @@ Another way, variation of DP
         retrun opt[V][type] = ret;
     }
 
+Multi-Threaded Download
+=======================
+1. A global cache:
+    Block g_buffer[BUFFER_COUNT]
+* Suppose two basic function has been implemented:
+    
+    //Download a block from Internet sequentially each call
+    bool GetBlockFromNet(Block* out_block);
+    bool WriteBlockToDisk(Block* in_block);
+
+Basic way:
+
+    while(true) {
+        bool isDownloadComplted = GetBlockFromNet(g_buffer);
+        WriteBlockToDisk(g_buffer);
+        if(!isDownloadComplted) 
+            break;
+
+
+Now need to design two threads:
+* Thread A: download block from the internet, save it to the buffer
+* Thread B: read block from cache, and write to disk
+
+Multi-Thread API
+    
+    class Thread {
+    public:
+        Thread(void (*work_func)());
+        ~Thread();
+        void Start();
+        void Abort();
+    };
+
+    class Semaphore{
+    public:
+        //Initialize semaphore counts
+        Semaphore(int cont, int max_count);
+        ~Semaphore();
+        //Consume a signal (count--, block current thread if count==0
+        void Unsignal();
+        //Raise a signal (count++)
+        void Signal();
+    };
+
+    class Mutex {
+        public:
+            //Block thread until other threads release the mutex
+            WaitMutex();
+            // release mutex to let other thread wait for it
+            ReleaseMutex();
+    };
+
+This is complicated, we will use chinese
+
+我们需要用两个线程来完成这个任务, 下载线程和储存线程共用一个全局共享
+缓存区，下面若干因素是我们要考虑的：
+1. 什么时候才算完成任务：当全部数据完全储存到硬盘上时
+2. 我们希望两个线程尽可能同时工作：Semaphore是更好的选择
+3. 下载和储存线程工作的必要条件：如果共享缓存区已满，则暂停下载，如果
+   全部下载完毕，也不用继续下载。如果缓存区为空，也没有必要运行储存线程，
+   如果下载工作已经完成，存储线程也可以结束了
+4. 共享缓存区数据结构。
+
+下载县城和储存线程的工作过程是“先进先出”， 缓冲空间固定，循环队列会是一个很好的
+选择。
+
+    #define BUFFER_COUNT 100
+    Block g_buffer[BUFFER_COUNT]
+
+    Thread g_threadA(ProcA);
+    Thread g_threadB(ProcB);
+    Semaphore g_seFull(0, BUFFER_COUNT); //set full
+    Semaphore g_seEmpty(BUFFER_COUNT, BUFFER_COUNT);  //set empty
+    bool g_downloadComplete;
+    int in_index = 0;
+    int out_index = 0;
+
+    void main() {
+        g_downloadComplete = false;
+        threadA.Start();
+        threadB.Start();
+    }
+
+    void ProcA() {
+        while(true) {
+            g_seEmpty.Unsignal(); //count--;
+            g_downloadComplete = GetBlockFromNet(g_buffer + in_index);
+            in_index = (in_index+1)% BUFFER_COUNT;
+            g_seFull.Signal(); //Count++
+            if(g_downloadComplete) {
+                break;
+            }
+        }
+    }
+
+    void ProcB() {
+        while(true) {
+            g_seFull.Unsignal();
+            WriteBlockToDisk(g_buffer+out_index);
+            out_index = (out_index + 1) % BUFFER_COUNT;
+            g_seEmpty.Signal();
+            if(g_downloadComplete && out_index == in_index) {
+                break;
+            }
+        }
+    }
+
+
