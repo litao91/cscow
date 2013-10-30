@@ -29,10 +29,12 @@ $\lambda$ is the loss for choosing reject.
 \]
 \item Optimal Decision: choose $C_i$ if \\$R(\alpha_i|x) = \min_{1\leq k\leq
 K}R(\alpha_i|\x) < R(\alpha_{K+1} | \x)$, \\Reject otherwise.
-\item [Discriminant Functions]: choose $C_i$ if $g_i(\x) = \max_k g_k(x)$
+\item [Discriminant Functions]: choose $C_i$ if \[g_i(\x) = \max_k
+    g_k(x)\]
 \item $g_i(\x) = -R(\alpha_i|x) = P(C_i|\x) = p(\x|C_i)P(C_i)$
 \item Two class may define single discriminant functions: $g(\x) = g_1(\x) -
 g_2(\x)$, choose $C_i$ if it greater than zero.
 \item [Decision Regions] $\mathcal{R}_i = \{\x|g_i(\x) = \max_k g_k(\x)\}$
-\item[Bayesian Network] joint:\\ $P(X_1,\dots, X_d) = \prod_{i=1}^d P(X_i|parents(X_i))$
+\item[Bayesian Network] Joint probability:\[P(X_1,\dots, X_d) =
+    \prod_{i=1}^d P(X_i|parents(X_i))\]
 \end{description}

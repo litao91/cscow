@@ -1,66 +1,106 @@
 \chapter{Parameter Estimation}
-\begin{description}
-\item[Setting] Assume data follow a distribution model.$\mathcal{X}=\{\x^{(l)}\}$, 
-$\x^{l}\sim p(\x)$, Assume some
-parametric form for $p(\x|\theta)$, $\theta$ is estimated using $\mathcal{X}$
-\item[Param Approach to classification] In Baye's rule for classification,
-$p(\x|C_i) \mbox{(likelihood) and } P(C_i)$ (prior) need to be estimated from the sample 
-$\mathcal{X}$
-\item[MLE] seeks to find $\theta$ that makes sampling from $p(\x|\theta)$ as
-likely as possible
-\item likelihood:\\$L(\theta|\mathcal{X}) \equiv p(\mathcal{X}|\theta) =
-\prod^N_{l=1}p(\x^{(l)}|\theta)$
-\item log likelihood: $\mathcal{L} \equiv \log L(\theta|X) = \sum^N_{l=1}\log
-p(\x^{(l)}|\theta)$
-    \item Max Likelihood estimate: $\hat{\theta} =
-    arg\max_{\theta}\mathcal{L}(\theta|\mathcal{X})$
-\item[Bernoulli] $x \in\{0, 1\}, P(x=1)$ for $p(C_1)$,\\ $P(x|p_0) =
-p_0^x(1-p_0)^{1-x}$
-\item[] Log Likelihood:\\ $\mathcal{L}(p_0|\cX) = \sum_{l=1}^N[x^{(l)}\log
-        p_0+(1-x^{(l)})\log(1-p_0)]$
-    \item[] ML estimation: $\hat{p_0} = \frac{1}{N}\sum_{l=1}^N x^{(l)}$
-\item[Multinomial]Ran Var. $\x$ with $K\geq 2$ possible value
-\item Indicator var: $x_i = 1 \mbox{ if outcome is state }i \mbox{, } 0 \mbox{
-if not}$
-\item $P(\x|\theta) = P(X_1,\dots, x_K|p_1,\dots, p_K) =
-    \prod^K_{i=1}p_i^{x_i}$, $\sum_{i=1}^K p_i = 1$
-\item[] Log likelihood: $\cL (p_0|\cX) = \sum_l^N\sum_{i=1}^K x_i^{(l)} \log p_i$
-\item[] ML estimate: $\hat{p_i} = \frac{1}{N}\sumln \xil$
-\item[Normal] pdf: $p(x|\mu, \sigma ) =
-    \frac{1}{\sqrt{2\pi\sigma^2}}\exp[-\frac{(x-\mu)^2}{2\sigma^2}]$
-\item[] $\cL(\mu, \sigma|\cX) = -\frac{N}{2}\log(2\pi) - N\log\sigma -
-    \frac{1}{2\sigma^2}\sumln(\xl - \mu)^2$
-\item ML Estimates: $\hat{\mu} = \frac{1}{N}\sumln \xl$\\
-    $\hat{\sigma^2} = \frac{1}{N}\sumln (\xl - \hat{\mu})^2$
-\item[Multivariable Normal] $\mathcal{N}(\bmu,\bSig)$, $\bmu$ mean vec, $\bSig$
-    covariance matrix
-\item[] $p(\x|\bmu, \bSig) = \frac{1}{(2\pi)^{d/2}|\bSig|^{1/2}}
-    \exp[-\frac{1}{2}(\x -\bmu)^T\bSig^{-1}(\x - \bmu)]$
-\item $\cL (\bmu,\bSig|\cX) = \frac{Nd}{2}\log(2\pi) - \frac{N}{2}\log|\bSig|
-    -\frac{1}{2}\sumln(\bxl - \bmu)^T\bSig^{-1}(\bxl - \bmu)$
-\item[] ML estimates: $\hat{\bmu} = \frac{1}{N}\sumln \bxl$, \\
-    $\hat{\bSig} = \frac{1}{N}\sumln(\bxl - \hat{\bmu})(\bxl - \hat{\bmu})^T$
-\item[Bias and Variance] Bias: $b_\theta(d) = E[d] - \theta$
-    \\Variance: $E[d-E[d]^2]$(d is estimator of param $\theta$)
-\item[] Mean Squared error: \\
-    $r(d,\theta) = E[(d-\theta)^2]= \mbox{bias}^2 + \mbox{variance}^2$
-\item[Bayesian Estimation] Treat $\theta$ as a Ran Var. Prior $p(\theta)$
-\item[] Posterior: \\
-    $p(\theta|\cX) = \frac{p(\cX|\theta)p(\theta)}{p(\cX)} =
-    \frac{p(\cX|\theta)p(\theta)}{ \int p(\cX|\theta')p(\theta')d\theta'}$
-\item[] Estimation of density at $x$: \\
-    $p(x|\cX) = \int p(x|\theta)p(\theta|\cX)d\theta$
-\item[] Regression $y = g(x|\theta)$:
-    $ y = \int g(x|\theta)p(\theta|\cX)d\theta $
-\item[Computational Considerations] 
-\item[] Max a posteriori (MAP): $\theta_{MAP}=arg\max_{\theta}p(\theta|\cX)$,\\
-    $p(x|\cX) \approx p(x|\theta_{MAP)}$, $y\approx y_{MAP} =
-    g(x|\theta_{MAP}$)
+\section{Max Likelihood Estimation}
+\subsection{Settings}
+Assume data follow a distribution model, with probability density function
+$f(\bx)$. 
 
-    ML estimation: $\theta_{ML} = arg \max_{\theta} p(\theta|\cX)$
+Dataset: \[\mathcal{X}=\{\x^{(l)}\}\]
+
+Follows the probability distribution: \[\x^{l}\sim p(\x)\], 
+
+Assume some parametric form for $p(\x|\theta)$. $\theta$ is the parameter
+(possibly a vector).
+
+The goal: Estimate $\theta$ using $\mathcal{X}$
+
+\paragraph{Approach to classification} In Baye's rule for classification,
+$p(\x|C_i) \mbox{(likelihood) and } P(C_i)$ (prior) need to be estimated from the sample 
+\section{MLE}
+Seeks to find $\theta$ that makes data samples from $p(\x|\theta)$ as
+likely as possible
+
+Likelihood:\[L(\theta|\mathcal{X}) \equiv p(\mathcal{X}|\theta) =
+    \prod^N_{l=1}p(\x^{(l)}|\theta)\]
+
+Log likelihood: \[\mathcal{L} \equiv \log L(\theta|X) = \sum^N_{l=1}\log
+p(\x^{(l)}|\theta)\]
+
+\paragraph{Max Likelihood estimate} \[\hat{\theta} =
+arg\max_{\theta}\mathcal{L}(\theta|\mathcal{X})\]
+
+In words, find a parameter $\theta$ such that, if we sample some data
+point follow this distribution, then it is most likely that we will get
+our learning set.
+
+\subsection{Example: Assume the data follow Bernoulli}
+\paragraph{Bernoulli Distribution} $x \in\{0, 1\}$, take $1$ with success
+probability $p_0$.
+\[P(x|p_0) = p_0^x(1-p_0)^{1-x}\]
+\paragraph{Log Likelihood}\[\mathcal{L}(p_0|\cX) = \sum_{l=1}^N[x^{(l)}\log
+p_0+(1-x^{(l)})\log(1-p_0)]\]
+\paragraph{ML estimation} 
+\[\hat{p_0} = \frac{1}{N}\sum_{l=1}^N x^{(l)}\]
+This is obtain by taking derivative of $\mathcal{L}$ with respect to
+$p_0$, and set the derivative to zero.
+
+\subsection{Example: Multinomial Ran Var.} 
+$\x$ with $K\geq 2$ possible value
+\paragraph{Indicator variable}: \[x_i = \begin{cases}1 & \mbox{if outcome
+    is state }i \\ 0 & \mbox{otherwise}\end{cases}\]
+\paragraph{Density function}
+\[ P(\x|\theta) = P(x_1,\dots, x_K|p_1,\dots, p_K) =
+\prod^K_{i=1}p_i^{x_i}, \quad 
+\sum_{i=1}^K p_i = 1 \]
+
+\paragraph{Log likelihood}: \[\cL (p_0|\cX) = \sum_l^N\sum_{i=1}^K x_i^{(l)}
+    \log p_i\]
+
+\paragraph{ML estimate}: \[\hat{p_i} = \frac{1}{N}\sumln \xil\]
+
+\subsection{Example Normal} \paragraph{p.\ d.\ f.}: \[p(x|\mu, \sigma ) =
+    \frac{1}{\sqrt{2\pi\sigma^2}}\exp[-\frac{(x-\mu)^2}{2\sigma^2}]\]
+    \paragraph{Log likelihood} \[\cL(\mu, \sigma|\cX) = -\frac{N}{2}\log(2\pi) - N\log\sigma -
+    \frac{1}{2\sigma^2}\sumln(\xl - \mu)^2\]
+    \paragraph{ML Estimates} \begin{align*}
+        \hat{\mu} &= \frac{1}{N}\sumln \xl\\
+        \hat{\sigma^2} &= \frac{1}{N}\sumln (\xl - \hat{\mu})^2 \end{align*}
+\subsection{Multivariable Normal} $\mathcal{N}(\bmu,\bSig)$, $\bmu$ mean vec, $\bSig$
+    covariance matrix
+ \[p(\x|\bmu, \bSig) = \frac{1}{(2\pi)^{d/2}|\bSig|^{1/2}}
+     \exp[-\frac{1}{2}(\x -\bmu)^T\bSig^{-1}(\x - \bmu)]\]
+\[\cL (\bmu,\bSig|\cX) = \frac{Nd}{2}\log(2\pi) - \frac{N}{2}\log|\bSig|
+-\frac{1}{2}\sumln(\bxl - \bmu)^T\bSig^{-1}(\bxl - \bmu)\]
+\paragraph{ML estimates} \begin{align*}\hat{\bmu} &= \frac{1}{N}\sumln
+    \bxl \\
+    \hat{\bSig} &= \frac{1}{N}\sumln(\bxl - \hat{\bmu})(\bxl -
+    \hat{\bmu})^T\end{align*}
+\section{Bias and Variance} 
+Bias: \[b_\theta(d) = E[d] - \theta\]
+Variance: \[E[d-E[d]^2]\](d is estimator of param $\theta$)
+
+\paragraph{Mean Squared error}
+\[r(d,\theta) = E[(d-\theta)^2]= \mbox{bias}^2 + \mbox{variance}^2\]
+\section{Bayesian Estimation} Treat $\theta$ as a Random Variable,  that
+is, the parameter $\theta$ follows a prior distribution $p(\theta)$
+\paragraph{Posterior}: 
+    \[p(\theta|\cX) = \frac{p(\cX|\theta)p(\theta)}{p(\cX)} =
+    \frac{p(\cX|\theta)p(\theta)}{ \int
+    p(\cX|\theta')p(\theta')d\theta'}\]
+    \paragraph{Estimation of density at $x$}: 
+    \[p(x|\cX) = \int p(x|\theta)p(\theta|\cX)d\theta\]
+    Regression $y = g(x|\theta)$:
+    \[ y = \int g(x|\theta)p(\theta|\cX)d\theta \]
+\section{Computational Considerations}
+\paragraph{Max a posteriori (MAP)}
+\[\theta_{MAP}=arg\max_{\theta}p(\theta|\cX)\]
+\[p(x|\cX) \approx p(x|\theta_{MAP)}\] \[y\approx y_{MAP} =
+    g(x|\theta_{MAP}\]
+
+    ML estimation: \[\theta_{ML} = arg \max_{\theta} p(\theta|\cX)\]
 
     Bayes' estimation -- expectation w.r.t.\ posterior density:
     \[ \theta_{Bayes} = E[\theta|\cX] = \int \theta p(\theta|\cX)d\theta\]
+\begin{description}
 \item[] Example: Bayesian estimation with known $\mu$, $\sigma$ and $\sigma_0$\\
         $x^{(l)} \sim \mathcal{N}(\theta, \sigma_0^2)$, 
         $\theta  \sim \mathcal{N}(\mu, \sigma^2)$\\
