@@ -1,0 +1,122 @@
+\section{Linear Problem}
+\begin{multicols}{2}
+\paragraph{Primal (P)}
+\begin{align*}
+    \text{Maximize} \quad & \bc^T \bx \\
+    \text{Subject to} \quad & \bA\bx \leq \bb \\
+                        & \bx \geq \bzero
+\end{align*}
+\paragraph{Dual (D)}
+\begin{align*}
+\text{Minimize} \quad &\bb^y \by \\
+\text{Subject to} \quad & \bA^T \by \geq \bc\\
+& \by \geq \bzero
+\end{align*}
+\end{multicols}
+
+
+\begin{thm}{Weak Duality Theorem}
+    \begin{itemize}
+        \item $\bx$ -- any feasible solution of (P)
+        \item $\by$ -- any feasible solution of (D)
+    \end{itemize}
+    Then $\bc^T \bx \leq \bb^T\by$. That is, primal bounded above by the
+    dual
+\end{thm}
+
+\begin{thm}{Strong Duality}
+    Given Primal and Dual, exactly one of the following holds:
+    \begin{enumerate}
+        \item Neither (P) nor (D) has feasible solution
+        \item (P) is unbounded and (D) has no feasible solution
+        \item (D) is unbounded and (P) has has no feasible solution.
+        \item Both (P) and (D) has feasible solution, and $\bc^T\bx^* =
+            \bb^T\by^*$ 
+    \end{enumerate}
+\end{thm}
+\begin{proof}
+    We will show that if (P) has an optimal $\bx^*$, then (D) has optimal
+    solution $\by^T$, and $\bc^T \bx = \bb^T\by$
+
+    Let $\gamma = \bc^T\bx^*$, then the following is feasible:
+    \begin{align*}
+        \bA\bx &\leq \bb \\
+        \bc^T \bx &\geq \gamma \\
+        \bx &\geq \bzero
+    \end{align*}
+
+    The following is not feasible:
+    \begin{align*}
+        \bA\bx &\leq \bb \\
+        \bc^T \bx &\geq \gamma + \epsilon \equiv -\bc^T \bx \leq -\gamma -
+        \epsilon\\
+        \bx &\geq \bzero
+    \end{align*}
+
+    Let \[\hat{\bA} = \begin{bmatrix} \bA \\ -\bc^T\end{bmatrix}, \quad
+    \hat{b_\epsilon} = \begin{bmatrix} \bb\\ -\gamma -\epsilon \end{bmatrix}  \]
+
+    Then $\hat{\bA} \bx = \bA - \bc^T \bx$
+
+    We have the follow:
+    \begin{enumerate}
+        \item $\hat{\bA} \bx  \leq \hat{\bb_\epsilon}$ is infeasible, so
+            $\exists \hat{\by} \geq 0, \hat{\bA^T} \hat{\by} \geq 0,
+            \hat{\bb_\epsilon}^T \hat{y} < 0$
+        \item $\hat{\bA} \bx  \leq \hat{\bb_0}$ is feasible.
+    \end{enumerate}
+    
+\end{proof}
+
+\begin{lem}{Farkve's Lemma}
+    \begin{itemize}
+        \item $\bA$, real matrix with $m$ rows and $n$ cols.
+        \item $\bb\in \mathbb{R}^m$ a vector
+    \end{itemize}
+    Exactly one of the following occurs:
+    \begin{enumerate}
+        \item \[\exists \bx \in \mathbb{R}^n \quad \text{s.\ t.\ } \bA\bx = \bb
+            \quad \text{and} \quad \bx \geq 0\]
+        \item \[\exists \by \in \mathbb{R}^m \quad \text{s.\ t.\ } 
+                \by^T \bA \geq 0 \quad \text{and} \quad \by^T \bb < 0
+            \]
+    \end{enumerate}
+\end{lem}
+
+\begin{thm}
+    Let $\bA, \bb$ be as in Farkvs Lemma, then exactly one of the
+    following possibilities occurs:
+    \begin{enumerate}
+        \item 
+            \[
+                \exists \bx\geq \bzero \quad \text{and} \quad \bA\bx \leq \bb
+            \]
+        \item \[
+                \exists \by \geq \bzero, \by^T\bA \geq 0 \quad
+                \text{and}\quad \by^T \bb < 0
+            \]
+    \end{enumerate}
+\end{thm}
+\begin{proof}
+    Using Farkvs Lemma for equations. Introduce slack variables in each
+    inequality of $\bA\bx \leq \bb$, \textbf{turning them into equation}.
+
+    Let 
+    \[\bar{\bA} =  \begin{bmatrix}
+            \bA & \bI_m 
+        \end{bmatrix}
+        \quad
+    \]
+    Introduce slack variable $\bS \geq \bzero$ such that
+    \[ \bar{\bA} \begin{bmatrix} \bx \\\bb\end{bmatrix} = \bb\]
+
+    by Farkv Lemma, we conclude that exactly one of the following holds:
+    \begin{enumerate}
+        \item holds
+        \item \[\by^T \begin{bmatrix} \bA & \bI_m\end{bmatrix} \geq 0
+            \implies \by^T \bA \geq 0 \quad \text{and}\quad \by \geq
+        \bzero\bzero \]
+    \end{enumerate}
+\end{proof}
+
+

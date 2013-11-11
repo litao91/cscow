@@ -1,0 +1,29 @@
+\chapter{P, NPC, and NP}
+\begin{description}
+    \item[Decision Problem] A problem whose answer is \textbf{yes} or
+        \textbf{no}, if decision problem can be answered in poly time,
+        then a optimal solution can be found with a few decision problem
+        by binary search.
+    \item[P]  Class of decision problems that can be solved in polynomial
+        time. 
+    \item[NP] Class of problem for which there is a ``Yes certification'',
+        that is, for a yes instance, there exists a short certification
+        that the answer is yes. (Given a TSP path that less than $K$, we
+        know that there exist a path less than $K$, however, given a path
+        greater than $K$, we don't no the answer is no in poly time).
+    \item[Co-NP] Class of problem for which there is a no-certificate.
+        That is for no-instances a short proof/certificate that the answer
+        is no. (The complement of the problem is NP).
+    \item[NP Complete] Class of decision problem for which the following
+        properties hold:
+        \begin{itemize}
+            \item The problem is in the class NP
+            \item If you could  solve the problem in polynomial time, then
+                all the problem in NP can be solved in polynomial time.
+        \end{itemize}
+    \item[Well Characterized] Problem that has both YES and NO
+        certificate.
+\end{description}
+
+Problems that are well-characterized typically have an associated min-max
+relation.

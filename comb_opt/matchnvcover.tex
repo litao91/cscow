@@ -1,0 +1,134 @@
+\section{Matching and Vertex Cover}
+\subsection{Definitions}
+\begin{definition}{Incident}
+$ e = (u,v)$, $e$ is incident to $u$ and $v$, $u$ and
+    $v$ are endpoints of $e$.
+\end{definition}
+
+\begin{definition}{Bipartite}
+Graph $G = (V,E)$, bipartition $ V = A\cup B$
+\end{definition}
+
+\begin{definition}{Matching}
+$M\subseteq E$, every $v \in V$ is incident to at most
+    one $e\in M$, size of matching: $|M|$
+\end{definition}
+
+\begin{definition}{Vertex Cover}
+ $C\subseteq V$, $\forall e \in E$ incident to some
+    vertices of $C$.
+\end{definition}
+
+Vertex Cover $\leq$ Size of Matching
+
+\subsection{Koning's Theorem}
+\begin{thm}{Konig's Theorem} For any \textbf{bipartite} graph, maximum
+    size of a matching is equal to the minimum size of vertex cover.
+\end{thm}
+
+\subsubsection{Integer LP Problem}
+Label edges: \[e_1, e_2, \dots, e_m\]
+Label vertices: \[ v_1, v_2, \dots, v_n\]
+Variable $x_j$ corresponding to edge $e_j$
+
+\paragraph{Integer LP for max matching}
+\begin{align*}
+    \text{max}\quad & \sum_{j=1}^m x_j e_m \\
+    \text{Subject to} \sum_{e_j \text{incident to} v_i} x_j \leq 1 \quad
+    \forall 1 \leq i \leq n \text{(each vertex is endpoint of at most one
+    edge)}\\
+    x_j \in \{0,1\} \quad \text{relaxation} x_j \geq 0, x_j \text{is
+    integer}
+\end{align*}
+Incident matrix $\bA$, $\bA[i,j] = 1$ if $v_i$ is endpoint of $e_j$, $e_j$
+incident to $v_i$
+
+\paragraph{Integer LP for Min Vertex Cover}
+Introduce $y_i$ for vertex $v_i$:
+\begin{align*}
+    \text{min} \quad &\sum_{i=1}^n y_i \\
+    \text{subject to}\quad & y_a + y_b \geq 1 \text{for each edge $e_j =
+    (v_a, v_b)$} \\
+    & \by_i \in \{0, 1\} \equiv \by_i \geq 0
+\end{align*}
+
+\begin{definition}{Totally Unimodular Matrix} $\bA$ is totally unimodular matrix
+    if every square matrix of $\bA$
+    obtained by deleting rows and cols from $\bA$ has determinant $0, 1$
+    or $-1$.
+\end{definition}
+
+\begin{thm}
+    $\bA$ be $m\times n$ totally unimodular, $\bb \in \mathbb{Z}^n$ be a
+    vector, then each vertex of the polyhedron
+    \[ P = \{ \bx: \bA\bx \leq \bb\} \]
+    is an integer. (We can plot the constraints with lines, and those
+    lines form a polyhedron, we are taking about the vertices of this
+    polyhedron.)
+\end{thm}
+
+\begin{thm} 
+    Incident matrix of bipartite graph is totally unimodular.
+\end{thm}
+
+\begin{lem}
+    Let $A$ be a totally unimodular matrix, and consider the matrix
+    $\bar{A}$ obtained from $A$ by appending a unit vector as the last row
+    or column, then $\bar{A}$ is totally unimodular.
+\end{lem}
+
+\begin{thm}{Hull's Theorem}
+    Let $G = \{V,E\}$ be a bipartite with bipartition $X$ and $Y$. $G$ has
+    a matching that covers all vertices in $X$ if and only if for every
+    $T \in X$, $N(T)| \geq |T|$
+
+    $N(T) = \{ y \in Y: \exists t \in T \text{with} (y,t) \in E\}$
+\end{thm}
+\subsection{How to find a maximum matching}
+Greedy: Just add edges to the matching greedily and stop when it is no
+        longer possible to grow the matching anymore.
+
+\begin{definition}{Alternating Path} Graph $G= (V,E)$ and matching $M$, an
+    alternating path w.r.t. $M$ is a path that alternates between edges in
+    $M$ and edges in $E-M$
+\end{definition}
+
+\begin{definition}{Augmenting Path} $P$ w.r.t. $M$ is an alternating path
+    in which the first and last vertices are exposed.
+
+    Such an edge contains $k$ edges from $M$ and exactly $k+1$ edges from
+    $E-M$.
+\end{definition}
+
+Approach to find maximum matching: keep improving your matching by finding
+augmenting paths again and again till there are no more augmenting path
+left.
+
+Augmenting a matching $M$ along path $P$ is 
+\[ M\Delta P = (M-P) \cup (P-M)\]
+\begin{thm}A matching $M$ is maximum if and only if there are no
+    augmenting paths left.
+\end{thm}
+
+
+\subsubsection{How to find an augmenting path}
+Create a directed graph $D$:
+\begin{itemize}
+    \item Edges in matching $M$ are directed from $B$ to $A$
+    \item Not in matching $M$ from $A$ to $B$
+    \item Finally an augmenting path w.r.t. $M$ is equivalent to finding a
+        path in this directed graph $D$, starts from a exposed in $A$ and
+        ends at an exposed vertex of $B$
+\end{itemize}
+
+Let $L = \text{set of vertices which can be reached in $D$ from an exposed
+vertex in $A$}$
+
+\begin{lem} $M^*$ is a matching output by algorithm
+    \begin{enumerate}
+        \item When the  algorithm terminated, $C^* = (A-L)\cup (B\cap L)$
+            is a vertex cover
+        \item Further $|C^*|=|M^*|$, where $M^*$ is matching returned by
+            the algorithm.
+    \end{enumerate}
+\end{lem}
