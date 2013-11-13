@@ -44,5 +44,24 @@ A sample execute implementation:
 * May call `fail()` on fail.
 * The topology finishes when `cleanup()` method is called.
 
+IBasicBolt
+----------
+Encapsulates the pattern of calling `ack` right after execute the method.
+Bolt Lifecycle
+--------------
+Bolt is a component that takes tuples as input and produces tuples as
+output.
 
+1. Bolts are created on the client machine, serialized into the topology, and
+submitted to the master machine of the cluster.
+* The cluster launches workers that deserialize the bolt, call prepare on
+  it, and then start processing tuples.
+* To customize a bolt, you should set parameters in its constructor and
+  save them as instance variables so they will be 
 
+### Reliable vs Unreliable Bolts
+* A topology is a tree of nodes  in which messages (tuples) travel along one
+ore more branches.
+* Each node will `ack(tuple)` or `fail(tuple)`
+* The best way to keep track of the original spout instance is to include
+  a reference to the originating spout in the message tuple. (Anchoring)

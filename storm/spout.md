@@ -62,3 +62,20 @@ SpoutOutputCollector
 * Expose the API for emitting tuples from an IRichSpout
 * Spout can tag messages with ids so that they can be acked or failed
   later on.
+
+Reliable versus Unreliable Messages
+----------------------------------
+In storm, it is the author's responsibility to guarantee message
+reliability
+- Reliable topology must manage the lost messages, which requires more
+  resources
+- A less reliable topology may lose some messages, but is less
+  resource-intensive.
+
+Manage reliability at the spout:
+1. Include a message ID with the tuple at *emit* time.
+* The methods `ack` and `fail` are called when a tuple is proceed
+  correctly or fails
+    - Tuple processing succeeds when the tuple is processed by all the
+      target bolts and all anchored bolts.
+
