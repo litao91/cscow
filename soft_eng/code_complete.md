@@ -10,7 +10,7 @@ Design Challenges
 * Design involves Restrictions (on resources) 
 
 Key Design Concepts
-====================
+---------------------
 ### Managing Complexity
 Software development is made difficult because of two different classes of
 problems:
@@ -112,5 +112,96 @@ detail
 * Abstraction deals with objects at *different levels of detail*
 
 
+Design Building Blocks: Heuristics
+---------------------------------
+### Information Hiding
+Isolate unstable areas so that the effect of change will be limited to one
+class, steps:
+1. Identify items that seem likely to change. (list of potential changes
+   and likelihood of each change.
+* Separate items that are likely to change. Compartmentalize each volatile
+  component in its own class.
+* Isolate items seem likely to change. Design interface.
 
+Few areas that are likely to change:
+* Business logic
+* Hardware dependencies
+* Input and output
+* Nonstandard language features
+* Difficult design and construction areas.
+* Status variables
+    - Use an enumerated type instead of boolean
+    - Use access routines rather than checking the variable directly.
+* Data-size constraints.
+
+A good technique for identifying areas likely to change is 
+* first to identify the minimal subset of the program that might be of use
+  to the user. The subset makes up the core of the system and is unlikely
+  to change. 
+* Next, define minimal increments to the system. These areas of potential
+  improvement constitute potential changes to the system. Design these
+  areas using the principles of information hiding. 
+
+### Keep Coupling Loose
+**Coupling**: How tightly a class or routine is related to other classes
+or routines.
+
+**Loose Coupling**: Create classes and routines with small, direct,
+visible, and flexible relations to other classes and routines.
+
+Good design:
+* One module can easily be used by the other modules. 
+* Make the connections among modules as simple as possible.
+* Create modules that depend little on other modules.
+
+#### Coupling Criteria
+
+* **Size**: number of connections between modules. Small is beautiful.
+* **Visibility**: prominence of connection between two modules. Making an
+  obvious connection.
+* **Flexibility**: How easy you can change connections between modules.
+
+#### Kinds of coupling:
+* **Simple-data-parameter coupling**: all the data passed between them are
+  of primitive data types and all all the data is passed through parameter
+  lists. Normal and acceptable.
+* **Simple Object coupling**: A module is simple-object coupled to an
+  object if it instantiates that object. Fine.
+* **Object parameter coupling**: Object1 requires Object2 to pass it an
+  Object3. Tighter than pass primitive data types.
+* **Semantic coupling**: One module makes use, not of some syntactic
+  element of another module, but of some semantic knowledge of another
+  module's inner workings. Insidious.
+  - Module1 pass a control flag to Module2 that tells Module 2 what to do
+  - Module2 uses global data after the global data has been modified by
+    module1.
+
+### Use of design pattern
+* **Abstract Factory**: creation of sets of related objects by specifying
+  the kind of set but not the kinds of each specific object.
+* **Adapter**: Interface conversion. 
+* **Bridge**: Builds an interface and an implementation in such a way that
+  either can vary without the other varying.
+* **Composite**: Consists of an object that contains additional objects of
+  its own type so that client code can interact with the top-level object
+  and not concern itself with all the detailed objects.
+* **Decorator**: Attaches responsibilities to an object dynamically,
+  without creating specific subclasses for each possible configuration of
+  responsibilities.
+* **Facade**: Provides a consistent interface to code that wouldn't
+  otherwise offer a consistent interface.
+* **Factory Method**: Instantiates classes derived from a specific base
+  class without needing to keep track of the individual derived classes
+  anywhere but the Factory Method.
+* **Iterator**: A server object that provides access to each element in a
+  set sequentially.
+* **Observer**: Keeps multiple objects in sync with each other by making a
+  third object responsible for notifying the set of objects about changes
+  to members of the set. 
+* **Singleton**: Provides a global access to a class that has one and only
+  one instance.
+* **Strategy** Defines a set of algorithms or behaviors that are
+  dynamically interchangeable with each other. 
+* **Template Method**: Defines the structure of an algorithm but leaves
+  some of the detailed implementation to subclasses.
 
