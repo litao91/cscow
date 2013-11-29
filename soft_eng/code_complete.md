@@ -205,3 +205,24 @@ Good design:
 * **Template Method**: Defines the structure of an algorithm but leaves
   some of the detailed implementation to subclasses.
 
+Design Practices
+-----------------
+### Top-Down
+
+* Begins at a high level of abstraction
+* Define  base classes or other non-specific design elements
+* As you develop the design, you increase the level of detail,
+  identifying derived classes, collaboration classes, and other
+  detailed desgin elements.
+
+
+It's iterative in a couple of sense:
+* You usually don't stop after one level of decomposition. You keep going
+  for several levels. 
+
+
+### Bottom Up 
+
+* Design starts with specifics and works toward generalities.
+* Typically begins by identifying concrete objects and then generalizes
+  aggregations 
