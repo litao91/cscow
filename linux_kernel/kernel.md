@@ -27,7 +27,8 @@
 * Kernel data sector in the memory written by `bootsect` at memory address
 `0X901FC` is the information of floppy disk (set as `ROOT_DEV`)
 * Starting from memory address of `0x90080` has 32bits is `drive_info`.
-  (set as `drive_info`)
+
+Source:
 
     init/main.c
     //at address 0x90080 is the a pointer to a struct with type
@@ -44,6 +45,7 @@
         drive_info = DRIVE_INFO;
         ...
     }
+
 
 ### Arrange Memory structure, buffer, ram disk, main memory
 * Main memory: space for program execution
