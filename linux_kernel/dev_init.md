@@ -267,6 +267,149 @@ From the code: if `n` is zero, then `gate_addr` is `&idt[0]`, that is the
  address of the `idt` entry. `dpl`(descriptor privilege level) is `0`,
  `addr` is the address `divide_error(void)`, the interruption service.
 
- `movl %%eax, %1\n\t" is assigning the value of `eax` to
+ `movl %%eax, %1\n\t"` is assigning the value of `eax` to
  `((char*)(gate_addr))`. That is assigning to the first 4bits of
  `idt[0]`
+
+## Initialize the structure of block devices request entry
+Two kinds devices:
+* Block devices: 
+* Character Devices:
+
+Block devices divide the storage into blocks, each block has block
+address, each block can read and write independently. We must go through
+buffer to communicate with block devices. Decide which I/O request by
+checking the interruption requests.
+
+
+    // init/main.c:
+    void main(void) {
+        ...
+        blk_dev_init(); // block devices initialization.
+        ...
+    }
+
+    // kernel/blk_drv/blk.h:
+    #define NR_REQUEST    32 // number of entries in the request-queue
+    struct request {
+        int dev;        /* -1 if no request */
+        int cmd;        /* READ or WRITE */
+        int errors;
+        unsigned long sector;
+        unsigned long nr_sectors;
+        char * buffer;
+        struct task_struct * waiting;
+        struct buffer_head * bh;
+        struct request * next; // A linked list
+    };
+
+
+    // kernel/blk_drv/ll_rw_block.c
+    ...
+    struct request request[NR_REQUEST];  //array of request list
+    ...
+
+    void blk_dev_init(void) {
+        int i;
+
+        for (i=0 ; i<NR_REQUEST ; i++) {
+            request[i].dev = -1;    /* set to no request */
+            request[i].next = NULL; /* empty request */
+        }
+    }
+
+
+# Link Interactive devices's interruption with interruption services
+Link interruption from serial ports and the related service routine in IDT
+`rs_init()` to setup serial ports and `con_init()` to setup display.
+
+    // init/main.c
+    void main(void) {
+        ...
+        tty_init();
+        ...
+    }
+
+    //kernel/chr_drv
+    void tty_init(void) {
+        rs_init();
+        con_init();  // setup console interrupt
+    }
+
+## Setup Serial Ports
+Basically implement the `rs232` functions. 
+Link IDT with two serial port interruptions. To be specific, link the
+address of `rs1_interrupt` and `rs2_interrupt` to IDT. Initialize things
+and finally allow `8259A` chip send `IRQ3` and `IRQ4` requests.
+
+Source:
+
+    // kernel/chr_drv/serial.c
+    void rs_init(void) {
+        set_intr_gate(0x24,rs1_interrupt);  // set up serial port 1 interruption
+        set_intr_gate(0x23,rs2_interrupt);  // serial port 2 interruption
+        init(tty_table[1].read_q.data);     // initialize serial port 1
+        init(tty_table[2].read_q.data);     // initialize serial port 2
+        outb(inb_p(0x21)&0xE7,0x21);        // Allow IRQ3 and IRQ4
+    }
+
+
+## Setup display
+At the time of linux 0.11, most grahpical adapter is single color. We
+assume it's single color EGA. So the Graphical memory's address `0xb0000`
+to `0xb8000`, the index register's port is set to `0x3b4`, the data
+register is set to `0x3b5`
+
+## Setup keyboard
+First link keyboard's interruption service to the IDT, then re-enable the
+keyboard's interruption from `8259A`, allow `IRQ1` sending interruption
+signal.
+
+The source code is in `kernel/chr_drv/console.c`, omit here.
+
+# Time initialization
+Get the start up time from `CMOS` chip, by calling `time_init()`
+
+Source:
+    // init/main.c
+    void main(void) {
+        ...
+        time_init();
+        ...
+    }
+    // read CMOS time
+    #define CMOS_READ(addr) ({ \
+    outb_p(0x80|addr,0x70); \
+    inb_p(0x71); \
+    })
+
+    #define BCD_TO_BIN(val) ((val)=((val)&15) + ((val)>>4)*10)
+
+    static void time_init(void) {
+        struct tm time;
+
+        do {
+            time.tm_sec = CMOS_READ(0);
+            time.tm_min = CMOS_READ(2);
+            time.tm_hour = CMOS_READ(4);
+            time.tm_mday = CMOS_READ(7);
+            time.tm_mon = CMOS_READ(8);
+            time.tm_year = CMOS_READ(9);
+        } while (time.tm_sec != CMOS_READ(0));
+        BCD_TO_BIN(time.tm_sec);
+        BCD_TO_BIN(time.tm_min);
+        BCD_TO_BIN(time.tm_hour);
+        BCD_TO_BIN(time.tm_mday);
+        BCD_TO_BIN(time.tm_mon);
+        BCD_TO_BIN(time.tm_year);
+        time.tm_mon--;
+        startup_time = kernel_mktime(&time);  // startup time, from
+         //1970/1/1
+        
+    }
+
+
+# Initialization process 0
+Process `0` is the first process in Linux. It's the first parent process.
+Include the following:
+1. System initialize the 
