@@ -412,4 +412,87 @@ Source:
 # Initialization process 0
 Process `0` is the first process in Linux. It's the first parent process.
 Include the following:
-1. System initialize the 
+1. System initialize the process `0`. We need to link the `task_struct`'s
+   `LDT` and `TSS` to `GDT`.
+* Setup clock interruption, allowing multi-thread.
+* Process `0` should have the capability to have system call.
+
+The process `0` have the above abilities and "inherit" those abilities to
+ti's children.  Its' implemented in `sched_init()` (Schedule
+initialization).
+
+Source:
+    // init/main.c
+    int main(void) {
+        ...
+        sched_init();
+        ...
+    }
+
+    // kernel/sched.c
+    ...
+    #define LATCH (1193180/HZ)   // HZ is 100 defined in sched.h
+    ...
+
+    union task_union {  // for both task_struct and kernel stoack
+        struct task_struct task;
+        char stack[PAGE_SIZE]; // Page size is 4KB
+    };
+
+    static union task_union init_task = {INIT_TASK,}; //process 0's task_struct
+    ...
+    //Initialize the process slot task[NR_TASKS]. Mkae the first
+    //item process 0, so task[0] is occupied by task_struct
+    struct task_struct * task[NR_TASKS] = {&(init_task.task), };
+    ...
+
+    void sched_init(void) {
+        int i;
+        struct desc_struct * p;
+
+        if (sizeof(struct sigaction) != 16)
+            panic("Struct sigaction MUST be 16 bytes");
+        set_tss_desc(gdt+FIRST_TSS_ENTRY,&(init_task.task.tss));  //setup TSS0, Task state segment
+        set_ldt_desc(gdt+FIRST_LDT_ENTRY,&(init_task.task.ldt));  //setup LDT0
+        //starting from the 6th item, that is from TSS1, all items
+        //clear to zero,
+        //Clear the process slots from 1. The 0 item for process 0
+        p = gdt+2+FIRST_TSS_ENTRY;
+        for(i=1;i<NR_TASKS;i++) {
+            task[i] = NULL;
+            p->a=p->b=0;
+            p++;
+            p->a=p->b=0;
+            p++;
+        }
+
+    /* Clear NT, so that we won't have troubles with that later on */
+        __asm__("pushfl ; andl $0xffffbfff,(%esp) ; popfl");
+        ltr(0);  //link TSS to TR register
+        lldt(0); // link LDT to LDTR
+        outb_p(0x36,0x43);        /* binary, mode 3, LSB/MSB, ch 0, setup timeout */
+        outb_p(LATCH & 0xff , 0x40);    /* LSB */ // interrupt every 10 ms
+        outb(LATCH >> 8 , 0x40);    /* MSB */
+        set_intr_gate(0x20,&timer_interrupt);//Setup timer interrupt
+        outb(inb_p(0x21)&~0x01,0x21); //allow timer interrupt
+        set_system_gate(0x80,&system_call); // entrance of system call
+    }
+
+    //include/linux/shed.h:
+    #define FIRST_TSS_ENTRY 4 // GDT's 4th entry, TSS0's entry
+    #define FIRST_LDT_ENTRY (FIRST_TSS_ENTRY+1) //Entry of LDT0
+
+    #define _TSS(n) ((((unsigned long) n)<<4)+(FIRST_TSS_ENTRY<<3))
+    #define _LDT(n) ((((unsigned long) n)<<4)+(FIRST_LDT_ENTRY<<3))
+    #define ltr(n) __asm__("ltr %%ax"::"a" (_TSS(n)))
+    #define lldt(n) __asm__("lldt %%ax"::"a" (_LDT(n)))
+    ...
+
+
+Note `include/asm/system.h` defines `set_intr_gate`, `set_trap_gate`
+`set_system_gate` `_set_tssldt_desc` omit here
+
+`inlucde/linux/sched.h` defines `tss_struct` and `task_struct`, the
+`INIT_TASK` defined the struct of process 0. 
+Lots of assembly code omit here.
+
