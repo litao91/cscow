@@ -410,12 +410,21 @@ Source:
 
 
 # Initialization process 0
+Note that in Linux, each process has an independent `task_struct`. The
+elements of `task_struct` contain or point to all of the information that
+the kernel needs to run the process(e.g. PID, pointer to the user stack,
+name of teh executable object file, and program counters)
+
 Process `0` is the first process in Linux. It's the first parent process.
 Include the following:
-1. System initialize the process `0`. We need to link the `task_struct`'s
-   `LDT` and `TSS` to `GDT`.
+1. System initialize the process `0`. The template of process `0` has been
+   pre-designed with `init_task = `{INIT_TASK}`. What we remain to do is
+   linking the `LDT` (local descriptor table) and `TSS`(Task state
+   segment) in the `task_struct` of process `0` to `GDT`.
 * Setup clock interruption, allowing multi-thread.
-* Process `0` should have the capability to have system call.
+* Process `0` should have the capability to have system call. It is done
+  by linking `system_call` with `IDT` (interruption description table)
+  through calling `set_system_gate`.
 
 The process `0` have the above abilities and "inherit" those abilities to
 ti's children.  Its' implemented in `sched_init()` (Schedule
@@ -425,7 +434,7 @@ Source:
     // init/main.c
     int main(void) {
         ...
-        sched_init();
+        sched_init(); //schedule the initialization
         ...
     }
 
@@ -441,8 +450,9 @@ Source:
 
     static union task_union init_task = {INIT_TASK,}; //process 0's task_struct
     ...
-    //Initialize the process slot task[NR_TASKS]. Mkae the first
-    //item process 0, so task[0] is occupied by task_struct
+    //Initialize the process slot task[NR_TASKS]. Make the first
+    //item process 0, so task[0] is occupied by task_struct, NR_TASKS
+    //number of tasks
     struct task_struct * task[NR_TASKS] = {&(init_task.task), };
     ...
 
@@ -458,6 +468,7 @@ Source:
         //clear to zero,
         //Clear the process slots from 1. The 0 item for process 0
         p = gdt+2+FIRST_TSS_ENTRY;
+        // use for loop to clear `task[64]` 
         for(i=1;i<NR_TASKS;i++) {
             task[i] = NULL;
             p->a=p->b=0;
@@ -496,3 +507,50 @@ Note `include/asm/system.h` defines `set_intr_gate`, `set_trap_gate`
 `INIT_TASK` defined the struct of process 0. 
 Lots of assembly code omit here.
 
+
+### Initialize Process 0 (`init_task`)
+The essential of `shed_init` function:
+
+    set_tss_desc(gdt+FIRST_TSS_ENTRY,&(init_task.task.tss));  //setup TSS0, Task state segment
+    set_ldt_desc(gdt+FIRST_LDT_ENTRY,&(init_task.task.ldt));  //setup LDT0
+
+`gdt`:global descriptor table. Global descriptor points to `tss` and
+`LDT`.
+
+The purpose of the lines are initialize the GDT entries for process `0`,
+namely, the 4th and 5th entries, `TSS0` (Task State Segment) and `LDT0` 
+
+
+### Setup `timer_interrupt`
+Clock interrupt is the base of round robin. Three steps:
+1. Setup `8253` timer. Most importantly setup `LATCH`.
+* Setup timer_interrupt, so that system can find `timer_interrupt()` when
+  interruption happens.
+* Enable the timer interrupt in `8259A`.
+
+### setup system call entrance
+`system_call` links with `int 0x80` interrupt descriptor. All the system
+call, after raising an `int 0x80` soft interruption, os always call the
+specific system method through this entrance. 
+
+## Initialize buffer management struct
+Buffer is for data exchange between memory and devices (such as hard
+disk).
+
+Operation system make use of a complicated hash table consists of
+`hash_table[NR_HASH]` and `buffer_head`(a duble linked list) to manage the
+buffer. 
+
+    void main(void) {
+        ...
+        buffer_init(buffer_memory_end);
+        ...
+    }
+
+In buffer_init function, starting simenteneously from the end of the
+kernel and the end of buffer, growing in opposite direction, make
+`buffer_head` and buffer blocks in pair. 
+`buffer_head`'s entries:
+* `b_count` reference count
+* `b_uptodate` up to date flag
+* 

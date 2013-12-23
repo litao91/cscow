@@ -21,3 +21,8 @@ GDT or LDT. Such an index is called a *segment selector*.
 
 The selector must generally be loaded into a segment register to be used. 
 
+# TSS (Task State Segment)
+It saves the register value of different privilege level. 
+
+On context switching, 
+
