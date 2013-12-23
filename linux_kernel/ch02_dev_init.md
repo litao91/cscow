@@ -1,24 +1,3 @@
-# 从开机加电到执行`main()`函数之前的过程
-## `head.s` 开始执行
-在执行`main`函数之前，先要执行三个由汇编代码生成的函数:
-
-* `bootsect`
-* `setup`
-* `head`
-
-1. 第一步， 加载`bootsect`到`0x07C00`
-* 第二步， 加载`setup`到`0x90200`
-
-这两段程序是分别加载，分别执行
-
-`haed`程序与他们不同:
-
-* 先将`head.s`汇编成目标代码(object code)
-* 将用C写的内核编译成目标代码(object code)
-* 然后链接(link)成system 模块
-
-也就是说, 两者紧挨着, head在前, system在后
-
 # Device Environment initialization and activate process `0`
 
 ## Setup root device, hard disk
@@ -127,7 +106,7 @@ Set up main memory and buffer position and size according to memory size
      * mem_start: the starting address of ramdisk, right before the main
      * memory
      */
-    long rd_init(long mem_start, int length)
+    long rd_init(long mem_start, int length) // ram disk initialization
     {
         int    i;
         char    *cp;
@@ -553,4 +532,122 @@ kernel and the end of buffer, growing in opposite direction, make
 `buffer_head`'s entries:
 * `b_count` reference count
 * `b_uptodate` up to date flag
-* 
+* `b_dirt` Dirty flag
+* `b_data` point to the buffer block
+* `buffer_head` `b_prev_free` and `b_next_free` form an doble linked list.
+
+    // fs/buffer.c
+    ...
+    // end is the end of kernel 
+    struct buffer_head * start_buffer = (struct buffer_head *) &end; 
+    struct buffer_head * hash_table[NR_HASH];
+    static struct buffer_head * free_list;
+    ...
+
+    void buffer_init(long buffer_end) { 
+        struct buffer_head * h = start_buffer;  
+        void * b; int i;
+
+        if (buffer_end == 1<<20)
+            b = (void *) (640*1024);
+        else
+            b = (void *) buffer_end;
+        //h starts from lower address and b from higher address side.
+        //assign blocks to head
+        while ( (b -= BLOCK_SIZE) >= ((void *) (h+1)) ) {
+            h->b_dev = 0;
+            h->b_dirt = 0;
+            h->b_count = 0;
+            h->b_lock = 0;
+            h->b_uptodate = 0;
+            h->b_wait = NULL;
+            h->b_next = NULL;
+            h->b_prev = NULL;
+            h->b_data = (char *) b;
+            h->b_prev_free = h-1;
+            h->b_next_free = h+1;
+            h++;
+            NR_BUFFERS++;
+            if (b == (void *) 0x100000)
+                b = (void *) 0xA0000;
+        }
+        h--;
+        free_list = start_buffer; //pointing to the first buffer_head
+        free_list->b_prev_free = h;
+        h->b_next_free = free_list;
+        for (i=0;i<NR_HASH;i++) //clear hash_table
+            hash_table[i]=NULL;
+    }
+
+## Initialize hard disk
+Create communication environment for block devices such as hard disk.
+
+In `hd_init()`, hook `do_hd_request() ` with `blk_dev`'s control
+structure.  All the hdd requests will be handled by `do_hd_request()`.
+Then hook `hd_interrupt()` with `IDT`. Finally, re-enable `8259A`'s `int
+2`
+
+    // init/main.c
+    void main(void) {
+        ...
+        hd_init();                       // initialize hard disk
+        ...
+    }
+
+    void hd_init(void) {
+        blk_dev[MAJOR_NR].request_fn = DEVICE_REQUEST;  // hook do_hd_request
+        set_intr_gate(0x2E,&hd_interrupt);              // set hard disk interrupt
+        outb_p(inb_p(0x21)&0xfb,0x21);                  // allow 8259A sending interrupt request
+        outb(inb_p(0xA1)&0xbf,0xA1);
+    }
+
+
+## Initialize floppy disk
+Implemented in `floppy_init()`, similar to `hd_init`.
+
+## Re-enable interrupt
+Now all the interrupt handler has been hooked in IDT, we can enable the
+interrupt in 32bit protection mode, the significance is that we can use
+system call. 
+
+    //include/asm/system.h
+    #define sti() __asm__ ("sti"::)
+
+    //init/main.c
+    void main(void) {
+        ...
+        sti()
+        ...
+    }
+
+Now the `IF` in `EFLAGS` is `1`. And interruption is enabled. 
+
+## Process 0 (`init_task`) from 0 privilege level to e privilege level
+Linux defines that except from process 0, all the other processes have to
+be created by a `3` privileged process. 
+
+So before process 0 create process 1, it has to be flipped from privilege
+`0` to privilege `3`.
+
+    void main(void) {
+        ...
+        move_to_user_mode(); //from priviledge 0 to 3
+        ...
+    }
+
+The `move_to_user_mode()` is defined in `include/system.h`
+
+In the meantime, CPU also done a content switch and revert content.
+
+In terms of execution sequence, interruption is similar to function call.
+They all jump from a code segment to another segment. It needs a context
+switch for each function call. 
+
+Interruption is different from function call in terms of context switch.
+Function call is pre-defined by the programmer so that compiler can
+pre-generate the code for pushing and popping context. Interruption, on the
+other hand, is unexpected, so the popping and pushing are done by
+hardware. 
+
+When CPU handles interruption, according to the setup in DPL, can
+apply predefined privilege level flipping. 
