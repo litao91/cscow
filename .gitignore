@@ -1,7 +1,6 @@
 *.log
 *.aux
 *~
-*.out
 *.snm
 *.vrb
 *.toc
@@ -9,3 +8,4 @@
 *-eps-converted-to.pdf
 *.nav
 *.out
+*.in
