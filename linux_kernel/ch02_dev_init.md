@@ -392,7 +392,7 @@ Source:
 Note that in Linux, each process has an independent `task_struct`. The
 elements of `task_struct` contain or point to all of the information that
 the kernel needs to run the process(e.g. PID, pointer to the user stack,
-name of teh executable object file, and program counters)
+name of the executable object file, and program counters)
 
 Process `0` is the first process in Linux. It's the first parent process.
 Include the following:

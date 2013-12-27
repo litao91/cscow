@@ -26,3 +26,29 @@ It saves the register value of different privilege level.
 
 On context switching, 
 
+# x86 Calling conventions
+Calling conventions describe the interface of called code:
+* The order in which atomic parameters, or individual parts of a complex
+  parameter, are allocated
+* How parameters are passed (pushed on the stack, placed in register or
+  mix
+* which registers the callee must preserve for the caller. 
+* How the task of preparing the stack for, and restoring after, a function
+  call is divided between the caller and callee.
+
+## Caller clean-up
+### codecl
+The cdecl (C declaration) is a calling convention that originates from the
+C programming language and is used by many C compilers for the x86
+architercutre. 
+
+In cdecl,  
+* subroutine arguments are passed on the stack
+* Integer values and memroy address are returned in the `EAX` register,
+  floating points in the `ST0` x87 register. 
+* `EAX`, `ECX`, and `EDX` are caller-saved, and the rest are callee-saved.
+* x87 floating point registers `ST0` to `ST7` must be empty when calling a
+  new function. And `ST1` to `S17` must be empty on existing a function. 
+
+In context of the C programming language, function arguments are pushed on
+the stack in the *reverse order*
