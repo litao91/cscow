@@ -452,15 +452,15 @@ Source code:
 
 
         /**
-         * A table manage 4MB,  and an entry is 4 bits. So the entry address
+         * A page table manage 4MB,  and an page table entry is 4 bits. So the entry address
          * is num of entry x 4. e.g. entry 0 at address 0, manage 0-4MB, entry
          * 1 at 4, manage 4-8MB, entry 2 at 8, 8-12MB and so on  >> 20 is the
          * num of MB 0xffc is 0b111111111100*/
 
         // >> 22 is number of 4MB, namely, entry number, copy from
-        // from_dir -- page table directory to copy from, the address of page
-        //             directory table entry
-        // to_dir -- page table directory to copy to
+        // get page table directory entry address from linear address
+        // from_dir -- page table directory entry address to copy from
+        // to_dir -- page table directory entry address to copy to
         from_dir = (unsigned long *) ((from>>20) & 0xffc); /* _pg_dir = 0 */
         to_dir = (unsigned long *) ((to>>20) & 0xffc);
         size = ((unsigned) (size+0x3fffff)) >> 22;
@@ -472,12 +472,19 @@ Source code:
             if (!(1 & *from_dir))
                 continue;
 
-            // *from_dir is the number of the page directory entry
+            // *from_dir is reference to the page directory entry, from
+            // the entry we extract the page table address
             // 0xfffff000& is to clear the lower 12 bits. The higher 20bits
             // is the page table number.
             from_page_table = (unsigned long *) (0xfffff000 & *from_dir);
+            
+            // allocate memory for new page table
             if (!(to_page_table = (unsigned long *) get_free_page()))
                 return -1;    /* Out of memory, see freeing */
+
+            // setup the page directory entry. Note that to_dir is
+            // pointing to the page directory entry, and it is extracted
+            // from the linear address
             *to_dir = ((unsigned long) to_page_table) | 7; // 7 -> 111
             nr = (from==0)?0xA0:1024; // 0xA0, 160, number of entries to copy
             //copy page table from parent
@@ -485,7 +492,8 @@ Source code:
                 this_page = *from_page_table;
                 if (!(1 & this_page))
                     continue;
-                this_page &= ~2; // page table attribute, ~2 is 101, user, read only, valid
+                // setup page table attribute, ~2 is 101, user, read only, valid
+                this_page &= ~2; 
                 *to_page_table = this_page;
                 if (this_page > LOW_MEM) { // LOW_MEM doesn't paginate
                     *from_page_table = this_page;
