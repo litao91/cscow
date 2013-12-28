@@ -85,7 +85,7 @@ Note that the line `_syscall0(int, fork)` will be expanded to:
     }
 
 The path of system call:
-![](syscall.png?raw=true)
+![](syscall.jpg?raw=true)
 
 Execution:
 1. `:"0" (__NR_fork)`, assign `__NR_fork`, the number of `fork` in
@@ -216,6 +216,7 @@ are related to previous pushing.
         if (!p)
             return -EAGAIN;
         task[nr] = p;
+        ...
     }
 
 Then call `get_free_page()` to request for a free page in main memory.
@@ -226,6 +227,9 @@ Note task union is defined as
         struct task_struct task;
         char stack[PAGE_SIZE];
     }
+
+As shown in the following figure:
+![](ts.jpg?raw=true)
 The front of the `task_union` is `task_struct` and lower end is
 kernel stack. And they are added up to exactly one page. 
 
@@ -233,4 +237,61 @@ kernel stack. And they are added up to exactly one page.
             long ebx,long ecx,long edx,
             long fs,long es,long ds,
             long eip,long cs,long eflags,long esp,long ss) {
-    ...
+        ...
+        // NOTE!: the following statement now work with gcc 4.3.2 now, and you
+        // must compile _THIS_ memcpy without no -O of gcc.#ifndef GCC4_3
+        // current point to task_struct of current process. Now child and
+        // parent processes have exactly the same task struct
+        // current: pointer to current process, p pointer to the new process
+        *p = *current;    /* NOTE! this doesn't copy the supervisor stack */
+                          /* This only copied the task_struct, the kernel
+                           * stack haven't been copied */
+
+        p->state = TASK_UNINTERRUPTIBLE; //only wake up when it is set to ready state
+        p->pid = last_pid; // customized for child process
+        p->father = current->pid;
+        p->counter = p->priority;
+        p->signal = 0;
+        p->alarm = 0;
+        p->leader = 0;        /* process leadership doesn't inherit */
+        p->utime = p->stime = 0;
+        p->cutime = p->cstime = 0;
+        p->start_time = jiffies;
+        ...
+    }
+
+![](cp_ts.jpg?raw=true)
+
+### Setup paging management
+#### Initialize code segment and data segment
+Apply `copy_mem()`, setup process 1's:
+* code segment
+* data segment's base address
+* segment's limit
+
+    int copy_process(int nr,long ebp,long edi,long esi,long gs,long none,
+            long ebx,long ecx,long edx,
+            long fs,long es,long ds,
+            long eip,long cs,long eflags,long esp,long ss) {
+        ...
+
+        if (last_task_used_math == current)
+            __asm__("clts ; fnsave %0"::"m" (p->tss.i387));
+
+        // setup the code segment, data segment and create the
+        // first page table of child process
+        if (copy_mem(nr,p)) {
+            task[nr] = NULL;
+            free_page((long) p);
+            return -EAGAIN;
+        }
+
+        // increase the count of file reference,
+        // since the child process also referencing the
+        // file that referenced by its parent.
+        for (i=0; i<NR_OPEN;i++)
+            if ((f=p->filp[i]))
+                f->f_count++;
+    }
+
+![](cp_pgt.jpg?raw=true)

@@ -482,6 +482,10 @@ Source:
 Note `include/asm/system.h` defines `set_intr_gate`, `set_trap_gate`
 `set_system_gate` `_set_tssldt_desc` omit here
 
+The initialized GDP is shown as follow:
+
+![](p0_sd.jpg?raw=true)
+
 `inlucde/linux/sched.h` defines `tss_struct` and `task_struct`, the
 `INIT_TASK` defined the struct of process 0. 
 Lots of assembly code omit here.
