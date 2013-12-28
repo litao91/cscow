@@ -295,3 +295,203 @@ Apply `copy_mem()`, setup process 1's:
     }
 
 ![](cp_pgt.jpg?raw=true)
+
+    // include/linux/sched.h
+    ...
+    #define _set_base(addr,base)  \  // use base to setup addr
+    __asm__ ("push %%edx\n\t" \
+        "movw %%dx,%0\n\t" \
+        "rorl $16,%%edx\n\t" \
+        "movb %%dl,%1\n\t" \
+        "movb %%dh,%2\n\t" \
+        "pop %%edx" \
+        ::"m" (*((addr)+2)), \
+         "m" (*((addr)+4)), \
+         "m" (*((addr)+7)), \
+         "d" (base) \
+        )
+    ...
+    #define set_base(ldt,base) _set_base( ((char *)&(ldt)) , (base) )
+    ...
+    
+    static inline unsigned long _get_base(char * addr) //get addr's base address
+    {
+             unsigned long __base;
+             __asm__("movb %3,%%dh\n\t"
+                     "movb %2,%%dl\n\t"
+                     "shll $16,%%edx\n\t"
+                     "movw %1,%%dx"
+                     :"=&d" (__base)
+                     :"m" (*((addr)+2)),
+                      "m" (*((addr)+4)),
+                      "m" (*((addr)+7)));
+             return __base;
+    }
+
+    #define get_base(ldt) _get_base( ((char *)&(ldt)) )
+
+    // get segment's limit
+    #define get_limit(segment) ({ \
+    unsigned long __limit; \
+    __asm__("lsll %1,%0\n\tincl %0":"=r" (__limit):"r" (segment)); \
+    __limit;})
+
+    // kernel/fork.c
+    // child process's code segment, data segment and copy the
+    // child process's first page table (from parent's page table)
+    int copy_mem(int nr,struct task_struct * p)
+    {
+        unsigned long old_data_base,new_data_base,data_limit;
+        unsigned long old_code_base,new_code_base,code_limit;
+
+        // get the limit of code and data segment
+        code_limit=get_limit(0x0f);
+        data_limit=get_limit(0x17);
+
+        // parent process's code segment and data segment's addr
+        old_code_base = get_base(current->ldt[1]); // ldt[1] code
+        old_data_base = get_base(current->ldt[2]); // ldt[2] data
+        if (old_data_base != old_code_base)
+            panic("We don't support separate I&D");
+        if (data_limit < code_limit)
+            panic("Bad data_limit");
+        // 0x4000000 is 64MB
+        new_data_base = new_code_base = nr * 0x4000000;
+        p->start_code = new_code_base;
+        set_base(p->ldt[1],new_code_base); // set base of code segment
+        set_base(p->ldt[2],new_data_base); // set base of data segment
+        if (copy_page_tables(old_data_base,new_data_base,data_limit)) {
+            printk("free_page_tables: from copy_mem\n");
+            free_page_tables(new_data_base,data_limit);
+            return -ENOMEM;
+        }
+        return 0;
+    }
+
+#### Create Page Table and Page Table Entry
+The virtual address is split to page directory entry, page table entry and
+offset. 
+
+Page directory entry is in page directory table for  page table
+management. 
+
+Linux0.11 has one page directory table. With the virtual page directory number in
+the virtual address, we can find the page directory entry. With the page
+directory entry, we can find the page table, the page table number in the
+virtual address, we can locate the page table entry. Concatenate the
+offset, we can get physical address. Shown as follow. 
+
+![](vm_mgmt.jpg?raw=true)
+
+Call `copy_page_tables()` to setup page directory table and copy page
+table. 
+    
+    int copy_mem(int nr, struct task_struct* p) {
+        ...
+        set_base(p->ldt[1],new_code_base); // set base of code segment
+        set_base(p->ldt[2],new_data_base); // set base of data segment
+        //create the first page table for child, copy parent's first page
+        // table
+        if (copy_page_tables(old_data_base,new_data_base,data_limit)) {
+            printk("free_page_tables: from copy_mem\n");
+            free_page_tables(new_data_base,data_limit);
+            return -ENOMEM;
+        }
+        return 0;
+    }
+
+`copy_page_tables` will basically request a free page for the new page
+table. 
+1.  **copy** the first 160 items in the parent process to this page. (Each
+    page table entry manage 4KB memory space, 160 page entries can manage
+    640KB). Now parent and child's page table entries pointing to the same
+    pages. 
+* Then we setup child process's page directory table 
+* Override `CR3` to update page switch cache. 
+
+
+    // mm/memory.c
+    ...
+    #define invalidate() \
+    __asm__("movl %%eax,%%cr3"::"a" (0))
+    ...
+
+     *  Well, here is one of the most complicated functions in mm. It
+     * copies a range of linerar addresses by copying only the pages.
+     * Let's hope this is bug-free, 'cause this one I don't want to debug :-)
+     *
+     * Note! We don't copy just any chunks of memory - addresses have to
+     * be divisible by 4Mb (one page-directory entry), as this makes the
+     * function easier. It's used only by fork anyway.
+     *
+     * NOTE 2!! When from==0 we are copying kernel space for the first
+     * fork(). Then we DONT want to copy a full page-directory entry, as
+     * that would lead to some serious memory waste - we just copy the
+     * first 160 pages - 640kB. Even that is more than we need, but it
+     * doesn't take any more memory - we don't copy-on-write in the low
+     * 1 Mb-range, so the pages can be shared with the kernel. Thus the
+     * special case for nr=xxxx.
+     */
+    int copy_page_tables(unsigned long from,unsigned long to,long size) {
+        unsigned long * from_page_table;
+        unsigned long * to_page_table;
+        unsigned long this_page;
+        unsigned long * from_dir, * to_dir;
+        unsigned long nr;
+
+        /* 0x 3fffff is 4MB, the size managed by a page table
+         * the last 22bits of from and to should b zero, multiples of 4MB
+         * The continuous 4MB space corresponding to a page table has to be
+         * start from 0x000000 and a multiple of 4MB */
+        if ((from&0x3fffff) || (to&0x3fffff))
+            panic("copy_page_tables called with wrong alignment");
+
+
+
+        /**
+         * A table manage 4MB,  and an entry is 4 bits. So the entry address
+         * is num of entry x 4. e.g. entry 0 at address 0, manage 0-4MB, entry
+         * 1 at 4, manage 4-8MB, entry 2 at 8, 8-12MB and so on  >> 20 is the
+         * num of MB 0xffc is 0b111111111100*/
+
+        // >> 22 is number of 4MB, namely, entry number, copy from
+        // from_dir -- page table directory to copy from, the address of page
+        //             directory table entry
+        // to_dir -- page table directory to copy to
+        from_dir = (unsigned long *) ((from>>20) & 0xffc); /* _pg_dir = 0 */
+        to_dir = (unsigned long *) ((to>>20) & 0xffc);
+        size = ((unsigned) (size+0x3fffff)) >> 22;
+
+
+        for( ; size-->0 ; from_dir++,to_dir++) {
+            if (1 & *to_dir)
+                panic("copy_page_tables: already exist");
+            if (!(1 & *from_dir))
+                continue;
+
+            // *from_dir is the number of the page directory entry
+            // 0xfffff000& is to clear the lower 12 bits. The higher 20bits
+            // is the page table number.
+            from_page_table = (unsigned long *) (0xfffff000 & *from_dir);
+            if (!(to_page_table = (unsigned long *) get_free_page()))
+                return -1;    /* Out of memory, see freeing */
+            *to_dir = ((unsigned long) to_page_table) | 7; // 7 -> 111
+            nr = (from==0)?0xA0:1024; // 0xA0, 160, number of entries to copy
+            //copy page table from parent
+            for ( ; nr-- > 0 ; from_page_table++,to_page_table++) {
+                this_page = *from_page_table;
+                if (!(1 & this_page))
+                    continue;
+                this_page &= ~2; // page table attribute, ~2 is 101, user, read only, valid
+                *to_page_table = this_page;
+                if (this_page > LOW_MEM) { // LOW_MEM doesn't paginate
+                    *from_page_table = this_page;
+                    this_page -= LOW_MEM;
+                    this_page >>= 12;
+                    mem_map[this_page]++; // include reference count
+                }
+            }
+        }
+        invalidate(); //reset CR3 to 0
+        return 0;
+    }
