@@ -506,3 +506,145 @@ Source code:
         invalidate(); //reset CR3 to 0
         return 0;
     }
+
+### Process 1 share process 0's files
+Setup the entries of `task_struct` that are related to file system. 
+* opened files `p->flip[20]`
+* Working directory's i-node struct
+* Root directory i-node struct
+* Executable file's i-node struct
+
+Source code:
+
+
+    int copy_process(int nr,long ebp,long edi,long esi,long gs,long none,
+            long ebx,long ecx,long edx,
+            long fs,long es,long ds,
+            long eip,long cs,long eflags,long esp,long ss) {
+        ...
+        // increase the count of file reference,
+        // since the child process also referencing the
+        // file that referenced by its parent.
+        for (i=0; i<NR_OPEN;i++)
+            if ((f=p->filp[i]))
+                f->f_count++;
+        if (current->pwd)
+            current->pwd->i_count++;
+        if (current->root)
+            current->root->i_count++;
+        if (current->executable)
+            current->executable->i_count++;
+        // setup GDT's child process
+        set_tss_desc(gdt+(nr<<1)+FIRST_TSS_ENTRY,&(p->tss));
+        ...
+    }
+
+
+### Setup process 1's GDT
+Setup process 1's `TSS` and `LDT` in `GDT`. As shown in the figure
+![](child_gdt.jpg?raw=true)
+
+    int copy_process(int nr,long ebp,long edi,long esi,long gs,long none,
+            long ebx,long ecx,long edx,
+            long fs,long es,long ds,
+            long eip,long cs,long eflags,long esp,long ss) {
+    // setup GDT's child process
+        set_tss_desc(gdt+(nr<<1)+FIRST_TSS_ENTRY,&(p->tss));
+        set_ldt_desc(gdt+(nr<<1)+FIRST_LDT_ENTRY,&(p->ldt));
+        p->state = TASK_RUNNING;    /* do this last, just in case */
+        ...
+        return last_pid;
+    }
+
+### Process 1 is ready
+Now the creation of process 1 is done. `copy_process()` return to
+`sys_fork()`:
+
+    sys_fork:
+        call find_empty_process
+        testl %eax,%eax # if the returned value is -EAGAIN(11), there have
+                        # been 64 processes running 
+        js 1f
+        push %gs        # next 5 pushes for copy_process's parameters
+        pushl %esi
+        pushl %edi
+        pushl %ebp
+        pushl %eax
+        call copy_process 
+        addl $20,%esp# copy_process return here, clear stacks
+    1:	ret # edi ebp eax
+
+Clear `sys_fork`'s 5 registers (gs, esi, edi, ebp, eax, the first 5
+parameters of `copy_process`)
+
+Note that `eax` correspond to `copy_process()`'s first parameter `nr`,
+that is `last_pid`,  the return value of `copy_process`
+    system_call:
+        ...
+
+        call *sys_call_table(,%eax,4) # call (_sys_call_table + 2x4, _sys_fork
+        pushl %eax                    # sys_fork return here, eax is last_pid
+        movl current,%eax 
+        cmpl $0,state(%eax)           # state
+        jne reschedule                # reschedule is process 0 is not ready
+        cmpl $0,counter(%eax)         # counter
+        je reschedule                 # process 0 doesn't have time slice
+    ret_from_sys_call:
+        movl current,%eax             # task[0] cannot have signals
+        cmpl task,%eax
+        je 3f                         # if current is process 0, jump to 3
+        cmpw $0x0f,CS(%esp)           # was old code segment supervisor ?
+        jne 3f
+        cmpw $0x17,OLDSS(%esp)        # was stack segment = 0x17 ?
+        jne 3f
+        movl signal(%eax),%ebx
+        movl blocked(%eax),%ecx
+        notl %ecx
+        andl %ebx,%ecx
+        bsfl %ecx,%ecx
+        je 3f
+        btrl %ecx,%ebx
+        movl %ebx,signal(%eax)
+        incl %ecx
+        pushl %ecx
+        call do_signal
+        popl %eax
+    3:	popl %eax                      # process 0 jump here, pop to registers
+        popl %ebx
+        popl %ecx
+        popl %edx
+        pop %fs
+        pop %es
+        pop %ds
+        iret
+
+Since current process is 0, so jump to label 3, recover the register
+values from stack. 
+
+`iret` return the interrupt, CPU hardware recover the `ss`, `esp`,
+`eflags`, `cs`, `eip` from stack to registers. Flip the privilege level
+back to `3`. `CS:EIP` point to the next line of `int 0x80` in `fork()`':
+
+    //include/unistd.h
+    int fork(void) {
+        long __res; 
+    // int 0x80 is the entrance of system call
+        __asm__ volatile ("int $0x80"
+            : "=a" (__res)  // output part, _res value assigned to eax
+            : "0" (2));     // input part, assign __NR_fork to eax
+        if (__res >= 0)    // interruption return, __res's value is eax(1)
+            return (int) __res;  // return 1 for parent process
+        errno = -__res; 
+        return -1; 
+    }
+
+Then return to main:
+    void main(void) {
+        sti()
+        move_to_user_mode();
+        if(!fork()) { // fork return 1 for parent
+            init(); // won't exec this line
+        }
+        ...
+        for(;;) pause();
+    }
