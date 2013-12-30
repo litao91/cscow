@@ -648,3 +648,129 @@ Then return to main:
         ...
         for(;;) pause();
     }
+
+## First Process Scheduling
+Now, switch from process 0 to process 1
+
+Two cases to cause content switch:
+1. Time allowed for process execute expire. (round-robin)
+* Process stop running.
+
+Process 0 execute `for(;;) pause()` until `schedule()` switch context. 
+
+`pause`
+
+    // init/main.c
+    ...
+    static inline _syscall0(int, fork)
+    static inline _syscall0(int, pause)
+    ...
+    void main(void) {
+    ...
+        move_to_user_mode();
+        if(!fork()) {
+            init();
+        }
+        for(;;) pause();
+    }
+
+Through `int 0x80` interrupt, map `call _sys_call_table(,%eax,4)` in
+`system_call.s` to `sys_pause()`, the system call method.  
+
+`sys_pause()` set process 0 to interruptible sleep. 
+
+Note: linux process state codes:
+    PROCESS STATE CODES
+       R  running or runnable (on run queue)
+       D  uninterruptible sleep (usually IO)
+       S  interruptible sleep (waiting for an event to complete)
+       Z  defunct/zombie, terminated but not reaped by its parent
+       T  stopped, either by a job control signal or because
+          it is being traced
+       [...]
+
+    // kernel/sched.c
+    int sys_pause(void)
+    {
+        // set process to interruptible sleep
+        // only interrupt or signal from other process
+        // can change this state to ready.
+        current->state = TASK_INTERRUPTIBLE;
+        schedule();
+        return 0;
+    }
+
+`schedule()` function decide to switch process or not. 
+Traverse all processes in `task[64]`. Handle the alarm and signals.
+
+Traverse the processes for the second time, compare the states and time
+slices. Find the ready process with highest counter. Execute
+`switch_to(next)`
+
+Source code:
+
+    void schedule(void) {
+        int i,next,c;
+        struct task_struct ** p;
+
+    /* check alarm, wake up any interruptible tasks that have got a signal */
+
+        for(p = &LAST_TASK ; p > &FIRST_TASK ; --p)
+            if (*p) {
+                if ((*p)->alarm && (*p)->alarm < jiffies) { // if alarm is set or passed
+                        (*p)->signal |= (1<<(SIGALRM-1));   // set SIGALARM
+                        (*p)->alarm = 0;                    // clear alarm
+                    }
+                if (((*p)->signal & ~(_BLOCKABLE & (*p)->blocked)) &&
+                (*p)->state==TASK_INTERRUPTIBLE)
+                    (*p)->state=TASK_RUNNING;
+            }
+
+    /* this is the scheduler proper: */
+
+        while (1) {
+            c = -1;
+            next = 0;
+            i = NR_TASKS;
+            p = &task[NR_TASKS];
+            while (--i) {
+                if (!*--p)
+                    continue;
+                if ((*p)->state == TASK_RUNNING && (*p)->counter > c)
+                    c = (*p)->counter, next = i;
+            }
+            if (c) break;
+            for(p = &LAST_TASK ; p > &FIRST_TASK ; --p) // find the ready process with largest counter
+                if (*p)
+                    (*p)->counter = ((*p)->counter >> 1) +
+                            (*p)->priority;
+        }
+        switch_to(next);
+    }
+    // include/linux/sched.h
+    /*
+     *	switch_to(n) should switch tasks to task nr n, first
+     * checking that n isn't the current task, in which case it does nothing.
+     * This also clears the TS-flag if the task we switched to has used
+     * tha math co-processor latest.
+     */
+    #define switch_to(n) {\
+    struct {long a,b;} __tmp; \                // prepare CS and EIP for ljmp
+    __asm__("cmpl %%ecx,current\n\t" \
+        "je 1f\n\t" \                          // do nothing if n is current
+        "movw %%dx,%1\n\t" \                   // assign CS to __tmp.b
+        "xchgl %%ecx,current\n\t" \            // exchange task[n] and task[current]
+        "ljmp *%0\n\t" \                       // ljmp to __tmp, __tmp has offset and segment selector
+        "cmpl %%ecx,last_task_used_math\n\t" \ // used coprocessor or not
+        "jne 1f\n\t" \
+        "clts\n" \                             // clear CR0
+        "1:" \
+        ::"m" (*&__tmp.a),"m" (*&__tmp.b), \
+        "d" (_TSS(n)),"c" ((long) task[n])); \ // EDX point to task[n]
+    }
+
+`ljmp` save the values of registers to process 0's `TSS`, load the value
+of process 1's `TSS` and `LDT`'s code segment and data segment to CPU's
+register, and flip from privilege 0 to privilege 3. 
+
+Note, `pause()` is called by flipping from privilege `3` to process `0`. 
