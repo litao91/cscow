@@ -1037,3 +1037,127 @@ specific device number and block number. If found, use it directly
             bh->b_count--;
         }
     }
+
+For process one, the buffer doesn't have any buffer block, so the
+`find_buffer()` will return `NULL`
+
+    // fs/buffer.c
+    // NR_HASH is 307
+    // e.g. if dev is 0x300 and block is 0, _hashfn(dev, block) is 154
+    #define _hashfn(dev,block) (((unsigned)(dev^block))%NR_HASH)
+    #define hash(dev,block) hash_table[_hashfn(dev,block)]
+    ...
+    // find buffer block of specified dev, block
+    static struct buffer_head * find_buffer(int dev, int block)
+    {
+        struct buffer_head * tmp;
+
+        for (tmp = hash(dev,block) ; tmp != NULL ; tmp = tmp->b_next)
+            if (tmp->b_dev==dev && tmp->b_blocknr==block)
+                return tmp;
+        return NULL;
+    }
+
+After returning from `find_buffer()` and `get_hash_table()`, the system
+continue `getblk()` function. It will then request a free buffer bloc. 
+
+
+    /*
+     * Now d_dirt, and b_block are 0, so BADNESS(bh) is 00
+     */
+    #define BADNESS(bh) (((bh)->b_dirt<<1)+(bh)->b_lock)
+    struct buffer_head * getblk(int dev,int block)
+    {
+        struct buffer_head * tmp, * bh;
+
+    repeat:
+        if ((bh = get_hash_table(dev,block)))
+            return bh;
+        tmp = free_list;
+        do {
+            if (tmp->b_count) // tmp->b_count is now zero
+                continue;
+            if (!bh || BADNESS(tmp)<BADNESS(bh)) { // bh is zero
+                bh = tmp;
+                if (!BADNESS(tmp)) // now BADNESS(tmp) is 00, got buffer block
+                    break;
+            }
+    /* and repeat until we find something good */
+        } while ((tmp = tmp->b_next_free) != free_list);
+        if (!bh) {
+            sleep_on(&buffer_wait);
+            goto repeat;
+        }
+        wait_on_buffer(bh);
+        if (bh->b_count)
+            goto repeat;
+        while (bh->b_dirt) {
+            sync_dev(bh->b_dev);
+            wait_on_buffer(bh);
+            if (bh->b_count) // we haven't put free block to hash table yet.
+                goto repeat;
+        }
+    /* OK, FINALLY we know that this buffer is the only one of it's kind, */
+    /* and that it's unused (b_count=0), unlocked (b_lock=0), and clean */
+    // add the free block to the hash table
+        bh->b_count=1;
+        bh->b_dirt=0;
+        bh->b_uptodate=0;
+        remove_from_queues(bh);
+        bh->b_dev=dev;
+        bh->b_blocknr=block;
+        insert_into_queues(bh);
+        return bh;
+    }
+
+![](getblk2.jpg?raw=true)
+
+    // fs/buffer.c
+    ...
+    static inline void remove_from_queues(struct buffer_head * bh)
+    {
+    /* remove from hash-queue */
+        if (bh->b_next)
+            bh->b_next->b_prev = bh->b_prev;
+        if (bh->b_prev)
+            bh->b_prev->b_next = bh->b_next;
+        if (hash(bh->b_dev,bh->b_blocknr) == bh)
+            hash(bh->b_dev,bh->b_blocknr) = bh->b_next;
+    /* remove from free list */
+        if (!(bh->b_prev_free) || !(bh->b_next_free))
+            panic("Free block list corrupted");
+        bh->b_prev_free->b_next_free = bh->b_next_free;
+        bh->b_next_free->b_prev_free = bh->b_prev_free;
+        if (free_list == bh)
+            free_list = bh->b_next_free;
+    }
+    ...
+
+![](rm_from_q.jpg?raw=true)
+
+    // fs/buffer.c
+    ...
+    static inline void insert_into_queues(struct buffer_head * bh)
+    {
+    /* put at end of free list */
+        bh->b_next_free = free_list;
+        bh->b_prev_free = free_list->b_prev_free;
+        free_list->b_prev_free->b_next_free = bh;
+        free_list->b_prev_free = bh;
+    /* put the buffer in new hash-queue if it has a device */
+        bh->b_prev = NULL;
+        bh->b_next = NULL;
+        if (!bh->b_dev)
+            return;
+        bh->b_next = hash(bh->b_dev,bh->b_blocknr);
+        hash(bh->b_dev,bh->b_blocknr) = bh;
+        bh->b_next->b_prev = bh;
+    }
+
+After `getblk()`, return to `bread()`
+
+#### Link the block the request
+After returning from `bread()`, call `ll_rw_block()`, As shown in the
+following figure:
+![](ll_rw_block.jpg?raw=true)
+
