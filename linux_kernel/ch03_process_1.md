@@ -828,6 +828,7 @@ Basically 3 steps:
 
 #### setup `hd_info`
 Code:
+
     // kernel/blk_dev/hd.c
     ...
     /*
