@@ -42,4 +42,4 @@ Methods:
   scored
 
 The UML diagram for `DefaultSimilary` (which is used most commonly)
-![](diagram/sim_uml.png?raw=true)
+![](diagrams/sim_uml.png?raw=true)
