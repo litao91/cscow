@@ -35,7 +35,7 @@ A `Weight` is used in the following way:
 ## `Collector`
 Collectors are primarily meant to be used to gather raw results from
 search, and implement sorting or custom result filtering, collation, etc.
-It's used to receive hits in `IndexSearcher`
+It's used to receive hits in `IndexSearcher`, it's basically a container.
 
 1. `TopDocsCollector` is an abstract base class that assumes you will
    retrieve the top N docs, according to some criteria, after collection
@@ -70,3 +70,25 @@ Simple example:
             this.docBase = context.docBase;
         }
     })
+
+`IndexSearcher` use `TopScoreDocCollector`. It collects the top-scoring
+hits, returning them as a `TopDocs`. This is used by `IndexSearcher` to
+implement `TopDocs`-based search. Hits are sorted by score descending. 
+
+The `collect(int doc)` of `TopScoreDocCollector` basically get the score
+of current document and add it to the priority queue.
+
+## Scorers
+In `IndexSearcherer`, the low level search API:
+
+    protected void search(List<AtomicReaderContext> leaves, Weight weight, Collector collector)
+      throws IOException 
+
+The `Scorer` is get by calling `weight.scorer()`, and the
+`scorer.score(Collector)` will collect and score the matched
+documents.This will call the `nextDoc()` method. 
+
+The `nextDoc()` implemented in `TermScorer()` is by maintaining a
+`DocsEnum`, this is created in `TermQuery` with the following:
+
+    final TermsEnum termsEnum = context.reader().terms(term.field()).iterator(null);
