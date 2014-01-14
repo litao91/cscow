@@ -1163,3 +1163,130 @@ After returning from `bread()`, call `ll_rw_block()`, As shown in the
 following figure:
 ![](ll_rw_block.jpg?raw=true)
 
+So after that, the buffer blocks are associated with the request entry
+(for hard disk reading).
+
+Steps:
+1. In `struct buffer_head bread(int dev, int block)`, call `ll_rw_block()`
+   to associate buffer with request
+* In `ll_rw_block`, if the corresponding device exists and the request
+  function is correctly associated, we can operate the buffer by calling 
+  `make_request`
+* In `make_reqest()`, we first lock the buffer, to protect it from
+  being operated by other processes. Then add the request to the request
+  queue `reqest[32]`, by calling `add_reqest()`
+*  `add_request` will analysis the current hard disk state, and set the
+   passed request to be the current request item. It will then call
+   `(dev->request_fn)()` (namely, `do_hd_request()` to send command to the
+   hard disk.
+
+#### Read hard disk
+`do_hd_request()` will do the final preparation for reading disk.
+
+Steps:
+1. Parse the `hd_info`, extract hard disk information such as `sector`,
+   `cylinder` and so on. 
+* Send command to hard disk by calling `hd_out()`. `WIN_READ` means that
+  it's reading operation. `read_intr()` is the interrupt routine for disk
+  reading. So we associate it with `hd_out()`. To write disk, we use
+  `write_intr()`
+* `hd_out()` will do the last step: send read disk command. It will assign
+  the `intr_addr` to `do_hd` and execute `_hd_interrupt` in
+  `kernel/system_call.s`
+* `ll_rw_block()` return to `bread()`, and call `wait_on_buffer(bh)`
+* In `wait_on_buffer()`, if the buffer is locked, call `sleep_on()`
+* `sleep_on` will then set the current task (process 1) to be
+  `TASK_UNINTERRUPTIBLE`, then call `schedule()` to switch to process `0`.
+
+
+In `do_hd_request()`:
+    if(CURRENT->cmd == WRITE) {
+        hd_out(dev, nsect,sec,head,cyl,WIN_WRITE, &write_intr);
+        ...
+    } else if (CURRENT->cmd == READ) {
+        hd_out(dev,nsect, sec, head, cyl, WIN_READ, &read_intr);
+    }
+#### Switch to process 0 while waiting for disk reading
+When entering the `schedule()` function, the current process is switched
+to process 0.
+
+Note that if there are no proper tasks, the `schedule()` function will
+force it to switch to process 0. `switch_to(next)` will be `0` in this
+case. 
+
+#### Hard disk interrupt while executing process 0
+When hard disk read the data from some sector, a hard disk interrupt will
+occur.
+
+1. When CPU receive the interrupt, it will stop the current program. The
+   stop point must be in one of `pause()`, `sys_pause()`, `scheduel()`,
+   `switch_to(n)`'s cycle. Then it goes to execute `_hd_interrupt`
+* Interrupt will automatically push `ss`, `esp`, `eflags`, `cs`, `eip`. 
+* `read_intr()` function will copy the data in the hard disk buffer into
+  the locked buffer block. 
+* The process will be repeated until all the requested data has been
+  extracted.
+* Finally, it will call `end_request(1)`
+* `end_request()` will set the flag `b_updodate` to 1. Meaning it can be
+  operated now. Then it will call `unlock_buffer` (`end_request` in
+  `kernel/blk_dev/blk.h`)
+* In `unlock_buffer()`, it will call `wake_up(&bh->b_wait)`.
+  (`unlock_buffer()` in `kernel/blk_dev/blk.h`)
+* `wake_up` will set the process to ready state. (code in `kernel/sched.c`)
+
+#### After reading disk, scheduler switch back to process 1
+After reading disk, the function will be returned to `sys_setup(void* BIOS)`
+Make use of the information from boot sector to setup `hd[]`. 
+
+### Process 1 format `ramdisk` and change the root device to be ramdisk.
+Note current root device is floppy disk. 
+
+1. `sys_setup` (`kernel/blk_dev/hd.c`) call `rd_load()`
+* `rd_load()` calls `breada()` function to read data for formating
+  ramdisk.  (`rd_load()` and `breada()` in `kernel/blk_dev/ramdisk.c`)
+
+### Process load root File System in Root Device
+The file system of an OS can be divided into two parts: one in the kernel,
+the other in hard disk, floppy disks, and ramdisks.
+
+File System makes use of i-nodes to manage files. I-nodes and files have
+one-to-one correspondence.  
+
+As shown in the following figure:
+![](./fs_inode.jpg)
+
+So all the files (including directory)'s i-node formed a tree structure.
+The root of the tree is the root i-node of the file system. A logic device
+can have exactly one file system. 
+
+Loading file system is equivalent to mounting a file system's root i-node
+to an i-node of another file system. As shown in the following figure:
+ ![](./mount.jpg)
+
+So a file system must be mounted on another file system, then there must
+be a file system that can only be mounted by other file systems. This file
+system is called root file system. It is mounted on `super_block[8]`
+
+Linux 0.11 has only one `super_block[8]`, each element is a super block,
+with exactly one root device. Load root file system is equivalent to mount
+the root i-node to `super_block[8]`'s corresponding block.
+
+Therefore, 3 main steps:
+1. copy the root device's super block into `super_block[8]`, mount root
+   device's root i-node onto `super_block[8]`'s corresponding super block.
+* setup `s_zmap[8]` and `s_imap[8]` on `super_block[8]`. 
+* Set the pointers, `pwd` and `root` , of current process to root device's
+  root i-node.
+
+Those steps are done in `mount_root` (`fs/super.c`):
+1. `mount_root()` initialize `super_block[8]` by setting `p->s_dev = 0`,
+   `p->s_lock=0`, `p->s_wait = NULL`
+* call `read_super()` (`fs/super.c`) to load the super block of root
+  device into `super_block[8]`
+
+Note:
+The superblock object is implemented by each filesystem and is used to
+store information describing that specific filesystem.This object usually
+corresponds to the filesystem superblock or the filesystem control block,
+which is stored in a special sector on disk (hence the object’s name)
+
