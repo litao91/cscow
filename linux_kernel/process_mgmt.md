@@ -6,11 +6,13 @@ Threads of execution, often shortened to be *threads*, are the objects of
 activity within the process. 
 
 Each thread includes:
+
 * A unique program counter
 * process stack
 * a set of processor registers
 
 Two virtualizations:
+
 * virtualized processor: give process the illusion that it alone
   monopolizes the system.
 * virtualized memory: lets the process allocate and manage memory as if it
@@ -22,6 +24,7 @@ called `task_list`, each element is a *process descriptor* of type `struct
 task_struct` (`<linx/sched.h>`)
 
 It contains:
+
 * open files
 * process's address space
 * pending signals
@@ -40,7 +43,8 @@ created that again lives at the bottom of the stack (for stacks that grow
 down) and at the top of the stack (for stacks that grow up). See figure:
 ![](./process_kernel_stack.png)
 
-The `thread_info` is defined in `<asm/thread_info.h>`
+The `thread_info` is defined in `<asm/thread_info.h>`:
+
     struct thread_info {
         struct task_struct *task;
         struct exec_domain *exec_domain;
@@ -68,11 +72,13 @@ On x86, `current` is calculated by masking out the 13 least-significant
 bits of the stack pointer to obtain the `thread_info` structure. (`struct
 thread_info` is stored on the kernel stack). This is done by
 `current_thread_info()`:
+
     movl $-8192, %eax
     andl %esp, %eax
 
 Finally `current` dereferences the `task` member of `thread_info` to
 return the `task_struct`:
+
     current_thread_info()->task;
 
 
@@ -111,12 +117,11 @@ should share. The `clone()` system call, in term, calls `do_fork()`
 starts the process running.
 
 Work done by `copy_process()`:
-1. calls `dup_task-struct()`, which creates new:
 
+1. calls `dup_task-struct()`, which creates new:
     - kernel stack
     - `thread_info` structure
     - `task_struct` for new process. 
-
    Values are identical to current process.
 * Check the new child not exceed the resource limit.
 * Various members of the new process descriptor are cleared or set to
@@ -145,7 +150,9 @@ process that shares certain resources with other processes.
 Threads are created the same as normal tasks, with the exception that the
 `clone()` system call is passed flags corresponding to the specific
 resources to be shared:
+
     clone(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND, 0);
+
 Results identical to `fork()`, except that the address space, filesystem
 resources, file descriptors, and signal handlers are shared.
 
@@ -172,3 +179,117 @@ for spawning a new kernel thread from an existing one is
 The new task is created via the `clone()` system call by the `kthread`
 kernel process. The new process will run the `threadfn` function, which is
 passed the `data` argument.
+
+## Process Termination
+When a process terminates, the kernel releases the resources owned by the
+process and notifies the child's parent of its demise.
+
+Generally, process destruction is self-induced. It occurs when it calls
+`exit()` system call.
+
+A process can also terminate involuntarily. When it receives a signal or
+exception it cannot handle or ignore.
+
+The bulk of work is handled by `do_exit()` for both, defined in
+`kernel/exit.c`:
+
+1. It sets `PF_EXITING` flag in the `flags` member of the `task_struct`
+* it calls `del_timer_sync()` to remove any kernel times. Upon return, it
+  is guaranteed that no timer is queued and that no timer handler is
+  running. 
+* If BSD process accounting is enabled, `do_exit()` calls
+  `acct_update_integrals()` to write out accounting information.
+* It calls `eixt_mm()` to release the `mm_struct` held by this process. If
+  the address space is not shared, the kernel destroys it.
+* It calls `exit_sem()` if the process is queued waiting for an IPS
+  semaphore.
+* It then calls `exit_files()` and `exit_fs()` to decrement the usage
+  count of objects related to file descriptors and filesystem data,
+  respectively. 
+* It sets the task's exit code, stored in the `exit_code` member of the
+  `task_struct` to the code provided by `exit()` or whatever kernel
+  mechanism forced to termination.
+* It calls `exit_notify()` to send signals to the task's parent. Reparents
+  any of the task's children to another thread in their thread group or
+  init process, and sets the task's exit state, store the `exit_state` in
+  the `task_struct` structure, to `EXIT_ZOMBIE`
+* `do_exit()` calls `schedule()` to switch a new process. The process is
+  not schedulable, this is the last code the task will ever execute.
+  `do_exit()` never returns.
+
+  At this point, the process is in `EXIT_ZOMBIE` exit state.
+
+  The only memory it occupies is its kernel stack, the `thread_info`
+  structure, and the `task_struct` structure. The task exists solely to
+  provide information to tis parent. 
+
+  After the parent retrieves the information, or notifies the kernel that
+  it is uninterested, the remaining memory held by the process is freed
+  and returned to the system for use. 
+
+### Removing the Process Descriptor
+The `wait()` family of functions are implemented via a single system call,
+`wait4()`. The standard behavior is to suspend execution of the calling
+task until one of its children exits, at which time the function returns
+with the PID of the exit child. 
+
+When it is time to finally deallocate the process descriptor,
+`release_task()` is invoked:
+
+1. it calls `__exit_signal()`, which calls `__unhash_process()`, which in
+   turns calls `detach_pid()` to remove the process from the pidhash and
+   remove the process from the task list.
+* `__exit_signal()` releases any remaining resources. 
+* `release_task()` notifies the zombie leader's parent.
+* `release_task()` calls `put_task_struct()` to free the pages containing
+  the process's kernel stack and `thread_info` structure and deallocate
+  the slab cache containing the `task_struct`
+
+### The Dilemma of the Parentless Task
+If a parent exits before its children, some mechanism must exist to reparent any child tasks
+to a new process, or else parentless terminated processes would forever remain zombies,
+wasting system memory.The solution is to reparent a task’s children on exit to either
+another process in the current thread group or, if that fails, the `init` process.
+
+`do_exit()` calls `exit_notify`, which calls `forget_original_parent()`
+which, in turn, calls `find_new_reaper()` to perform reparenting.
+
+    static struct task_struct *find_new_reaper(struct task_struct *father)
+    {
+        struct pid_namespace *pid_ns = task_active_pid_ns(father);
+        struct task_struct *thread;
+
+        thread = father;
+        while_each_thread(father, thread) { //  while ((thread = next_thread(thread)) != father)
+            if (thread->flags & PF_EXITING)
+                continue;
+            if (unlikely(pid_ns->child_reaper == father))
+                pid_ns->child_reaper = thread;
+            return thread;
+        }
+
+        if(unlikely(pid_ns->child_reaper == father)) {
+            write_unlock_irq(&tasklist_lock);
+            if(unlikely(pid_ns == &init_pid_ns)) 
+                panic("Attempted to kill init!");
+            zap_pid_nis_process(pid_ns);
+            write_lock_irq(&tasklist_lock);
+            /*
+            * We can not clear ->child_reaper or leave it alone.
+            * There may by stealth EXIT_DEAD tasks on ->children,
+            * forget_original_parent() must move them somewhere.
+            */
+            pid_ns->child_reaper = init_pid_ns.child_reaper;
+        }
+        return pid_ns->child_reaper;
+    }
+
+`find_new_reaper(struct task_struct *father)` attempts to find and return
+another task in the process's thread group. If another task is not in the
+thread group, it finds and return the `init` process. 
+
+Now that a suitable new parent is found, each child neeeds to be located
+and reparent to `reaper`.
+
+`ptrace_exit_finish()` is then called to do the same reparenting but to a
+list of `ptraced` children.
