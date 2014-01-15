@@ -134,7 +134,7 @@ phases:
 * Later for **each instantiation** of function template - where it would
   perform actual code compilation against the template data-types.
 
-## Pointers, References and Arrays with Templates
+### Pointers, References and Arrays with Templates
 Code sample:
     template<class T>
     double GetAverage(T tArray[], int nElements)
@@ -253,7 +253,7 @@ How we utilize return reference:
     // Set the max value to zero (0)
     GetMax(x,y) = 0;
 
-## Multiple Types with Function Templates
+### Multiple Types with Function Templates
 Example:
 
     template<class T1, class T2>
@@ -277,3 +277,202 @@ short, or vice-versa. But with templates, if you pass short - it is
 absolutely short, not (upgraded to) int. So, if you pass (short, int),
 (short, short), (long, int) - this would result in three different
 instantiations for `PrintNumbers`!
+
+In similar fashion, function templates may have 3 or more parameters, and
+each of them would map to the argument types specified in function call.
+
+---
+
+Assume there is a non-templated function:
+
+    void Show(int nData);
+
+And you call it:
+
+    Show( 120 );    // 1
+    Show( 'X' );    // 2
+    Show( 55.64 );  // 3
+
+* Call 1 is valid.
+* Call 2 is valid call since we are passing `char`, which will be **promoted**
+  by compiler to `int`.
+* Call 3 would demand demotion of value - compiler has to convert `double`
+  to `int`, and hence 55 would be passed instead of 55.64. This will
+  trigger appropriate compiler warning.
+
+One solution: modify the function such that it takes `double`. But that
+wouldn't support all types and may not fit in, or convertible to,
+`double`. 
+
+With template, you can write it a template function instead:
+
+    template<class Type>
+    void show(Type tData) {}
+
+But what if you wanted to pass int to function template `Show`, but wich
+the compiler instantiates as if `double` was passed?
+
+    Show<double>(1234)
+
+Which instantiates the following:
+    
+    void Show(double)
+
+### Function Template VS. Template Function
+There is a difference between **function template** and **template
+function**.
+
+A *function template* is body of a function that is bracketed around
+`template` keyword, which is not an actual function, and will not be fully
+compiled by compiler, and is not accountable by the linker. At least one
+call, for particular data-type(s) is needed to instantiate it, and put
+into accountability of compiler and linker. 
+
+A *template function* is an instance of a functin template, which is
+produced when you call it, or cause it to get instantiated for particular
+data type. It's a valid function. 
+
+An instance of a function template is not a normal function. An instance
+of function template:
+
+    template<class T>
+    void Show(T data){}
+
+For template argument `double`, it is **not**:
+
+    void Show(double data){}
+
+But actually:
+
+    void Show<double>(double x) {}
+
+### Explicit Template Argument Specification
+You can call this function template as:
+
+    PrintNumbers<double, double>(10, 100);    // int, int
+    PrintNumbers<double, double>(14, 14.5);   // int, double
+    PrintNumbers<double, double>(59.66, 150); // double, int
+
+Which produce only the following template function:
+
+    void PrintNumbers<double, double>(const double& t1Data, const T2& t2Data) {}
+
+And the concept of passing template type parameters this way, from the
+call-site, is known as **Explicit Template Argument Specification**.
+
+Reason to use Explicit Template Argument:
+
+#### You want only specific type to be passed
+Example, there is one function template, taking **two** arguments:
+
+    template<class T>
+    T max(T t1, T t2)
+    {
+       if (t1 > t2)
+          return t1;
+       return t2;
+    }
+
+And you attempt to call it as:
+
+    max(120, 14.55);
+
+It would cause a compiler error, mentioning there is an ambiguity with
+template-type `T`. You are asking the compiler to deduce one type, for two
+types.
+
+There you use explicit argument specification:
+
+    max<double>(120, 14.55); // Instantiates max<double>(double, double)
+
+#### When function-template takes template-type, but not from arguments
+Example: 
+    template<class T>
+    void PrintSize()
+    {
+       cout << "Size of this type:" << sizeof(T);
+    }
+
+You must call it like:
+    
+    PrintSize<float>();
+
+#### When has a return type
+    template<class T>
+    T SumOfNumbers(int a, int b)
+    {
+       T t = T(); // Call default CTOR for T
+
+       t = T(a)+b;
+
+     
+       return t;
+    }
+
+You would call it as 
+
+    double nSum;
+    nSum = SumOfNumbers<double>(120,200);
+
+### Default Arguments with Function Templates
+This is not about default template-type arguments. Default template-types,
+is not allowed with function-template. 
+
+As you know, a C++ function may have default arguments. The default-ness
+may only go from right to left, meaning, if nth argument is required to be
+default, (n+1)th must also be default, and so on till last argument of
+function.
+
+Example:
+
+    template<class T>
+    void PrintNumbers(T array[], int array_size, T filter = T())
+    {
+       for(int nIndex = 0; nIndex < array_size; ++nIndex)
+       {
+           if ( array[nIndex] != filter) // Print if not filtered
+               cout << array[nIndex];
+       }
+    }
+
+## Class Templates
+Example:
+
+    template<class T>
+    class Item
+    {
+        T Data;
+    public:
+        Item() : Data( T() )
+        {}
+
+        void SetData(T nValue)
+        {
+            Data = nValue;
+        }
+
+        T GetData() const
+        {
+            return Data;
+        }
+
+        void PrintData()
+        {
+            cout << Data;
+        }
+    };
+
+Syntax:
+    
+    template<class T>
+    class Item
+
+Note that the keyword `class` is used two times
+* template type specification (`T`), and
+* Specify that this is a C++ declaration
+
+Usage:
+
+    Item<int> item1;
+    item1.SetData(120);
+    item1.PrintData();
