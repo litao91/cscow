@@ -198,19 +198,20 @@ CFS uses a *red-black* to manage the list of **runnable processes** and
 efficiently find the process with the smallest `vruntime`. 
 
 It involves:
-1. Picking the Next Task: Given the rbtree, the process that CFS wants to
+
+1. **Picking the Next Task**: Given the rbtree, the process that CFS wants to
    run next, which is the process with the smallest `vruntime`, is the
    leftmost node in the tree. The function perform this selection is
    `__pick_next_entity()` defined in `kernel/sched_fair.c`. With the
    line`struct rb_node *left = cfs_rq->rb_leftmost;` ( it does not really
    traverse the tree)
-* Adding processes to the Tree and caches the leftmost node. This would
+* **Adding processes to the Tree** and caches the leftmost node. This would
   occur when a process becomes runnable(wakes up) or its first created via
   `fork()`. Adding process is performed by `enqueue_entity()`. This
   function updates the runtime and other statistics and then invokes
   `__enqueue_entity()` to perform the actual heavy lifting of inserting
   the entry to rbtree.
-* Removing Process from the tree. This happens when a process blocks or
+* **Removing Process from the tree**. This happens when a process blocks or
   terminates. With `dequeue_entity()`, and then, the real work is
   performed by the helper function `__dequeue_entity()`.
 
