@@ -215,3 +215,230 @@ It involves:
   terminates. With `dequeue_entity()`, and then, the real work is
   performed by the helper function `__dequeue_entity()`.
 
+### The Scheduler Entry Point
+The main entry point into the process schedule is the function `shedule()`
+is the function `schedule()`, defined in `kernel/sched.c`. This is the
+function that the rest of the kernel uses to invoke the process scheduler,
+deciding which process to run and then running it. 
+
+It finds the highest priority scheduler class with a runnable process and
+asks it what to run next.
+
+The only important part of the function, `pick_next_taks()` also defined
+in `kernel/sched.c`..The `pick_next_task()` function goes through each
+scheduler class, starting with the highest priority, and selects the
+highest process in the highest priority class.
+
+    /*
+     * Pick up the highest-prio task:
+     */
+    static inline struct task_struct *
+    pick_next_task(struct rq *rq)
+    {
+        const struct sched_class *class;
+        struct task_struct *p;
+        /*
+        * Optimization: we know that if all tasks are in
+        * the fair class we can call that function directly:
+        */
+        if (likely(rq->nr_running == rq->cfs.nr_running)) {
+            p = fair_sched_class.pick_next_task(rq);
+            if (likely(p))
+                return p;
+        }
+        class = sched_class_highest;
+        for ( ; ; ) {
+            p = class->pick_next_task(rq);
+            if (p)
+            return p;
+            /*
+            * Will never be NULL as the idle class always
+            * returns a non-NULL p:
+            */
+            class = class->next;
+        }
+    }
+
+The optimization at the beginning of the function. Because CFS is the
+scheduler class for normal processes, and most systems run mostly normal
+processes, there is a small hack to quick select the next CFS-provided
+process if the number of runnable processes is equal to the number of CFS
+runnable process. (all processes are provided by CFS)
+
+The core of the function is the `for()` loop, which iterates over each
+class in priority order, starting with the highest priority. Each class
+implements the `pick_next_task()` function.
+
+CFS's implementation of `pick_next_task()` calls `pick_next_entity()`,
+which in tern calls the `__pick_next_entity()`.
+
+### Sleeping and Waking Up
+Tasks that are sleeping (blocked) are in a special nonrunnable state. A
+tasks sleeps while it is waiting for some event. Behavior:
+
+1. The Task marks itself as sleeping
+* Puts itself on a waiting queue.
+* Removes itself from the red-black tree of runnable
+* Calls `schedule()` to select a new process to execute.
+
+Waking back up is inverse:
+
+1. The task is set as runnable
+* Removed from the wait queue
+* added back to red-black tree. 
+
+Two states are associated with sleeping:
+
+* `TASK_INTERRUPTIBLE`: wake up prematurely and respond to signal if one
+  is issued
+* `TASK_UNITERRUPTIBLE`: Ignore signals
+
+Both types sit on a wait queue, waiting for an event to occur, and are not
+runnable.
+
+#### Wait Queues
+A wait queue is a simple list of processes waiting for an event to occur.
+Wait queues are represented in the kernel by `wake_queue_head_t`.
+
+It is created statically via `DECLARE_WAITQUEUE()` or dynamically via
+`init_waitqueue_head()`. Processes put themselves on a waitqueue and amrk
+themselves not runnable.
+
+    DEFINE_WAIT(wait)
+    add_wait_queue(q, &wait);
+    while(!condition) { /* condition is the event that we are waiting for*/
+        prepare_to_wait(&q, &wait, TASK_INTERRUPTIBLE);
+        if(signal_pending(current))
+            /*handle signal */
+        schedule();
+    }
+    finish_wait(&q, &wait);
+
+Tasks performs the following steps to a wait queue:
+
+1. Create a wait queue entry with `DEFINE_WAIT()`
+* Add to wait queue via `add_wait_queue()`. There needs to be code else
+  where that call `wake_up()` on the queue when the event actually does
+  occur.
+* Calls `prepare_to_wait()` to change to `TASK_INTERRUPTIBLE` or
+  `TASK_UNINTERRUPTIBLE`. 
+* If the state is set to `TASK_INTERRUPTIBLE` , a signal wakes the process
+  up.This is called a *spurious wake up* (a wake-up not caused by the
+  occurrence of the event). So check and handle signals.
+* When the task awakens, it again checks whether the condition is true, if
+  it is, it exits loop. Otherwise, it again calls `schedule()` and repeats
+* Now the condition is true, the task sets itself to `TASK_RUNNABLE` and
+  removes itself from the wait queue via `finish_wait()`.
+
+Note that kernel code often has to perform various other tasks in the body
+of the loop. For example, it might need to release locks before calling
+`schedule()`
+
+
+The function `inotify_read()` in `fs/notify/inotify/inotify_user.c` which
+handles reading from the inotify file descriptor, is straightforward
+example of using wait queues:
+
+#### Waking UP
+Waking is handled via `wake_up()`, which wakes up all the tasks waiting on
+the given wait queue. It calls `try_to_wake_up()`, which sets the task's
+state to `TASK_RUNNING`, calls `enqueue_task()` to add the task to the
+red-black tree, and sets `need_resched` if the awakened task's priority is
+higher than the priority of the current task.
+
+The code that causes the event to occur typically calls `wake_up()`
+itself. For example, when data arrives from the had disk, the VFS calls
+`wake_up()` on the wait queue that holds the processes waiting for the
+data. (Each event corresponding to a separate wait queue, for example, the
+`inotify_read` calls `prepare_to_wait(&group->notification_waitq, &wait,
+TASK_INTERRUPTIBLE)`
+
+An important note: there are spurious wake-ups. Just because a task is
+awakened does not mean that the event for which the task is waiting has
+occurred; sleep should always be handled in a loop that ensures that the
+condition for which the task is waiting has indeed occurred.  As shown in
+the following figure.
+
+![](figures/wakeup.png)
+
+## Preemption and Context Switching
+Context switching, the switching from one runnable task to another, is
+handled by `context_switch()` in `kernel/sched.c`. It is called by
+`schedule()` when a new process has been selected to run.
+
+Tow basic jobs:
+
+* Calls `switch_mm()`, in `<asm/mmu_context.h>`, to switch the virtual
+  memory mapping from previous to new process.
+* Calls `switch_to()` in `<asm/system.h>` to switch the state from
+  previous to current. This involves saving and restoring stack
+  information and the processor registers.
+
+The kernel must know when to call `schedule()`. If it called `schedule()`
+only when code explicitly did so, user-space programs could run
+indefinitely. 
+
+The kernel provides the `need_resched` flag to signify whether a
+reschedule should performed.
+
+The kernel provides the  `need_resched` flag to signify whether a reschedule should be performed. 
+This flag is set by `scheduler_tick()` when a process should be preempted, and
+by `try_to_wake_up()` when a process that has a higher priority than the
+currently running process is awakened.The kernel checks the flag, sees
+that it is set, and calls `schedule()` to switch to a new process.The flag
+is a message to the kernel that the scheduler should be invoked as soon as
+possible because another process deserves to run.
+
+Upon returning to user-space or returning from an interrupt, the
+`need_resched` flag is checked. If it is set, the kernel invokes the
+scheduler before continuing. The flag is per-process and not simply
+global.
+
+#### User Preemption
+User preemption can occur:
+
+* When returning to user-space from system call
+* When returning to user-space from an interrupt handler.
+
+At these two moments, `need_resched` is checked, if it is set, the
+scheduler is invoked.
+
+#### Kernel Preemption
+* Nonpreemptive kernel: kernel code runs until completion.
+* Preemptive kernel(linux): kernel become preemptive.
+
+When safe to reschedule? -- the kernel can preempt a task running in the
+kernel so long as it does not hold a lock.
+
+Because the kernel is SMP-safe, if a lock is not held, the current code is 
+reentrant and capable of being preempted.
+
+Supporting Kernel Preemption:
+
+* `preempt_count` to each process's `thread_info`. Begins at zero and
+  increments once for each lock that is acquired and decrements once for
+  each lock that is released.
+
+## Real-Time Scheduling Policies
+Linux provides two real-time scheduling policies, `SCHED_FIFO` and
+`SCHED_RR`. The normal, not real-time scheduling policy is `SCHED_NORMAL`.
+These real-time policies are managed not by the CFS, but by the special
+realtime scheduler in `kernel/sched_rt.c`
+
+`SCHED_FIFO`, first in first out without timeslices. A runnable
+`SCHED_FIFO` task is always scheduled over any `SCHED_NORMAL` taks. Only a
+higher priority `SCHED_FIFO` or `SCHED_RR` task can preempt a
+`SCHED_FIFO`.
+
+`SCHED_RR` is identical to `SCHED_FIFO` except that each process can run
+oly until it exhausts a predetermined timeslice.
+
+Both real-time policies provide implement static priorities. The kernel
+does not calculate dynamic priority values for real-time tasks.
+
+The real-time policies in Linux provide Soft real time behavior: kernel tries to schedule applications within timing
+deadlines, but the kernel does not promise to always achieve these goals.
+
+Hard real time: guaranteed to meet any scheduling requirements within
+certain limits.
+

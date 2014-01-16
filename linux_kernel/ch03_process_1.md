@@ -85,7 +85,7 @@ Note that the line `_syscall0(int, fork)` will be expanded to:
     }
 
 The path of system call:
-![](syscall.jpg?raw=true)
+![](figures/syscall.jpg)
 
 Execution:
 1. `:"0" (__NR_fork)`, assign `__NR_fork`, the number of `fork` in
@@ -229,7 +229,7 @@ Note task union is defined as
     }
 
 As shown in the following figure:
-![](ts.jpg?raw=true)
+![](figures/ts.jpg)
 The front of the `task_union` is `task_struct` and lower end is
 kernel stack. And they are added up to exactly one page. 
 
@@ -260,7 +260,7 @@ kernel stack. And they are added up to exactly one page.
         ...
     }
 
-![](cp_ts.jpg?raw=true)
+![](figures/cp_ts.jpg)
 
 ### Setup paging management
 #### Initialize code segment and data segment
@@ -296,7 +296,7 @@ Source:
                 f->f_count++;
     }
 
-![](cp_pgt.jpg?raw=true)
+![](figures/cp_pgt.jpg)
 
     // include/linux/sched.h
     ...
@@ -383,7 +383,7 @@ directory entry, we can find the page table, the page table number in the
 virtual address, we can locate the page table entry. Concatenate the
 offset, we can get physical address. Shown as follow. 
 
-![](vm_mgmt.jpg?raw=true)
+![](figures/vm_mgmt.jpg)
 
 Call `copy_page_tables()` to setup page directory table and copy page
 table. 
@@ -542,7 +542,7 @@ Source code:
 
 ### Setup process 1's GDT
 Setup process 1's `TSS` and `LDT` in `GDT`. As shown in the figure
-![](child_gdt.jpg?raw=true)
+![](figures/child_gdt.jpg)
 
     int copy_process(int nr,long ebp,long edi,long esi,long gs,long none,
             long ebx,long ecx,long edx,
@@ -823,7 +823,7 @@ Basically 3 steps:
 * Read hard disk boot block.
 * Gain information from boot sector. 
 
-![](hd_init.jpg?raw=true)
+![](figures/hd_init.jpg)
 
 
 #### setup `hd_info`
@@ -985,7 +985,7 @@ buffer block
 In `getblk()`, first call `get_hash_table()` to check for whether the
 block has been loaded into buffer or not. If yes, don't need to load from
 the disk again. 
-![](getblk.jpg?raw=true)
+![](figures/getblk.jpg)
 
     
     /*
@@ -1112,7 +1112,7 @@ continue `getblk()` function. It will then request a free buffer bloc.
         return bh;
     }
 
-![](getblk2.jpg?raw=true)
+![](figures/getblk2.jpg)
 
     // fs/buffer.c
     ...
@@ -1135,7 +1135,7 @@ continue `getblk()` function. It will then request a free buffer bloc.
     }
     ...
 
-![](rm_from_q.jpg?raw=true)
+![](figures/rm_from_q.jpg)
 
     // fs/buffer.c
     ...
@@ -1161,7 +1161,7 @@ After `getblk()`, return to `bread()`
 #### Link the block the request
 After returning from `bread()`, call `ll_rw_block()`, As shown in the
 following figure:
-![](ll_rw_block.jpg?raw=true)
+![](figures/ll_rw_block.jpg)
 
 So after that, the buffer blocks are associated with the request entry
 (for hard disk reading).
@@ -1253,7 +1253,7 @@ File System makes use of i-nodes to manage files. I-nodes and files have
 one-to-one correspondence.  
 
 As shown in the following figure:
-![](./fs_inode.jpg)
+![](figures/fs_inode.jpg)
 
 So all the files (including directory)'s i-node formed a tree structure.
 The root of the tree is the root i-node of the file system. A logic device
@@ -1261,7 +1261,7 @@ can have exactly one file system.
 
 Loading file system is equivalent to mounting a file system's root i-node
 to an i-node of another file system. As shown in the following figure:
- ![](./mount.jpg)
+ ![](figures/mount.jpg)
 
 So a file system must be mounted on another file system, then there must
 be a file system that can only be mounted by other file systems. This file

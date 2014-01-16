@@ -31,7 +31,7 @@ It contains:
 * process's state
 * and much more, as shown in the figure
 
-![](./task_list.png)
+![](figures/task_list.png)
 
 
 ### Allocating the Process Descriptor
@@ -41,7 +41,7 @@ kernel stack of each process. With the process descriptor now dynamically
 created via the slab allocator, a new structure `struct thread_info` was
 created that again lives at the bottom of the stack (for stacks that grow
 down) and at the top of the stack (for stacks that grow up). See figure:
-![](./process_kernel_stack.png)
+![](figures/process_kernel_stack.png)
 
 The `thread_info` is defined in `<asm/thread_info.h>`:
 
@@ -94,7 +94,7 @@ return the `task_struct`:
 * `__TASK_STOPPED`: occurs if the task receives `SIGSTOP`, `SIGTSTP`,
   `SIGTTIN` or `SIGTTOU`
 
-![](./p_state.png)
+![](figures/p_state.png)
 
 ## Process Creation
 Unix separating these steps into two distinct functions:`fork()` and
