@@ -88,6 +88,7 @@ The path of system call:
 ![](figures/syscall.jpg)
 
 Execution:
+
 1. `:"0" (__NR_fork)`, assign `__NR_fork`, the number of `fork` in
    `sys_call_table[]`, to `eax`. This is the offset number of `sys_fork()`
    in `sys_call_table`.
@@ -97,81 +98,81 @@ Execution:
   of hardware. Those data will be used later to initialize `TSS` of
   process 1.
 
-    // kernel/system_call.s
-    system_call:
-        cmpl $nr_system_calls-1,%eax  # int 0x80 -- entrance of system call
-        ja bad_sys_call
-        push %ds                      # The next 6 push are parameters for copy_
-        push %es
-        push %fs
-        pushl %edx
-        pushl %ecx                    # push %ebx,%ecx,%edx as parameters
-        pushl %ebx                    # to the system call
-        movl $0x10,%edx               # set up ds,es to kernel space
-        mov %dx,%ds
-        mov %dx,%es
-        movl $0x17,%edx               # fs points to local data space
-        mov %dx,%fs
-        call *sys_call_table(,%eax,4) # call (_sys_call_table + 2x4, _sys_fork
-        pushl %eax
-        movl current,%eax
-        cmpl $0,state(%eax)           # state
-        jne reschedule
-        cmpl $0,counter(%eax)         # counter
-        je reschedule
-    ret_from_sys_call:
-        movl current,%eax             # task[0] cannot have signals
-        cmpl task,%eax
-        je 3f
-        cmpw $0x0f,CS(%esp)           # was old code segment supervisor ?
-        jne 3f
-        cmpw $0x17,OLDSS(%esp)        # was stack segment = 0x17 ?
-        jne 3f
-        movl signal(%eax),%ebx
-        movl blocked(%eax),%ecx
-        notl %ecx
-        andl %ebx,%ecx
-        bsfl %ecx,%ecx
-        je 3f
-        btrl %ecx,%ebx
-        movl %ebx,signal(%eax)
-        incl %ecx
-        pushl %ecx
-        call do_signal
-        popl %eax
-    3:	popl %eax
-        popl %ebx
-        popl %ecx
-        popl %edx
-        pop %fs
-        pop %es
-        pop %ds
-        iret
+        // kernel/system_call.s
+        system_call:
+            cmpl $nr_system_calls-1,%eax  # int 0x80 -- entrance of system call
+            ja bad_sys_call
+            push %ds                      # The next 6 push are parameters for copy_
+            push %es
+            push %fs
+            pushl %edx
+            pushl %ecx                    # push %ebx,%ecx,%edx as parameters
+            pushl %ebx                    # to the system call
+            movl $0x10,%edx               # set up ds,es to kernel space
+            mov %dx,%ds
+            mov %dx,%es
+            movl $0x17,%edx               # fs points to local data space
+            mov %dx,%fs
+            call *sys_call_table(,%eax,4) # call (_sys_call_table + 2x4, _sys_fork
+            pushl %eax
+            movl current,%eax
+            cmpl $0,state(%eax)           # state
+            jne reschedule
+            cmpl $0,counter(%eax)         # counter
+            je reschedule
+        ret_from_sys_call:
+            movl current,%eax             # task[0] cannot have signals
+            cmpl task,%eax
+            je 3f
+            cmpw $0x0f,CS(%esp)           # was old code segment supervisor ?
+            jne 3f
+            cmpw $0x17,OLDSS(%esp)        # was stack segment = 0x17 ?
+            jne 3f
+            movl signal(%eax),%ebx
+            movl blocked(%eax),%ecx
+            notl %ecx
+            andl %ebx,%ecx
+            bsfl %ecx,%ecx
+            je 3f
+            btrl %ecx,%ebx
+            movl %ebx,signal(%eax)
+            incl %ecx
+            pushl %ecx
+            call do_signal
+            popl %eax
+        3:	popl %eax
+            popl %ebx
+            popl %ecx
+            popl %edx
+            pop %fs
+            pop %es
+            pop %ds
+            iret
 
-Note the line `call _sys_call_table (,%eax, 4)`, `eax` has been assigned
-2, so this line is `call _sys_call_table + 2x4` (every entry in
-`_sys_call_table` is 4bits). So it's equivalent to `call
-_sys_call_table[2]`
+    Note the line `call _sys_call_table (,%eax, 4)`, `eax` has been assigned
+    2, so this line is `call _sys_call_table + 2x4` (every entry in
+    `_sys_call_table` is 4bits). So it's equivalent to `call
+    _sys_call_table[2]`
 
-    ...
-    _sys_call:
-    ...
-    _sys_fork:
+        ...
+        _sys_call:
+        ...
+        _sys_fork:
 
-    sys_fork:
-        call find_empty_process
-        testl %eax,%eax # if the returned value is -EAGAIN(11), there have
-                        # been 64 processes running 
-        js 1f
-        push %gs        # next 5 pushes for copy_process's parameters
-        pushl %esi
-        pushl %edi
-        pushl %ebp
-        pushl %eax      # the returned value 
-        call copy_process
-        addl $20,%esp
-    1:	ret
-    ...
+        sys_fork:
+            call find_empty_process
+            testl %eax,%eax # if the returned value is -EAGAIN(11), there have
+                            # been 64 processes running 
+            js 1f
+            push %gs        # next 5 pushes for copy_process's parameters
+            pushl %esi
+            pushl %edi
+            pushl %ebp
+            pushl %eax      # the returned value 
+            call copy_process
+            addl $20,%esp
+        1:	ret
+        ...
 
 ### Find an unoccupied Process Number
 Start executing `sys_fork()`. In `sched_init()` we've cleared the items in
