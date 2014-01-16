@@ -160,12 +160,12 @@
   calculate the score.
 * The `countingSumScorer` will basically accumulate each sub scorer
 
-    @Override
-    public float score() throws IOException {
-        coordinator.nrMatchers = 0;
-        float sum = countingSumScorer.score();
-        return sum * coordinator.coordFactors[coordinator.nrMatchers];
-    }
+        @Override
+        public float score() throws IOException {
+            coordinator.nrMatchers = 0;
+            float sum = countingSumScorer.score();
+            return sum * coordinator.coordFactors[coordinator.nrMatchers];
+        }
   
   The counting scorer will basically do the scoring. 
 
