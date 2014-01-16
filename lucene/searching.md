@@ -148,13 +148,14 @@
 
 * The `BooleanScorer2.score(Collector)` scores and collects all matching documents:
 
-    @Override
-    public void score(Collector collector) throws IOException {
-        collector.setScorer(this);
-        while ((doc = countingSumScorer.nextDoc()) != NO_MORE_DOCS) {
-          collector.collect(doc);
+        @Override
+        public void score(Collector collector) throws IOException {
+            collector.setScorer(this);
+            while ((doc = countingSumScorer.nextDoc()) != NO_MORE_DOCS) {
+              collector.collect(doc);
+            }
         }
-    }
+
 * The `score()` function of `BooleanScorer2` is called in `Collector` as
   above. The `score()` function make use of the `countingSumScorer` to
   calculate the score.
