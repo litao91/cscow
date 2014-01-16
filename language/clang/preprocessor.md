@@ -20,9 +20,11 @@ Note
     #define PI_PLUS_ONE (3.14 + 1)
 By doing so, you avoid the possibility that an order of operations issue
 will destroy the meaning of your constant. 
+
     x = PI_PLUS_ONE * 5;
 
 Without parentheses, the above will be converted to:
+
     x = 3.14 + 1 * 5;
 
 ## Conditional Compiling
@@ -36,6 +38,7 @@ a closing `#endif`.
 The `#if` directive takes a numerical argument that evaluates to true if
 it's non-zero. If its argument is false, then code until the closing
 `#else`, `#elif` or `#endif` will be excluded. 
+
     #if 0
     /* comment ...
     */
@@ -73,17 +76,22 @@ structure to print.
 
 To paste tokens in a macro, use `##` between the two things to paste
 together.
+
     #define BUILD_FIELD(field) my_struct.inner_struct.union_a.##field
+
 Now when used with a particular field name, it will expand to something
 like:
+
     my_struct.inner_struct.union_a.field1
 
 ### String-izing Tokens
 Turn a token into a string containing the literal text of the token. The
 syntax is simply prefix the token with a pound sign (`#`).
+
     #define PRINT_TOKEN(token) printf(#token " is %d", token)
 
 For instance `PRINT_TOKEN(foo) will expand to:
+
     praintf("<foo>" "is %d" <foo>)
 
 
