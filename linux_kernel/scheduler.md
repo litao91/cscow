@@ -378,9 +378,6 @@ The kernel must know when to call `schedule()`. If it called `schedule()`
 only when code explicitly did so, user-space programs could run
 indefinitely. 
 
-The kernel provides the `need_resched` flag to signify whether a
-reschedule should performed.
-
 The kernel provides the  `need_resched` flag to signify whether a reschedule should be performed. 
 This flag is set by `scheduler_tick()` when a process should be preempted, and
 by `try_to_wake_up()` when a process that has a higher priority than the
