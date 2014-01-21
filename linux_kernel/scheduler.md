@@ -378,18 +378,49 @@ The kernel must know when to call `schedule()`. If it called `schedule()`
 only when code explicitly did so, user-space programs could run
 indefinitely. 
 
-The kernel provides the  `need_resched` flag to signify whether a reschedule should be performed. 
-This flag is set by `scheduler_tick()` when a process should be preempted, and
-by `try_to_wake_up()` when a process that has a higher priority than the
-currently running process is awakened.The kernel checks the flag, sees
-that it is set, and calls `schedule()` to switch to a new process.The flag
-is a message to the kernel that the scheduler should be invoked as soon as
-possible because another process deserves to run.
+The kernel provides the  `need_resched` flag to signify whether a
+reschedule should be performed. 
+
+* This flag is set by `scheduler_tick()` when a process should be preempted, and
+* by `try_to_wake_up()` when a process that has a higher priority than the
+  currently running process is awakened.
+
+The kernel checks the flag, sees that it is set, and calls
+`schedule()` to switch to a new process.The flag is a message to the
+kernel that the scheduler should be invoked as soon as possible because
+another process deserves to run.
 
 Upon returning to user-space or returning from an interrupt, the
 `need_resched` flag is checked. If it is set, the kernel invokes the
 scheduler before continuing. The flag is per-process and not simply
 global.
+
+If a process enters the `TASK_RUNNING` state, the kernel checks whether
+tis dynamic priority is greater than the priority of the currently running
+process. If it is, the execution of current is interrupted and the
+scheduler is invoked to select another process to run.
+
+For instance, let us consider a scenario in which only two programs--a
+text editor and a compiler--are being executed. 
+
+1. The text editor is an interactive program, therefore it has a higher
+   dynamic priority than the compiler. Nevertheless, it is often
+   suspended, since the user alternates between pauses for think time and
+   data entry; moreover, the average delay between two key-presses is
+   relatively long. 
+* However, as soon as the user presses a key, an interrupt is raised, and
+  the kernel wakes up the text editor process. 
+* The kernel also determines that the dynamic priority of the editor is
+  higher than the priority of current, the currently running process (that
+  is, the compiler), and hence it sets the `need_resched` field of this
+  process, thus forcing the scheduler to be activated when the kernel
+  finishes handling the interrupt.
+* The scheduler selects the editor and performs a task switch; as a
+  result, the execution of the editor is resumed very quickly and the
+  character typed by the user is echoed to the screen. 
+* When the character has been processed, the text editor process suspends
+  itself waiting for another keypress, and the compiler process can resume
+  its execution.
 
 #### User Preemption
 User preemption can occur:
