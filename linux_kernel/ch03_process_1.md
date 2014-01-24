@@ -72,6 +72,7 @@ execute the macro function `syscall0` in `unistd.h`
     extern int sys_open();
 
 Note that the line `_syscall0(int, fork)` will be expanded to:
+
     int fork(void) { 
         long __res; 
     // int 0x80 is the entrance of system call

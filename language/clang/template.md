@@ -476,3 +476,48 @@ Usage:
     Item<int> item1;
     item1.SetData(120);
     item1.PrintData();
+
+
+### Multiple Types with Class Templates
+
+    template<class Type1, class Type2>
+    struct Pair {
+        Type1 first;
+        Type2 second;
+    };
+
+The following give default constructor would initialize both members
+to their default values, as per data type of `Type1` and `Type2`
+    
+    Pair() : first(Type1()), second(Type2()) {}
+
+### Non-type Template Argument
+Class templates also allow few non-type template arguments. A class
+template may take a integer as template argument. Example:
+
+    template<class T, int SIZE>
+    class Array{};
+
+In this class template declaration, `int SIZE` is a non-type argument,
+which is an integer:
+
+* Inly integral data-type can be non-type integer argument, it includes
+  `int`, `char`, `long`, `long long`, `unsigned` variants and `enums`.
+  Types such as `float` and `double` are not allowed.
+* When being instantiated, only compile time constant integer can be
+  passed. This means `100`, `100+99`, `1<<3` etc are allowed. Arguments
+  that involve function call, like `abs(-120)`, are not allowed.
+
+We can instantiate class template `Array` as:
+    
+    Array<int, 10> my_array;
+
+Within the class template you can use this non-type integer argument,
+whenever you could have used an integer, it includes:
+
+* Assigning `static const` data-member of a class
+* Specify a default value for a emthod.
+* To define the size of an array.
+
+### Template Class as Argument to Class Template
+
