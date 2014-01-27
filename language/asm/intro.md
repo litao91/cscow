@@ -63,11 +63,11 @@ Debugging information is, in a sense, a step backward: portions of the source co
 
 Assembly: 
     
-    as exit.s -o exit.o
+    as --32 exit.s -o exit.o
 
 Link:
     
-    ld exit.o -o exit
+    ld -melf_i386 exit.o -o exit
 
 
 ## Outline
