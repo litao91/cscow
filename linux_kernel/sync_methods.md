@@ -268,8 +268,48 @@ semaphore` type represents semaphores.
 
 Shortcut to create more common mutex:
 
-    static DECORE_MUTEX(name);
+    static DECLARE_MUTEX(name);
 
 To initialize a dynamically created mutex, you can use:
 
     init_MUTEX(sem);
+
+## Mutexes
+The term "mutex" is a generic name to refer to any sleeping lock that
+enforces mutual exclusion, such as a semaphore with a usage count of one.
+In recent Linux Kernels, the proper none "mutex" is now also a specific
+type of sleeping lock that implements mutual exclusion. 
+
+The mutex is represented by `struct mutex`. It behaves similar to a
+semaphore with a count of one, but it has a simpler interface, more
+efficient performance, and additional constraints on its use. 
+
+To statically define a mutex, you do:
+
+    DEFINE_MUTEX(name);
+
+To dynamically initialize a mutex, you call:
+    
+    mutex_init(&mutex);
+
+Locking and unlocking the mutex is easy:
+
+    mutex_lock(&mutex);
+    /* critical region... */
+    mutex_unlock(&mutex);
+
+The simplicity and efficiency of the mutex comes from the additional
+constraints it imposes on its users over and above what semaphore
+requires.
+
+* Only one task can hold the mutex at a time.
+* Whoever locked a mutex must unlock it. 
+* Recursive locks and unlocks are not allowed.
+* A process cannot exit while holding a mutex.
+* A mutext cannot be acquired by an interrupt handler or bottom half, even
+  with `mutex_trylock()`.
+* A mutex can be managed only via the official API.
+
+The most useful  aspect of the new `struct mutex` is that, via a special
+debugging mode, the kernel can programmatically check for and warn about
+violations of these constraints. 
