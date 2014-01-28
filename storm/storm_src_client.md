@@ -90,59 +90,59 @@ The `main()` method in `WordCountTopology`:
 
     很简单只是简单的调用RPC 
 
-    `client.getClient().submitTopologyWithOpts(name, submittedJar, serConf, topology, opts);`
+        `client.getClient().submitTopologyWithOpts(name, submittedJar, serConf, topology, opts);`
 
-    /**
-     * Submits a topology to run on the cluster. A topology runs forever or until 
-     * explicitly killed.
-     *
-     *
-     * @param name the name of the storm.
-     * @param stormConf the topology-specific configuration. See {@link Config}. 
-     * @param topology the processing to execute.
-     * @param options to manipulate the starting of the topology
-     * @throws AlreadyAliveException if a topology with this name is already running
-     * @throws InvalidTopologyException if an invalid topology was submitted
-     */
-    public static void submitTopology(String name, Map stormConf, StormTopology topology, SubmitOptions opts) throws AlreadyAliveException, InvalidTopologyException {
-        if(!Utils.isValidConf(stormConf)) {
-            throw new IllegalArgumentException("Storm conf is not valid. Must be json-serializable");
-        }
-        stormConf = new HashMap(stormConf);
-        stormConf.putAll(Utils.readCommandLineOpts());
-        Map conf = Utils.readStormConfig();
-        conf.putAll(stormConf);
-        try {
-            String serConf = JSONValue.toJSONString(stormConf);
-            if(localNimbus!=null) {
-                LOG.info("Submitting topology " + name + " in local mode");
-                localNimbus.submitTopology(name, null, serConf, topology);
-            } else {
-                NimbusClient client = NimbusClient.getConfiguredClient(conf);
-                if(topologyNameExists(conf, name)) {
-                    throw new RuntimeException("Topology with name `" + name + "` already exists on cluster");
-                }
-                submitJar(conf);
-                try {
-                    LOG.info("Submitting topology " +  name + " in distributed mode with conf " + serConf);
-                    if(opts!=null) {
-                        client.getClient().submitTopologyWithOpts(name, submittedJar, serConf, topology, opts);                    
-                    } else {
-                        // this is for backwards compatibility
-                        client.getClient().submitTopology(name, submittedJar, serConf, topology);                                            
-                    }
-                } catch(InvalidTopologyException e) {
-                    LOG.warn("Topology submission exception", e);
-                    throw e;
-                } catch(AlreadyAliveException e) {
-                    LOG.warn("Topology already alive exception", e);
-                    throw e;
-                } finally {
-                    client.close();
-                }
+        /**
+         * Submits a topology to run on the cluster. A topology runs forever or until 
+         * explicitly killed.
+         *
+         *
+         * @param name the name of the storm.
+         * @param stormConf the topology-specific configuration. See {@link Config}. 
+         * @param topology the processing to execute.
+         * @param options to manipulate the starting of the topology
+         * @throws AlreadyAliveException if a topology with this name is already running
+         * @throws InvalidTopologyException if an invalid topology was submitted
+         */
+        public static void submitTopology(String name, Map stormConf, StormTopology topology, SubmitOptions opts) throws AlreadyAliveException, InvalidTopologyException {
+            if(!Utils.isValidConf(stormConf)) {
+                throw new IllegalArgumentException("Storm conf is not valid. Must be json-serializable");
             }
-            LOG.info("Finished submitting topology: " +  name);
-        } catch(TException e) {
-            throw new RuntimeException(e);
+            stormConf = new HashMap(stormConf);
+            stormConf.putAll(Utils.readCommandLineOpts());
+            Map conf = Utils.readStormConfig();
+            conf.putAll(stormConf);
+            try {
+                String serConf = JSONValue.toJSONString(stormConf);
+                if(localNimbus!=null) {
+                    LOG.info("Submitting topology " + name + " in local mode");
+                    localNimbus.submitTopology(name, null, serConf, topology);
+                } else {
+                    NimbusClient client = NimbusClient.getConfiguredClient(conf);
+                    if(topologyNameExists(conf, name)) {
+                        throw new RuntimeException("Topology with name `" + name + "` already exists on cluster");
+                    }
+                    submitJar(conf);
+                    try {
+                        LOG.info("Submitting topology " +  name + " in distributed mode with conf " + serConf);
+                        if(opts!=null) {
+                            client.getClient().submitTopologyWithOpts(name, submittedJar, serConf, topology, opts);                    
+                        } else {
+                            // this is for backwards compatibility
+                            client.getClient().submitTopology(name, submittedJar, serConf, topology);                                            
+                        }
+                    } catch(InvalidTopologyException e) {
+                        LOG.warn("Topology submission exception", e);
+                        throw e;
+                    } catch(AlreadyAliveException e) {
+                        LOG.warn("Topology already alive exception", e);
+                        throw e;
+                    } finally {
+                        client.close();
+                    }
+                }
+                LOG.info("Finished submitting topology: " +  name);
+            } catch(TException e) {
+                throw new RuntimeException(e);
+            }
         }
-    }
