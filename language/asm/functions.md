@@ -203,3 +203,46 @@ it both as the multiplier (stored in `%ebx`) and the current value (in
 `-4(%ebp)). It also has the power stored in `%ecx`. It then continually
 multiplies the current value by the multiplier, decreases the power, and
 leave the loop if the power gets down to 1.
+
+## Recursive functions
+Sample code for calculating factorial:
+
+
+# Recursive calculate factorial
+
+    .section .data
+    .section .text
+
+    .globl _start
+    .globl factorial
+
+    _start:
+    pushl $4
+    call factorial
+    addl $4, %esp
+    movl %eax, %ebx
+    movl $1, %eax
+    int $0x80
+
+    .type factorial, @function
+    factorial:
+    pushl %ebp
+    movl %esp, %ebp
+    movl 8(%ebp), %eax
+    cmpl $1, %eax
+    je end_factorial
+
+    decl %eax
+    pushl %eax
+    call factorial
+    movl 8(%ebp), %ebx
+    imull %ebx, %eax
+
+    end_factorial:
+    movl %ebp, %esp
+    popl %ebp
+    ret
+
+Note: The `.type` directive tells the linker that `factorial` is a function.
+This isn't really needed unless we were using factorial in other programs.
+
