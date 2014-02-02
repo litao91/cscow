@@ -641,9 +641,116 @@ Example:
 
     (map #(println %) [1 2 3])
 
-When run in a REPL, this outputs the values 1, 2 and 3 on separate lines interspersed with a sequence of
-three nil s which are the return values from three calls to the println function. The REPL always fully
-evaluates the results of the expressions that are entered. However, when run as part of a script, nothing is
-output by this code. This is because the map function returns a lazy sequence containing the results of
-applying its first argument function to each of the items in its second argument collection. The
-documentation string for the map function clearly states that it returns a lazy sequence
+When run in a REPL, this outputs the values 1, 2 and 3 on separate lines
+interspersed with a sequence of three nil s which are the return values
+from three calls to the println function. The REPL always fully evaluates
+the results of the expressions that are entered. However, when run as part
+of a script, nothing is output by this code. This is because the map
+function returns a lazy sequence containing the results of applying its
+first argument function to each of the items in its second argument
+collection. The documentation string for the map function clearly states
+that it returns a lazy sequence
+
+The `dorun` and `doall` functions force the evaluation of items in a
+single lazy sequence. The `doseq` macro forces the evaluation of items in
+one or more lazy sequences. 
+
+`doseq` or `dorun` simply cause the side effects, the results are not
+retained. 
+
+`doall` will retain retain the results. It holds teh head of the sequence
+which causes the results to be cached and it returns the evaluated
+sequence.
+
+`doseq` is typically preferred over the `dorun` because the code is easier
+to read.
+
+## Namespaces
+Java groups methods in classes and classes in packages. Clojure groups things that are named by symbols
+in namespaces. These include Vars, Refs, Atoms, Agents, functions, macros and namespaces themselves
+
+Symbols are used to assign names to functions, macros and bindings.
+Symbols are partitioned into namespaces. There is always a current
+namespace, initially set to "user", and it is stored in the special symbol
+`*ns*`.
+
+Two function to change it, `in-ns` and `ns` function.
+
+The "user" namespace provides access to all the symbols in `clojure.core`
+namespace. The same is true of any namespace that is made the default
+through use the `ns` macro.
+
+In order to access items that are not in the default namespace they must
+be namespce-qualified. This is done by preceding a name with a namesapce
+name and a slash.
+
+For example, the `clojure.string` library defines the `join` function. It
+creates a string by concatenating a given separator string between teh
+string representation of all the items in a sequence. The
+namespace-qualified name of this function is `clojure.string/join`.
+
+The `require` function loads Clojure libraries. It takes one or more
+quoted namespaces:
+
+    (require 'clojure.string)
+
+This merely loads the library. Names in it must still be
+namespace-qualified.
+
+The `refer` function makes all the symbols in a given namespace accessible
+in the current namespace:
+
+    (refer 'cloure.string)
+
+The `ns` macro is typically used at the top of a source file. It supports
+the directives `:require`, `:use` and `:import` that are alternatives to
+using their function forms. Using these is preferred over using their
+function forms. 
+
+    (ns com.ociweb.demo
+      (:require [clojure.string :as su])
+      (:use [clojure.math.numeric-tower :only (gcd sqrt)])
+      (:import (java.text NumberFormat) (javax.swing JFrame JLabel)))
+
+    (doto (JFrame. "Hello")
+      (.add (JLabel. "Hello, world!"))
+      (.pack)
+      (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
+      (.setVisible true))
+
+## Metadata
+Clojure is a data attached to a symbol or collection that is not realted
+to its logical value. Two objects that are logically equal can have
+different metadata.
+
+## Macros
+Macros are used to add new constructs to the language. They are code that
+generates code at real-time
+
+While functions always evaluate all their arguments, macros can decide
+which of their arguments will be evaluated.
+
+Suppose there are many places in our code that need to take different
+actions based on whether a number is really close to zero, negative or
+positive. We want to avoid code duplication. This must be implemented as a
+macro instead of a function because only one of the three actions should
+be evaluated. The defmacro macro defines a macro.
+
+    (defmacro around-zero [number negative-expr zero-expr positive-expr]
+        `(let [number# ~number] ; so number is only evaluated once
+            (cond
+                (< (Math/abs number#) 1e-15) ~zero-expr
+                (pos? number#) ~positive-expr
+                true ~negative-expr)))
+
+The back-quote at the beginning of the macro definition prevents
+everything inside from ebing evaluated unless it is unquoted. This means
+that the contents will appear literally in the expansion, except items
+proceed by a tilde (`~`).
+
+To verify that is macro is expanded properly, enter:
+
+    (macroexpand­1
+      '(around­zero 0.1 (println "­") (println "0") (println "+")))
+
+    
