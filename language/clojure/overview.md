@@ -628,6 +628,15 @@ provide initial values for the local binds. Calls to `recur` cause control
 to return to the loop and assign new values to its local binds. `recur`
 can only appear as the last call in the `loop`.
 
+Instead of using a `loop`, you can `recur` back to the top of a function.
+This make it simple to write a function whose entire body an implicit
+`loop`:
+
+    (defn countdown [result x]
+        (if (zero? x)
+        result
+        (recur (conj result x) (dec x))))
+
 ## Predicates
 Used to test a condition.
 
@@ -693,6 +702,7 @@ The `require` function loads Clojure libraries. It takes one or more
 quoted namespaces:
 
     (require 'clojure.string)
+    (reauire '[clojure.string :as str])
 
 This merely loads the library. Names in it must still be
 namespace-qualified.
@@ -717,6 +727,10 @@ function forms.
       (.pack)
       (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
       (.setVisible true))
+
+The `ns` macro sets the current namespace (available as `*ns*` to `name`,
+creating the namespace if necessary. The `references` can include
+`:import`, `:require` and `:use`
 
 ## Metadata
 Clojure is a data attached to a symbol or collection that is not realted
@@ -753,4 +767,3 @@ To verify that is macro is expanded properly, enter:
     (macroexpand­1
       '(around­zero 0.1 (println "­") (println "0") (println "+")))
 
-    
