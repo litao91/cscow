@@ -767,3 +767,42 @@ To verify that is macro is expanded properly, enter:
     (macroexpand­1
       '(around­zero 0.1 (println "­") (println "0") (println "+")))
 
+## Lazy and Infinite Sequences
+Lazy sequences: elements are not calculated until they are needed.
+
+## Forcing Sequences
+`doall` forces Clojure to walk the elements of a sequence and returns the
+elements as a result:
+
+    (doall coll)
+
+`dorun` walks the elements of a sequence **without** keeping past elements
+in memory. As a result, `dorun` can walk collections too large to fit in
+memory.
+
+## Seq-ing Regular Expressions
+Clojure's regex use `java.util.regex` under the hood.
+
+You can use `re-matcher` to create a Matcher for a regular expression and
+a string and then `loop` on `re-find` to iterate over the matches
+
+    (re-matcher regexp string)
+
+Example:
+
+    (let [m (re-matcher #"\w+" "the quick brown fox")]
+      (loop [match (re-find m)]
+        (when match
+          (println match)
+          (recur (re-find m)))))
+
+
+Much better is to use the higher-level `re-seq`:
+
+    (re-seq regexp string)
+
+Example:
+    
+    (re-seq #"\w+" "the quick brown fox")
+
+

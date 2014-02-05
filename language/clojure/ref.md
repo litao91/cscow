@@ -83,6 +83,29 @@ Example:
 This reads almost like English: “For [each] word in [a sequence of words]
 format [according to format instructions].”
 
+### Seq-ing
+| `(re-matcher regexp string)` | return a matcher, use with `re-find` |
+| `(re-seq regexp string)`     | exposes a seq over matches           |
+| `(xml-seq root)`             | view the xml tree as a seq           |
+
+### Structure-Specific Functions
+| `(peek coll)`              | return the first element       |
+| `(pop coll)`               | return the frist and remove it |
+| `(get coll idx)`           | return value at idx or nil     |
+| `(subvec avec start end?)` | return a subvector of a vector |
+
+### Functions on Maps
+| `(keys map)`                           | return keys of a map                  |
+| `(vals map)`                           | values from a map                     |
+| `(get map key val-not-f?)`             | get return val for a key              |
+| `(contains:? map key)`                 |                                       |
+| `(merge-with merge-fn & maps)`         | can specify merge function            |
+| `(rename relation rename-map)`         | renames keys                          |
+| `(select pred relation)`               | returns maps for which pred is true   |
+| `(project relation keys)1              | return parts that match a set of keys |
+| `(join relation-1 relation-2 keymap?)` | join based on shared keys             |
+
+
 
 
 
