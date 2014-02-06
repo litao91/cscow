@@ -912,18 +912,18 @@ Then bounce `trampoline-fibo` on a `trampoline`
 
 Then:
 
-    ```clojure
-    (declare my-odd? my-even?)
+```clojure
+(declare my-odd? my-even?)
 
-    (defn my-odd? [n]
-      (if (= n 0)
-        false
-        #(my-even? (dec n))))
+(defn my-odd? [n]
+  (if (= n 0)
+    false
+    #(my-even? (dec n))))
 
-    (defn my-even? [n]
-      (if (= n 0)
-        true
-        #(my-odd? (dec n))))
+(defn my-even? [n]
+  (if (= n 0)
+    true
+    #(my-odd? (dec n))))
 
-    (trampoline my-even? 1000000)
-    ```
+(trampoline my-even? 1000000)
+```
