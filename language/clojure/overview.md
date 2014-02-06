@@ -770,6 +770,7 @@ To verify that is macro is expanded properly, enter:
 ## Lazy and Infinite Sequences
 Lazy sequences: elements are not calculated until they are needed.
 
+
 ## Forcing Sequences
 `doall` forces Clojure to walk the elements of a sequence and returns the
 elements as a result:
@@ -805,4 +806,124 @@ Example:
     
     (re-seq #"\w+" "the quick brown fox")
 
+## Lazier than Lazy
+`comp` is used to *compose* two or more functions:
 
+    (comp f & fs)
+
+Return a new function that applies the right most function to tis
+argument, the next-rightmost function to that result and so on.
+
+Example:
+
+    (def count-if (comp count filter))
+
+So:
+
+    (count-if odd? [1 2 3 4 5])
+    -> 3
+
+It will first do the filter, the filtered result will be counted.
+
+`partial` performs a partial application of a function:
+
+    (partial f & partial-args)
+
+### Curry and Partial Application
+When you *curry* a function, you get a new function that takes one
+argument and returns the original and returns the original function with
+that one argument fixed.
+
+    ;almost a curry
+    (defn faux-curry [& args] (apply partial partial args))
+
+## Mutual Recursion
+A mutual recursion occurs when the recursion bounces between two or more
+functions. Example:
+
+    (declare my-odd? my-even?)
+    
+    (defn my-odd? [n]
+      (if (= n 0)
+        false
+        (my-even? (dec n))))
+
+    (defn my-even? [n]
+      (if (= n 0)
+        true
+        (my-odd? (dec n))))
+
+`my-odd` and `my-even` consume stack frames proportional to the size of
+their argument, so they will fail with large numbers.
+
+Solution:
+* Converting to self-recursion
+* Trampolining a mutual recursion
+* Replacing the recursion with laziness
+* Shortcutting recursion with memoization
+
+### Convert to self-recursion
+You can convert a mutual recursion to a self-recursion by coming up with a
+single abstraction that deals with multiple concepts simultaneously.
+
+For example, you can think of oddness and evenness in terms of a single
+concept: *parity*. 
+
+    (defn parity [n]
+      (loop [n n par 0]
+        (if (= n 0)
+          par
+          (recur (dec n) (- 1 par)))))
+
+Then you can trivially implement `my-odd?` and `my-even?`:
+
+    (defn my-even? [n] (= 0 (parity n)))
+    (defn my-odd? [n] (= 0 (parity n)))
+
+### Trampolining Mutual recursion
+A trampoline is like an after-the-fact `recur`, imposed by the *caller* a
+function instead of the *implementer*. Since the caller can call more than
+one function inside a trampoline, trampolines can optimize mutual
+recursion:
+    
+    (trampoline f & partial-args)
+
+* If the return value is not a function, then a trampoline works just like
+  calling the function directly.
+* If the return value is a function, then `tramploine` assumes you want to
+  call it recursively and calls it for you.
+
+Example:
+
+    (defn trampoine-fibo [n]
+      (let [fib (fn fib [f-2 f-1 current]
+                  (let [f (+ f-2 f-1)]
+                    (if (= n current)
+                      f
+                      #(fib f-1 f (inc current)))))]
+      (cond
+        (= n 0) 0
+        (= n 1) 1
+        :else (fib 0N 1 2))))
+
+Then bounce `trampoline-fibo` on a `trampoline`
+
+    (trampoline trampoline-fibo 9)
+
+Then:
+
+    ```clojure
+    (declare my-odd? my-even?)
+
+    (defn my-odd? [n]
+      (if (= n 0)
+        false
+        #(my-even? (dec n))))
+
+    (defn my-even? [n]
+      (if (= n 0)
+        true
+        #(my-odd? (dec n))))
+
+    (trampoline my-even? 1000000)
+    ```

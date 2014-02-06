@@ -45,13 +45,14 @@
 
 ### Filtering Sequences 
 
-| Form                     | Purpose                             |
-| -----                    | -----                               |
-| `(filter pred coll)`     | The most basic filter               |
-| `(take-while pred coll)` | take while a predicate remains true |
-| `(drop-while pred coll)` | opposite of `take-while`            |
-| `(split-at index coll)`  | split the collection into two       |
-| `(split-with pred coll)` | split into two with first true      |
+| Form                          | Purpose                             |
+| -----                         | -----                               |
+| `(filter pred coll)`          | The most basic filter               |
+| `(take-while pred coll)`      | take while a predicate remains true |
+| `(drop-while pred coll)`      | opposite of `take-while`            |
+| `(split-at index coll)`       | split the collection into two       |
+| `(split-with pred coll)`      | split into two with first true      |
+| `(partition size step? coll)` |                                     |
 
 ### Sequence Predicates
 
