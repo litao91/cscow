@@ -1,28 +1,30 @@
 # Reference 
 ## General
 
-    (apply f args* argseq)
-    (true? expr)
-    (faluse? expr)
-    (nil? expr)
-    (zero? expr)
-    (get the-map key not-found-val)
-    (defrecord name [arguments])
-    (defn name doc-string? attr-map? [params*] body)
-    (fn [params*] body)
-    #(body)
-    (let [bindings*] exprs*)
-    (resolve sym) ; resolve symbol
-    (in-ns name) ; switch namespace
-    (import '(pacakge Class+))
-    (ns name & references) ; import java classes and require namespaces
+```clojure
+(apply f args* argseq)
+(true? expr)
+(faluse? expr)
+(nil? expr)
+(zero? expr)
+(get the-map key not-found-val)
+(defrecord name [arguments])
+(defn name doc-string? attr-map? [params*] body)
+(fn [params*] body)
+#(body)
+(let [bindings*] exprs*)
+(resolve sym) ; resolve symbol
+(in-ns name) ; switch namespace
+(import '(pacakge Class+))
+(ns name & references) ; import java classes and require namespaces
 
-    (new classname)
-    (. class-or-instance member-symbol & args)
-    (. class-or-instance (member-symbol & args))
+(new classname)
+(. class-or-instance member-symbol & args)
+(. class-or-instance (member-symbol & args))
 
-    (loop [bindings *] exprs*)
-    (recur exprs*)
+(loop [bindings *] exprs*)
+(recur exprs*)
+```
 
 ## Sequences
 ### Creating sequences
@@ -56,6 +58,8 @@
 
 ### Sequence Predicates
 
+| Form                     | Description                           |
+| --                       | --                                    |
 | `(every? pred coll)`     | whehter it is true true for every ele |
 | `(some pred coll)`       | the first non false value             |
 | `(not-every? pred coll)` |                                       |
@@ -84,18 +88,30 @@ Example:
 This reads almost like English: “For [each] word in [a sequence of words]
 format [according to format instructions].”
 
+
 ### Seq-ing
+
+| From                         | Description                          |
+| ----                         | ----                                 |
 | `(re-matcher regexp string)` | return a matcher, use with `re-find` |
 | `(re-seq regexp string)`     | exposes a seq over matches           |
 | `(xml-seq root)`             | view the xml tree as a seq           |
 
+
 ### Structure-Specific Functions
+
+| Form                       | Description                    |
+| --                         | --                             |
 | `(peek coll)`              | return the first element       |
 | `(pop coll)`               | return the frist and remove it |
 | `(get coll idx)`           | return value at idx or nil     |
 | `(subvec avec start end?)` | return a subvector of a vector |
 
+
 ### Functions on Maps
+
+| Form                                   | Description                           |
+| ---                                    | ---                                   |
 | `(keys map)`                           | return keys of a map                  |
 | `(vals map)`                           | values from a map                     |
 | `(get map key val-not-f?)`             | get return val for a key              |

@@ -820,14 +820,18 @@ Example:
 
 So:
 
-    (count-if odd? [1 2 3 4 5])
-    -> 3
+```clojure
+(count-if odd? [1 2 3 4 5])
+-> 3
+```
 
 It will first do the filter, the filtered result will be counted.
 
 `partial` performs a partial application of a function:
 
-    (partial f & partial-args)
+```clojure
+(partial f & partial-args)
+```
 
 ### Curry and Partial Application
 When you *curry* a function, you get a new function that takes one
@@ -841,17 +845,19 @@ that one argument fixed.
 A mutual recursion occurs when the recursion bounces between two or more
 functions. Example:
 
-    (declare my-odd? my-even?)
-    
-    (defn my-odd? [n]
-      (if (= n 0)
-        false
-        (my-even? (dec n))))
+```clojure
+(declare my-odd? my-even?)
 
-    (defn my-even? [n]
-      (if (= n 0)
-        true
-        (my-odd? (dec n))))
+(defn my-odd? [n]
+  (if (= n 0)
+    false
+    (my-even? (dec n))))
+
+(defn my-even? [n]
+  (if (= n 0)
+    true
+    (my-odd? (dec n))))
+```
 
 `my-odd` and `my-even` consume stack frames proportional to the size of
 their argument, so they will fail with large numbers.
@@ -869,16 +875,20 @@ single abstraction that deals with multiple concepts simultaneously.
 For example, you can think of oddness and evenness in terms of a single
 concept: *parity*. 
 
-    (defn parity [n]
-      (loop [n n par 0]
-        (if (= n 0)
-          par
-          (recur (dec n) (- 1 par)))))
+```clojure
+(defn parity [n]
+  (loop [n n par 0]
+    (if (= n 0)
+      par
+      (recur (dec n) (- 1 par)))))
+```
 
 Then you can trivially implement `my-odd?` and `my-even?`:
 
+```clojure
     (defn my-even? [n] (= 0 (parity n)))
     (defn my-odd? [n] (= 0 (parity n)))
+```
 
 ### Trampolining Mutual recursion
 A trampoline is like an after-the-fact `recur`, imposed by the *caller* a
@@ -926,4 +936,255 @@ Then:
     #(my-odd? (dec n))))
 
 (trampoline my-even? 1000000)
+```
+
+## State
+Clojure's reference model clearly separates identities from values. Almost
+everything in Clojure is a value. For identities, Clojure provides four
+reference types:
+
+* Refs manage *coordinate*, *synchronous* changes to shared state.
+* Atoms manage *uncoordinated*, *synchronous* changes to shared state.
+* Agents manage *asynchronous* changes to shared state.
+* Vars manage *thread-local* state.
+
+Clojure's model for state and identity:
+
+* A *functional model* that has no mutable state. Most of your code will
+  normally be in this layer.
+* *Reference models* for parts of the application that you find more
+  convenient to deal with using mutable state.
+
+### Refs and Software Transactional Memory
+Create mutable data by creating a mutable *reference* to an immutable
+object. We create a ref with this
+
+```clojure
+(ref initial-state)
+```
+
+Example: create a reference to current song:
+
+```clojure
+(def current-track (ref "Mars, the Bringer of War"))
+```
+The `ref` wraps and protects access 
+
+To read the contents of the reference:
+
+```clojure
+(deref reference) ; -> #'user/current-track
+```
+
+The `deref` function can be shortened to the `@` reader macro. 
+
+```clojure
+(deref current-track) ; -> "Mars, the Bringer of War"
+@current-track        ; -> "Mars, the Bringer of War"
+```
+
+
+You can change where a reference points with `ref-set`:
+
+```clojure
+(ref-set reference new-value)
+```
+
+Call `ref-set`:
+```clojure
+(ref-set current-track "Venus, the Bringer of Peace")
+; -> java.lang.IllegalStateException: No transaction running
+```
+Because refs are mutable, you must protect their updates. Instead of lock,
+in clojure, you can use a *transaction*. Transaction are wrapped in a
+*docync*:
+
+```clojure
+(docsync & exprs)
+```
+
+So wrap your `ref-set` with `dosync`:
+```clojure
+(dosync (ref-set current-track "Venus, the Bringer of Peace"))
+```
+
+### alter
+More complex example, where transactions need to update existing
+information. A simple chat application:
+```clojure
+(defrecord Message [sender text])
+(user.Message. "Aaron" "Hello") 
+;-> #:user.Message{:sender "Aaron", :text "Hello"}
+(def message (ref ()))
+```
+
+Clojure's `alter` will apply an update function to a reference object
+within a transaction:
+
+```clojure
+(alter ref update-fn &args...)
+```
+`alter` returns the new value of the ref.
+
+So we use:
+
+```clojure
+(defn add-message [msg]
+  (dosync (alter messages conj msg)))
+```
+
+Notice that 
+```clojure
+(cons item sequence)
+(conj sequence item)
+```
+
+The `alter` function calls its `update-fn` as follow:
+```clojure
+(your-func thing-that-gets-updated & optional-other-args)
+```
+
+### commute
+`communte` is a specialized variant of `alter` allowing for more
+concurrency:
+```clojure
+(commute ref update-fn &args...)
+```
+Updates must be able to occur in nay order (commutative).
+`commute` returns the new value of the ref. However, the last
+in-transaction value you see from a `commute` will not always match the
+end-of-transaction value of ref, because of reordering.
+
+### Adding Validation to Refs
+We can specify a validation function when creating a ref:
+
+```clojure
+(ref initial-state options*)
+; options include:
+; :validator validate-fn
+; :meta metadata-map
+```
+
+Example:
+```clojure
+(def  validate-message-list
+  (partial every? #(and (:sender %) (:text %)))
+(def message (ref () :validator validate-message-list))
+
+(add-message "not a valid message")
+;-> java.lang.IllegalStateException: Invalid reference state
+
+@messages
+-> ()
+```
+
+### Use Atoms for Uncoordinated, Synchronous Updates
+Atoms are lighter-weight mechanism than refs. Where multiple ref updates
+can be coordinated in a transaction, atoms allow updates of a single
+value:
+```clojure
+(atom initial-state options?)
+;optionsinclude:
+; :validatorvalidate-fn
+; :metametadata-map
+```
+
+Atoms do not participate in transaction and thus do not require a
+`docsync`:
+```clojure
+(reset! an-atom newval)
+```
+
+`swap!` updates `an-atom` by calling function `f` on the current value of
+`an-atom`, plus any additional args:
+```clojure
+(swap! an-atom f &args)
+```
+
+### Agents for Asynchronous Updates
+You can create an agent by wrapping some piece of initial stae:
+```clojure
+(agent initial-state)
+```
+
+Once you have an agent, you can `send` the agent a function to update its
+state. `send` queues an `update-fn` to run later, on a thread in a thread
+pool:
+
+```clojure
+(send agent update-fn & args)
+```
+The call to `send` does not return the new value, returning instead the
+agent itself. That is because send does not know the new value. You can
+check the current value of an agent with `deref/@`.
+
+If you want to be sure that the agent has complted the action you sent to,
+you can call `await` or `await-for`:
+```clojure
+(await & agents)
+(await-for time-millis & agents)
+```
+These will case the current thread to block until all actions sent from
+the current thread or agent have completed.
+
+Agent also take validation functions:
+```clojure
+(agent initial-state options*)
+;optionsinclude:
+; :validatorvalidate-fn
+; :metametadata-map
+```
+
+To discover the error:
+```clojure
+(agent-errors agent)
+```
+You make agent usable again by calling `clear-agent-errors`:
+```clojure
+(clear-agent-errors agent)
+```
+
+`send-off` is a variant of `send` for actions that expect to block.
+
+### Per-Thread State with Vars
+When you call `def` or `defn`, you create a *dynamic var*, or just `var`. 
+In all  the  examples  so  far  in  the  book,  you  pass  an  initial
+value  to def,  which becomes the root binding for the var. 
+
+For example, create a root binding for `foo` of 10:
+
+```clojure
+(def ^:dynamic foo 10)
+```
+
+However, you can create a `thread-local` binding:
+```clojure
+(binding [bindings] & body)
+```
+Bindings have dynamic scope. In other words, a binding is visible anywhere
+a  thread’s  execution  takes  it,  until  the  thread  exits  the  scope
+where  the binding began. A binding is not visible to any other threads.
+
+#### Acting at a Distance
+Vars intended for dynamic binding are sometimes called special variables.
+It is good style to name them with leading and trailing asterisks. (e.g.
+`*in`, `*out*`, and `*err`).
+
+Clojure provides `memoize`, which takes a function and return a
+memorization of a function
+```clojure
+(memoize function)
+```
+
+By dynamically rebinding a function such as slow-double, you change the
+behavior of other functions such as calls-slow-doublewithout their knowledge or
+consent. With lexical binding forms such as let, it is easy to see the entire
+range of your changes. Dynamic binding is not so simple. It can change the
+behavior of other forms in other files, far from the point in your source where
+the binding occurs.
+
+### Working with java Callback APIs
+Clojure provides the `set!` special form a thread-local dynamic binding:
+```clojure
+(set! var-symbol new-value)
 ```
