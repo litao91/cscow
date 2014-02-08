@@ -203,19 +203,23 @@ them are immutable, heterogeneous and persistent.
         (nth stooges 2)  ; indexes start at 0 -> "Curly"
 
 * Functions retrieve several items:
-        (next stooges)                    ; -> ("Larry" "Curly" "Shemp")
-        (butlast stooges)                 ; -> ("Moe" "Larry" "Curly")
-        (drop-last 2 stooges)             ; -> ("Moe" "Larry")
-                                          ; Get names containing more than three characters.
-        (filter #(> (count %) 3) stooges) ; -> ("Larry" "Curly" "Shemp")
-        (nthnext stooges 2)               ; -> ("Curly" "Shemp")
+    ```clojure
+    (next stooges)                    ; -> ("Larry" "Curly" "Shemp")
+    (butlast stooges)                 ; -> ("Moe" "Larry" "Curly")
+    (drop-last 2 stooges)             ; -> ("Moe" "Larry")
+                                      ; Get names containing more than three characters.
+    (filter #(> (count %) 3) stooges) ; -> ("Larry" "Curly" "Shemp")
+    (nthnext stooges 2)               ; -> ("Curly" "Shemp")
+    ```
 
 * Several predicate functions:
 
-        (every? #(instance? String %) stooges)     ; -> true
-        (not-every? #(instance? String %) stooges) ; -> false
-        (some #(instance? Number %) stooges)       ; -> nil
-        (not-any? #(instance? Number %) stooges)   ; -> true
+    ```clojure
+    (every? #(instance? String %) stooges)     ; -> true
+    (not-every? #(instance? String %) stooges) ; -> false
+    (some #(instance? Number %) stooges)       ; -> nil
+    (not-any? #(instance? Number %) stooges)   ; -> true
+    ```
 
 ### Lists
 Create list:
@@ -260,16 +264,20 @@ by index. Function definition specify their parameter list using a vector.
 
 Create Vector:
 
-    (def stooges (vector "Moe" "Larry" "Curly"))
-    (def stooges ["Moe" "Larry" "Curly"])
+```clojure
+(def stooges (vector "Moe" "Larry" "Curly"))
+(def stooges ["Moe" "Larry" "Curly"])
+```
 
 The `get` function retrieves an item from a vector by index (similar to
 `nth`), take an optional value to be returned if the index is out of range. 
 If not provided `get` will return nil and `nth` will throw exception
 
-    (get stooges 1 "unknown") ; -> "Larry"
-    (get stooges 3 "unknown") ; -> "unknown"
-    (nth stooges 1 "unknown") ; -> "Larry"
+```clojure
+(get stooges 1 "unknown") ; -> "Larry"
+(get stooges 3 "unknown") ; -> "unknown"
+(nth stooges 1 "unknown") ; -> "Larry"
+```
 
 The `assoc` operates on vectors and maps. When applied to a vector, it creates a new vector where
 the item specified by an index is replaced. If the index is equal to the number of items in the vector, a new
@@ -306,32 +314,40 @@ Maps associate keys and values. Often **keywords** are used for map keys.
 
 Create maps:
 
-    (def popsicle-map
-        (hash-map :red :cherry, :green :apple,:purple :grape))
-    (def popsicle-map
-        {:red :cherry, :green :apple, :purple :grape}) ; same as previous
-    (def popsicle-map
-        (sorted­map :red :cherry, :green :apple, :purple :grape))
+```clojure
+(def popsicle-map
+    (hash-map :red :cherry, :green :apple,:purple :grape))
+(def popsicle-map
+    {:red :cherry, :green :apple, :purple :grape}) ; same as previous
+(def popsicle-map
+    (sorted­map :red :cherry, :green :apple, :purple :grape))
+```
 
 Maps can be sued as functions of their keys. In some cases keys can be
 used as function of maps:
 
-    (get popsicle-map :green)
-    (popsicle-map :green)
-    (:green popsicle-map)
+```clojure
+(get popsicle-map :green)
+(popsicle-map :green)
+(:green popsicle-map)
+```
 
 Then access items:
 
-    (contains? possicle-map :green) ; -> true
-    (keys popsicle-map) ; -> (:red :green :purple)
-    (vals popsicle-map) ; -> (:cherry :apple :grape)
-    
+```clojure
+(contains? possicle-map :green) ; -> true
+(keys popsicle-map) ; -> (:red :green :purple)
+(vals popsicle-map) ; -> (:cherry :apple :grape)
+```
+
 The `assoc` function operates on maps and vectors. When applied to a map, it creates a new map where
 any number of key/value pairs are added. Values for existing keys are replaced by new values. For
 example:
 
-    (assoc popsicle-map :green :lime :blue :blueberry) 
-    ; -> {:blue :blueberry, :green :lime, :purple :grape, :red :cherry}
+```clojure
+(assoc popsicle-map :green :lime :blue :blueberry) 
+; -> {:blue :blueberry, :green :lime, :purple :grape, :red :cherry}
+```
 
 The `dissoc` function takes a map and any number of keys. It returns a new map where those keys are
 removed
@@ -362,35 +378,41 @@ values.
 
 Values in maps can be maps, and they can be nested to any depth.
 
-    (def person {
-      :name "Mark Volkmann"
-      :address {
-        :street "644 Glen Summit"
-        :city "St. Charles"
-        :state "Missouri"
-        :zip 63304}
-      :employer {
-        :name "Object Computing, Inc."
-        :address {
-          :street "12140 Woodcrest Executive Drive, Suite 250"
-          :city "Creve Coeur"
-          :state "Missouri"
-          :zip 63141}}})
+```clojure
+(def person {
+  :name "Mark Volkmann"
+  :address {
+    :street "644 Glen Summit"
+    :city "St. Charles"
+    :state "Missouri"
+    :zip 63304}
+  :employer {
+    :name "Object Computing, Inc."
+    :address {
+      :street "12140 Woodcrest Executive Drive, Suite 250"
+      :city "Creve Coeur"
+      :state "Missouri"
+      :zip 63141}}})
+```
 
 `get-in` function takes a map and a key sequence. It returns the value of
 the nested map key at the end of the sequence. The `->` macro and `reduce`
 function can also be used for this purpose.
 
-    (get-in person [:employer :address :city]) ; -> "Creve Coeur"
-    (-> person :employer :address :city) ; explained below
-    (reduce get person [:employer :address :city]) ; explained below
+```clojure
+(get-in person [:employer :address :city])     ; -> "Creve Coeur"
+(-> person :employer :address :city)           ; explained below
+(reduce get person [:employer :address :city]) ; explained below
+```
 
 The `->` macro, referred to as the "thread" macro, calls the series of
 function, passing the result of each as an argument to the next. The
 follow has the same reuslt
 
-    (f1 (f2 (f3 x)))
-    (-> x f3 f2 f1)
+```clojure
+(f1 (f2 (f3 x)))
+(-> x f3 f2 f1)
+```
 
 The `reduce` function takes a function of two arguments, an optional value
 and a collection. 
@@ -701,8 +723,10 @@ namespace-qualified name of this function is `clojure.string/join`.
 The `require` function loads Clojure libraries. It takes one or more
 quoted namespaces:
 
-    (require 'clojure.string)
-    (reauire '[clojure.string :as str])
+```clojure
+(require 'clojure.string)
+(reauire '[clojure.string :as str])
+```
 
 This merely loads the library. Names in it must still be
 namespace-qualified.
@@ -710,23 +734,27 @@ namespace-qualified.
 The `refer` function makes all the symbols in a given namespace accessible
 in the current namespace:
 
-    (refer 'cloure.string)
+```clojure
+(refer 'cloure.string)
+```
 
 The `ns` macro is typically used at the top of a source file. It supports
 the directives `:require`, `:use` and `:import` that are alternatives to
 using their function forms. Using these is preferred over using their
 function forms. 
 
-    (ns com.ociweb.demo
-      (:require [clojure.string :as su])
-      (:use [clojure.math.numeric-tower :only (gcd sqrt)])
-      (:import (java.text NumberFormat) (javax.swing JFrame JLabel)))
+```clojure
+(ns com.ociweb.demo
+  (:require [clojure.string :as su])
+  (:use [clojure.math.numeric-tower :only (gcd sqrt)])
+  (:import (java.text NumberFormat) (javax.swing JFrame JLabel)))
 
-    (doto (JFrame. "Hello")
-      (.add (JLabel. "Hello, world!"))
-      (.pack)
-      (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
-      (.setVisible true))
+(doto (JFrame. "Hello")
+  (.add (JLabel. "Hello, world!"))
+  (.pack)
+  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
+  (.setVisible true))
+```
 
 The `ns` macro sets the current namespace (available as `*ns*` to `name`,
 creating the namespace if necessary. The `references` can include
