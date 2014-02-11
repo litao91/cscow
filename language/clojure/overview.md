@@ -50,6 +50,7 @@ Managed by Leiningen Project management tool:
 Special cases in Clojure:
 
 | Purpose   | Sugar                | Function                  |
+| ---       | ---                  | ---                       |
 | Comment   | `;text`              | `(comment text)`          |
 | Character | `\char \tab \space`  | `(char ascii-code)`       |
 | String    | `"text"`             | `(str char1 char2 ...)`   |

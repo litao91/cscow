@@ -6,7 +6,9 @@ instructions take up one or two storage locations for the instruction
 itself, and then storage locations for the instruction's arguments. For
 example:
     
-    movl data_items (, %edi, 4), %ebx
+```asm
+movl data_items (, %edi, 4), %ebx
+```
 
 Takes up to 7 storage locations. 
 
@@ -132,6 +134,7 @@ The `brk` system call is call number 45 (in `%eax`). `%ebx` should be
 loaded with the requested breakpoint. Then you call `int $0x80` to signal
 Linux to do its work. After mapping in your memory, Linux will return the
 new break point in `%eax`.
+
 
 
 
