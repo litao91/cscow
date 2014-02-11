@@ -195,13 +195,14 @@ incl %eax                # %eax now has the last valid
                          # address, and we want the
                          # memory location after that
 movl %eax, current_break # store the current break
+
 movl %eax, heap_begin    # store the current break as our
                          # first address. This will cause
                          # the allocate function to get
                          # more memory from Linux the
                          # first time it is run
 movl %ebp, %esp          # exit the function
-popl %eb
+popl %ebp
 ret
 #### END OF FUNCTION
 
@@ -246,17 +247,22 @@ movl %esp, %ebp
 movl ST_MEM_SIZE(%ebp), %ecx              # %ecx will hold the size
                                           # we are looking for (which is the first
                                           # and only parameter)
+
 movl heap_begin, %eax                     # %eax will hold the current
                                           # search location
+
 movl current_break, %ebx                  # %ebx will hold the current
                                           # break
+
 alloc_loop_begin:                         # here we iterate through each
                                           # memory region
+
 cmpl %ebx, %eax                           # need more memory if these are equal
 je move_break
-                                          # grab the size of this memory
+
+                          # grab the size of this memory
 movl HDR_SIZE_OFFSET(%eax), %edx
-                                          # If the space is unavailable, go to the
+                          # If the space is unavailable, go to the
 cmpl $UNAVAILABLE, HDR_AVAIL_OFFSET(%eax)
 je next_location                          # next one
 
@@ -274,7 +280,9 @@ addl %edx, %eax                           # region is the sum of the size
                                           # region). So, adding %edx and $8
                                           # to %eax will get the address
                                           # of the next memory region
+
 jmp alloc_loop_begin                      # go look at the next location
+
 allocate_here:                            # if we’ve made it here,
                                           # that means that the
                                           # region header of the region
@@ -287,12 +295,16 @@ addl $HEADER_SIZE, %eax                   # move %eax past the header to
 movl %ebp, %esp                           # return from the function
 popl %ebp
 ret
+
+
+
 move_break:                                # if we’ve made it here, that
                                            # means that we have exhausted
                                            # all addressable memory, and
                                            # we need to ask for more.
                                            # endpoint of the data,
                                            # and %ecx holds its size
+
                                            # we need to increase %ebx to
                                            # where we _want_ memory
                                            # to end, so we

@@ -52,7 +52,7 @@ movl %eax, heap_begin    # store the current break as our
                          # more memory from Linux the
                          # first time it is run
 movl %ebp, %esp          # exit the function
-popl %eb
+popl %ebp
 ret
 #### END OF FUNCTION
 
@@ -125,6 +125,7 @@ addl %edx, %eax                           # region is the sum of the size
                                           # region). So, adding %edx and $8
                                           # to %eax will get the address
                                           # of the next memory region
+
 jmp alloc_loop_begin                      # go look at the next location
 allocate_here:                            # if we’ve made it here,
                                           # that means that the
