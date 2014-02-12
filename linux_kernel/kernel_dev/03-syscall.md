@@ -51,21 +51,21 @@ The return value is sent to user-space via `eax` register on x86.
       marked writable.
 * The system call is defined via `SYSCALL_DEFINE3` macro, the last number
   denote the number of arguments. Take `SYSCALL_DEFINE0` as an example:
-      ```c
-      #define SYSCALL_DEFINE0(name) asmlinkage long sys_##name(void)
-      #define SYSCALL_DEFINE1(name, ... ) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
-      // some code omitted
-      #define SYSCALL_DEFINEx(x, name, ...)                                   \
-      asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));           \
-      static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__));       \
-      asmlinkage long SyS##name(__SC_LONG##x(__VA_ARGS__))            \
-      {                                                               \
-              __SC_TEST##x(__VA_ARGS__);                              \
-              return (long) SYSC##name(__SC_CAST##x(__VA_ARGS__));    \
-      }                                                               \
-      SYSCALL_ALIAS(sys##name, SyS##name);                            \
-      static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
-      ```
+```c
+#define SYSCALL_DEFINE0(name) asmlinkage long sys_##name(void)
+#define SYSCALL_DEFINE1(name, ... ) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
+// some code omitted
+#define SYSCALL_DEFINEx(x, name, ...)                                   \
+asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));           \
+static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__));       \
+asmlinkage long SyS##name(__SC_LONG##x(__VA_ARGS__))            \
+{                                                               \
+      __SC_TEST##x(__VA_ARGS__);                              \
+      return (long) SYSC##name(__SC_CAST##x(__VA_ARGS__));    \
+}                                                               \
+SYSCALL_ALIAS(sys##name, SyS##name);                            \
+static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
+```
 * After the system call is written, we need to register it as an official
   system call.
     1. Add an entry to the end of the system call table, defined in
