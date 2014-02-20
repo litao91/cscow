@@ -1,0 +1,68 @@
+\section{Multi-Label Classification}
+\subsection{HOMER Algorithm}
+\subsubsection{Training}
+General idea: transform large set of labels $L$ into a tree-shaped
+hierarchy of simpler multi-label classification tasks.
+\begin{itemize}
+    \item Each node $n$ of the tree contains $L_n \subseteq L$
+    \item There are $|L|$ leaves, each one containing single distinct
+        label $\lambda_i \in L$
+    \item Each node contains the union of the label set of its children.
+        $L_{root} = L$
+\end{itemize}
+
+\emph{Meta-label}: of a node $n$, $\mu_n$ as the disjunction of the labels
+contained in the node. A training example can be considered annotated with
+meta-label $\mu_n$ if it is annotated with at least one of the labels in
+$L_n$
+
+Each internal node $n$ of the hierarchy also contains a multilabel
+classifier $h_n$. 
+
+Task of $h_n$: the prediction of one or more of the labels of its
+children. Set of labels for $h_n$
+\[
+    M_n = \{ \mu_c | c \in \mbox{children}(n)\}
+\]
+
+
+\subsubsection{Prediction}
+\begin{enumerate}
+    \item Starts with $h_{root}$
+    \item Follows a recursive process forwarding $x$ to the multilabel
+        classifier $h_c$ of a child node $c$ only if $\mu_c$ is among the
+        prediction of $h_{\mbox{parent}(c)}$
+    \item Eventually, this process may lead to the prediction of one or
+        more single-labels by the multi-label classifiers.
+    \item The union of these predicted single-labels is the output of hte
+        proposed approach in this case.
+\end{enumerate}
+\subsubsection{Training}
+\begin{enumerate}
+    \item Assume the existence of a set $D = \{(\bx_i, \bY_i) | i = 1
+        \cdots |D|\}$, each one consists of a feature vector $\bx_i$ and
+        set of labels $\bY_i \subseteq L$.
+    \item Recursively in a top-down depth-first fashion starting with the
+        root
+    \item At each $n$, $k$ children nodes are first created, unless $|L_n|
+        < k$, in which the number of children is $|L_n|$.
+    \item Each such child $n$ filters the data of its parent, keeping only
+        the eexample that are annotated with at least one of its own
+        labels.
+    \item Two main processes are then sequentially executed:
+        \begin{enumerate}
+            \item labels of the current node are distributed into $k$
+                disjoint subsets, one for each child of the current node
+            \item A multilabel classifier is trained for the prediction of
+                the meta-labels of its children.
+        \end{enumerate}
+    \item The approach recurses into each child node that contains no more
+        than a single label.
+\end{enumerate}
+
+Grouping: balanced k-means.
+
+\subsection{RAKEL}
+Let $L = \{\lambda_i\}, i = 1 \dots |L|$ be the set of labels. A set
+$Y\subseteq L$ with $k = |Y|$ is called $k$-labelset.
+

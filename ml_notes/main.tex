@@ -1,6 +1,4 @@
-\documentclass[a4paper]{scrbook}
-\usepackage{parskip}
-\usepackage[top=2.0cm,bottom=2.0cm,left=1.5cm,right=1.5cm]{geometry}
+\documentclass[a4paper, parskip=half*, DIV=18]{scrbook}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{graphicx}
@@ -45,10 +43,12 @@
 \def \brl{\mathbf{r}^{(l)}}
 \def \bv{\mathbf{v}}
 \def \bh{\mathbf{h}}
+\def \bY{\mathbf{Y}}
 \title{Machine Learning}
 \author{LI Tao}
 \begin{document}
 \maketitle
+\tableofcontents
 \input{bayesian}
 \input{param}
 \input{multivariate}
@@ -64,4 +64,5 @@
 \input{cnn}
 \input{dA}
 \input{Sda}
+\input{multilabel}
 \end{document}
