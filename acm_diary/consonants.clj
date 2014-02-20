@@ -1,6 +1,5 @@
 ; problem addr:
 ; https://code.google.com/codejam/contest/2437488/dashboard
-;
 (require '[clojure.string :as string])
 
 (def vowels (hash-set \a \e \i \o \u))
