@@ -816,4 +816,69 @@ float Data2 = 1;
 bool b = Data.IsEqualTo(Data2);
 bool b = Data.IsEqualTo<double>(Data2);
 ```
+
+One of the astonding thing, with the help of templates, you can do it by
+defining conversion operator on top of templates
+```c++
+template<class T>
+operator T() const
+{
+    return data;
+}
+```
+It would make possible to convert the `Convert` class template instance
+into any type, whenever possible:
+```c++
+Convert<int> IntData(40);
+float FloatData;
+double DoubleData;
+
+ 
+FloatData = IntData;
+DoubleData = IntData;
+```
+Which would instantiate the following:
+```c++
+Convert<int>::operator<float> float();
+Convert<int>::operator<double> double();
+```
+
 ## Requirement from the Underlying Type
+There are class templates and function templates, and they work on given
+type (template argument type). For example, a function template would sum
+up two values (or entire array), for type T - But this function template
+would require `operator+` to be present and accessible for the give type
+(type T). Similarly, a class would require the target type to have
+constructor, assignment operator and other set of required operators.
+
+### Requirement: Function Templates
+Example:
+```c++
+template<typename T>
+void DisplayValue(T tValue) {
+    std::cout << tValue;
+}
+
+struct Currency {
+    int Dollar;
+    int Cents;
+};
+
+Currency c;
+c.Dollar = 10;
+c.Cents = 54;
+
+DisplayValue(c);
+```
+This call is an error, because the following lien fails to compile for the
+instantiation of `DisplayValue` for type `Currency`. Because none of the
+overloaded operator `ostream::operator <<` can be called for `Currency`.
+
+Options:
+
+* Don't call `DisplayValue` for type `Currency`.
+* Modify `ostream` class, add new `operator <<` that takes Currency type.
+  But you don't have the liberty to do so, since `ostream` is one of C++
+  standard header.
+* Modify your own class, `Currency`, so that `cout << tValue` would
+  succeed.
