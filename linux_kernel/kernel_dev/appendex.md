@@ -52,3 +52,8 @@ In cdecl,
 
 In context of the C programming language, function arguments are pushed on
 the stack in the *reverse order*
+
+# The likely and unlikely macro
+These are macros that give hints to the compiler about which way a branch
+may go. The macros expand to GCC specific extensions, if they are
+available.

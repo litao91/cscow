@@ -221,6 +221,12 @@ Leverage several basic tenets:
     a partial slab, if one exists. Otherwise, the request is satisfied
     from an empty slab. If no empty, one is created. 
 
+The relationship between caches, slabs, and objects:
+
+![](./figures/slab.png)
+
+---
+
 Take `inode` structure as an example:
 * `struct inode` is allocated from the `inode_cachep` cache. 
 * This cache is made up of one or more slabs
@@ -240,6 +246,8 @@ contains three lists:
 
 Stored inside a `kmem_list3` structure defined in `mm/slab.c`.
 
+---
+
 A slab descriptor:
 
 ```c
@@ -250,7 +258,114 @@ struct slab {
     unsigned int inuse;      /* allocated objects in the slab */
     kmem_bufctl_t free;      /* first free object, if any */
 };
+```
 
 Slab descriptors are allocated either outside the slab in a general cache
-or inside the slab itself, at the beginning.
+or inside the slab itself, at the beginning.The slab allocator creates new
+slabs by interfacing with the low-levl kernel page allocator:
+```c
+static void *kmem_getpages(struct kmem_cache *cachep, gfp_t flags, int nodeid) {
+    struct page *page; 
+    void *addr; 
+    int i;
+    flags |= cachep->gfpflags; 
+    if (likely(nodeid == -1)) {
+        addr = (void*)__get_free_pages(flags, cachep->gfporder); 
+        if (!addr)
+            return NULL; 
+        page = virt_to_page(addr);
+    } else {
+        page = alloc_pages_node(nodeid, flags, cachep->gfporder); 
+        if (!page)
+            return NULL; 
+            addr = page_address(page);
+    }
+    i = (1 << cachep->gfporder); 
+    if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
+        atomic_add(i, &slab_reclaim_pages); 
+    add_page_state(nr_slab, i); 
+    while (i––) {
+        SetPageSlab(page); 
+        page++;
+    } 
+    return addr;
+}
 
+```
+We can ignore the NUMA-aware code and write a simple `kmem_getpages`
+```c
+static inline void * kmem_getpages(struct kmem_cache *cachep, gfp_t flags) {
+    void *addr;
+    flags |= cachep->gfpflags; 
+    addr = (void*) __get_free_pages(flags, cachep->gfporder);
+    return addr; 
+}
+```
+
+The freeing function is called only when available memory grows low and
+the system is attempting to free memory, or when a cache is explicitly
+destroyed.
+
+The slab layer is managed on a per-cache basis through a simple interface,
+which is exported to the entire kernel. The interface enables the creation
+and destruction of new caches and the allocation and freeing of objects
+within the caches.The sophisticated management of caches and the slabs
+within is entirely handled by the internals of the slab layer.After you
+create a cache, the slab layer works just like a specialized allocator for
+the specific type of object.
+
+### Slab Allocator Interface
+A new cache is created via:
+```c
+struct kmem_cache * kmem_cache_create(const char *name, 
+                size_t size,  // size of each element
+                size_t align, //offset of the first object
+                unsigned long flags, // cache's behavior
+                void (*ctor)(void *)); // constructor, when a new page is added
+```
+
+Destroying a cache:
+```c
+int kmem_cache_destroy(struct kmem_cache *cachep)
+```
+It is generally invoked from module shutdown code in modules that create
+their caches.
+
+---
+
+Allocating from the Cache
+```c
+void* kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+```
+
+This function returns a pointer to an object from the given cache
+`cachep`. If no free objects, the slab layer must obtain new pages via
+`kmem_getpages()`. 
+
+To free an object:
+```c
+void kmem_cache_free(struct kmem_cache *cachep, void *objp)
+```
+
+### of Using the Slab
+```c
+struct kmem_cache *task_struct_cachep;
+task_struct_cachep = kmem_cache_create(“task_struct”, 
+                            sizeof(struct task_struct), 
+                            ARCH_MIN_TASKALIGN, 
+                            SLAB_PANIC | SLAB_NOTRACK, 
+                            NULL);
+struct task_struct *tsk;
+// fork()
+tsk = kmem_cache_alloc(task_struct_cachep, GFP_KERNEL); 
+if (!tsk)
+    return NULL;
+// After a task dies
+kmem_cache_free(task_struct_cachep, tsk)
+
+// It's in fact never destroyed.
+int err;
+err = kmem_cache_destroy(task_struct_cachep); 
+if (err)
+    /* error destroying cache */
+```
