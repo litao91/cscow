@@ -536,3 +536,106 @@ In make, dependencies are always listed after the name of target:
     mytarget: dep1 dpe2
 
 Dependencies may be real files or phony targets.
+
+## Managing Large Projects
+
+### Recursive make
+Motivation: make works very well within a single directory (or small set
+of directories) but becomes more complex when the number of directories grows. So, we can use make to
+build a large project by writing a simple, self-contained makefile for each directory , then executing them all
+individually . 
+
+Suppose I have an mp3 player application:
+
+    ~/src/MyProject
+        |> ---- Makefile
+        |> ---- include
+        |           |>---- db
+        |           |>---- codec
+        |           |>---- ui
+        |> ---- lib
+        |           |>---- db
+        |           |>---- codec
+        |           |>---- ui
+        |> ---- app
+        |           |>---- player
+        |> ---- doc
+
+Note: A more traditional layout would place the application's main
+function and glue in the top directory rather than in the subdirectory
+`app/player`
+
+---
+
+If each of the directories `lib/db`, `lib/codec`, `lib/ui` and
+`app/player` contains a makefile, then it is the job of the top-level
+makefile to invoke them:
+
+    lib_codec := lib/codec
+    lib_db  := lib/db
+    lib_ui  := lib/ui
+    libraries := $(lib_ui) $(lib_db) $(lib_codec)
+    player := app/player
+    .PHONY: all $(player) $(libraries)
+    all: $(player)
+    $(player): $(libraries)
+    $(lib_ui): $(lib_db) $(lib_codec)
+
+The top-level make file invokes make on each subdirectory through a rule
+that lists the subdirectories as targets and whose action is to invoke
+make:
+
+    $(player) $(libraries):
+        $(MAKE) --directory=$@
+
+The variable `MAKE` should always be used to invoke make within a amke
+file. The `MAKE` variable is recognized by make and is set to the actual
+path of make so recursive invocation all use the same executable.
+
+The target directories marked with `.PHONY` so the rule fires even though
+the target may be up-to-date.
+
+The `--directory` (`-C`) option is used to cause make to change to the
+target directory before reading a makefile.
+
+As make is planning the execution of dependency graph, the prerequisites
+of a target are independent of one another. In addition, separate targets
+with no dependency relationships to one another are also independent.
+
+For example, the libraries have no inherent relationship to `app/player`
+target or to each other. 
+
+This means make is free to execute the
+`app/player` makefile before building any of the libraries. This would
+cause the build to fail since linking the application requires the
+libraries.
+
+To solve this, we provide the additional dependency information:
+
+    $(player): $(libraries)
+    $(lib_ui): $(lib_db) $(lib_codec)
+
+When the top-level makefile is run, we see:
+
+    $ make
+    make --directory=lib/db
+    make[1]: Entering directory `/test/book/out/ch06-simple/lib/db'
+    Update db library...
+    make[1]: Leaving directory `/test/book/out/ch06-simple/lib/db'
+    make --directory=lib/codec
+    make[1]: Entering directory `/test/book/out/ch06-simple/lib/codec'
+    Update codec library...
+    make[1]: Leaving directory `/test/book/out/ch06-simple/lib/codec'
+    make --directory=lib/ui
+    make[1]: Entering directory `/test/book/out/ch06-simple/lib/ui'
+    Update ui library...
+    make[1]: Leaving directory `/test/book/out/ch06-simple/lib/ui'
+    make --directory=app/player
+    make[1]: Entering directory `/test/book/out/ch06-simple/app/player'
+    Update player application...
+    make[1]: Leaving directory `/test/book/out/ch06-simple/app/player'
+
+When make detects that it is invoking another make recursively, it enalbes
+the `--print-directory` (`-w`) option, which causes make to print the
+entering and exiting directory. The `MAKELEVEL` is printed in square
+brackets in each line as well.
