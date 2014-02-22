@@ -882,3 +882,208 @@ Options:
   standard header.
 * Modify your own class, `Currency`, so that `cout << tValue` would
   succeed.
+
+You need to facilitate either of the following:
+
+* `ostream::operator<<(Currency value);` (simplified syntax)
+* `ostream::operator<<(std::string value);`
+* `ostream::operator<<(double value);`
+
+The first is very much possible, it is the definition of function would
+take `ostream` as well as `Currency` types, so that
+`cout<<currency_object;` would work.
+
+The second demands understanding of `std::string` and would be slower and
+complex
+
+The third fits the requirement at this moment, and is simplest of other
+two. It means that `Currency` be converted to `double`, whenever demanded,
+and the converted data will be passed to `cout`:
+
+```c++
+struct Currency
+{
+  int Dollar;
+  int Cents;
+
+  operator double()
+  {
+    return Dollar + (double)Cents/100;
+  }
+};
+```
+Now the compiler will happy since there is a **possible conversion** from
+`Currency` to *one of the type that `ostream::operator<<` takes*
+
+Therefore, 
+```c++
+std::cout << tValue;
+```
+Would be expanded as:
+```c++
+std::out << tValue.operator double();
+```
+It is generally advised that class shouldn't expose conversion operators
+too much, instead they should provide relevant functions for them. An
+example is `string::c_str()`, which returns C-style string pointer; but
+another implementations (like CString) would provide necessary conversions
+implicitly by providing conversion-operators. But for most cases it is
+recommended that classes should not expose unnecessary operators just to
+make it work with any code. It should provide only reasonable implicit
+conversions.
+
+### Requirements: Class Templates
+Most class templates would demand the following from underlying type:
+
+* Default constructor
+* Copy constructor
+* Assignment operator
+
+
+---
+
+Let's revisit the class:
+
+```c++
+template<typename T>
+class Item
+{
+   T Data;
+public:
+   Item() : Data( T() ) {}
+   void SetData(T nValue)
+   {
+      Data = nValue;
+   }
+   T GetData() const
+   {
+    return Data;
+   }
+ 
+   void PrintData()
+   {
+      cout << Data;
+   }
+};
+```
+The mandatory requirement is having default constructor in type `T`. The
+`SetData` also requires that `T` implemented assignment operator.
+
+## Templates and Other Aspects of C++
+### Class Templates, Friends
+Example, the template-based assignment operator in `Item<>` (in-class)
+```c++
+template<typename U>
+void operator = (U other) {
+    Data = other.GetData();
+}
+```
+We had to use `GetData` from other object of another type (another variant
+of `Item<>`. The reason is simple: `Itme<T>` and `Item<U>` would be
+different types. One class cannot access private member of another class.
+
+Since the two *specialization* of class template belong to same class, we
+can make them friend, that is, it's possible to make `Item<T>` and
+`Item<U>` friends of each other.
+
+Logically, it's like:
+```c++
+class Item_T {
+    ...
+    frind class item_U;
+}
+```
+
+So `Item_U` can access `Data`(private) of class `Item_T`
+
+We sould use code that is portable and indicates `Item` as class template,
+since target type is unknown, we cannot replace `T` with any particular
+data-type:
+
+Following should be used:
+
+```c++
+template<typename T>
+class Item{
+    ...
+    template <class U>
+    friend class Item;
+}
+```
+
+It forward-declares the class, and implies that `Item` is class template.
+
+Now the following code works:
+
+```c++
+template<typename U>
+void operator = (U other) {
+    Data = other.Data;
+}
+```
+
+### Class Templates, Inheritance
+Three modes of single inheritance:
+
+1. Class template inheriting Regular class
+* Regular class inheriting Class Template
+* Class Template inheriting another Class Template
+
+You know that *class-template* is a template for a class, which will be
+instantiated depending on the types and other argument it takes.
+
+The instantiation would produce a *template-class*, or **specialization**
+of that class.
+
+---
+
+```c++
+class ItemExt : public Item<int>
+{
+};
+```
+
+Normal class `ItemExt` is inheriting from a specialization, and is not
+facilitating any other instantiation of `Item`.
+
+---
+
+Another type of inheritance would be *template-inheritance* where you
+would inherit the class template itself and pass the template-parameter to
+it:
+
+```c++
+template<typename T>
+class SmartItem : public Item<T> {
+};
+```
+Class `SmartItem` is another class template which is inheriting from
+`Item` template. You would instantiate `SmartItem<>` with some type.
+
+As another example of *template-inheritance*:
+```c++
+
+template<size_t SIZE>
+class IntArray : public Array<int, SIZE>
+{
+};
+int main()
+{
+   IntArray<20> Arr;
+   Arr[0] = 10;
+}
+```
+
+And similarly, you may do:
+```c++
+template<typename T>
+class Array64 : public Array<T, 64>
+{
+};
+ 
+int main()
+{
+  Array64<float> Floats;
+  Floats[2] = 98.4f;
+}
+```

@@ -462,12 +462,77 @@ A library can be lined into an executable in serveral ways.
         cc count_words.o -L. -lcounter -lfl -o count_words
 
 
+## Variables and Macros
+Make is sort of two languages in one:
 
+* language describews depency graphs consists of targets and
+  prerequisites.
+* A macro language for performing textual substitution.
 
+Variable naming convention example:
+
+    # Some simple constants.
+    CC := gcc
+    MKDIR := mkdir -p
+    # Internal variables.
+    sources = *.c
+    objects = $(subst .c,.o,$(sources))
+    # A function or two.
+    maybe-make-dir = $(if $(wildcard $1),,$(MKDIR) $1)
+    assert-not-null = $(if $1,,$(error Illegal null value.))
+
+The value of a variable consists of all the words to the right of the
+assignment symbol with leading space trimmed. Trailing spaces are not
+trimmed.
+
+### Variables Types
+Two types of variables in make:
+
+* Simply expanded variables
+* Recursively expanded variables
+
+A simply expanded variable is defined using `:=` assignment operator:
+
+    MAKE_DEPEND := $(CC) -M
+
+Its rhs is expanded immediately upon reading the line from the makefile.
+
+---
+
+The second type of variable is called a recursively expanded variable. It
+is defined using `=` assignmetn operator.
+
+    MAKE_DEPEND = $(CC) -M
+
+Its rhs is simply slurped up my make and stored as value of variable
+without evaluating or expanding it any way. Instead, teh expansion is
+performed when the variable is used.
+
+### Macros
+A macro is just another way of defining a variable in make, and one that
+can contain embeded newlines.
+
+    define create-jar
+        @echo Creating $@...
+        $(RM) $(TMP_JAR_DIR)
+        $(MKDIR) $(TMP_JAR_DIR)
+        $(CP) -r $^ $(TMP_JAR_DIR)
+        cd $(TMP_JAR_DIR) && $(JAR) $(JARFLAGS) $@ .
+        $(JAR) -ufm $@ $(MANIFEST)
+        $(RM) $(TMP_JAR_DIR)
+    endef
+
+We can use it like this: 
+
+    $(UI_JAR): $(UI_CLASSES)
+        $(create-jar)
+
+Note that command line prefixed with an `@` character are not echoed by
+make when teh command is executed
 ## Dependencies in detail
 
 In make, dependencies are always listed after the name of target:
 
     mytarget: dep1 dpe2
 
-
+Dependencies may be real files or phony targets.
