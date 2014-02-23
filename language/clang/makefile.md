@@ -639,3 +639,46 @@ When make detects that it is invoking another make recursively, it enalbes
 the `--print-directory` (`-w`) option, which causes make to print the
 entering and exiting directory. The `MAKELEVEL` is printed in square
 brackets in each line as well.
+
+### Building Other Targets
+
+    clean: $(player) $(libraries)
+        $(MAKE) --directory=$@ clean
+
+This is broken because the prerequisites would trigger a build of the
+default target in `$(player)` and `$(libraries)` makefile, not a build of
+the clean target.
+
+The following would work:
+
+    $(player) $(libraries):
+        $(MAKE) --directory $@ $(TARGET)
+
+By adding the variable `$(TARGET)` to the recursive make line and the
+`TARGET` variable on the make command line, we can add arbitrary goals to
+sub directory:
+
+    make TARGET=clean
+
+We can set default value for `TARGET`:
+
+    TARGET ?= all
+
+We can take that one step further and derive `TARGET` from `MAKECMDGOALS`:
+
+## C and CPP
+
+### Separating Source and Binary
+Make works with multiple directories best when the files is updating live
+in the current directory.
+
+#### The Easy Way
+The easiest way to get make to place binaries in a separate directory from
+sources is to **start the make program from the binary directory**
+
+The output files are accessed using relative paths, while input files must
+be found either through explicit paths or through searching through
+`vpath`. Start with source directory:
+
+    SOURCE_DIR := ../mp3_player
+
