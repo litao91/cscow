@@ -3,6 +3,7 @@ This doc show the basic searching process of Lucene
 
 ## The process of `TermQuery`
 1. Create Reader and searcher with 
+
    ```Java
    IndexReader reader = DirectoryReader.open(Directory directory);
    IndexSearcher searcher = new IndexSearcher(reader);
