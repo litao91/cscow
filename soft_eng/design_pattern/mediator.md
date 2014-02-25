@@ -1,5 +1,9 @@
 # Mediator Pattern
 
+Define an object that encapsulates how a set of objects interact. Mediator
+promots loose coupling by keeping objects from referring to each other
+explicitly, and it lets you vary their interaction independently.
+
 ## Participants
 * **Mediator** -- defines an interface for communicating with Colleague
   objects.

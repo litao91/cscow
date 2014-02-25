@@ -1,14 +1,14 @@
 # The Search
+This doc show the basic searching process of Lucene
+
 ## The process of `TermQuery`
 1. Create Reader and searcher with 
 
         IndexReader reader = DirectoryReader.open(Directory directory);
         IndexSearcher searcher = new IndexSearcher(reader);
-
 * In `IndexSearcher`, the `IndexSearcher searcher` call `public TopDocs search(Query query, int nDocs)`
 
         TopDocs results = new searcher.search(parser.parse(str), 20)
-
 * `search(Query query, int n)` will then call `public search(Query query,
   Filter filter, int n)`
 * It will then call the low-level search Implementation:

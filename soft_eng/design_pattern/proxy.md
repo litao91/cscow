@@ -157,3 +157,102 @@ public class ImageViewer {
     }
 }
 ```
+
+## Extension: force proxy
+`IGamePlayer` must be accessed via proxy:
+
+The interface shared by both proxy and real subject:
+```java
+public interface IGamePlayer {
+    pulic void login(String user, String password);
+
+    public void killBoss();
+
+    public IGamePlayer getProxy();
+}
+```
+
+---
+
+The real object
+```java
+public class GamePlayer implements IGamePlayer {
+    private String name = "";
+
+    private IGamePlayer proxy = null;
+
+    public GamePlayer(String _name) {
+        this.name = _name;
+    }
+
+    public IGamePlayer getProxy() {
+        this.proxy = new GamePlayerProxy(this.name);
+        return this.proxy;
+    }
+
+    public void killBoss() {
+        if(this.isProxy()) {
+            System.out.println(this.name + "killing boss");
+        } else {
+            System.out.println("Use proxy to access");
+        }
+    }
+
+    public void login(String user, String pwd) {
+        if(this.isProxy()) {
+            System.out.println(user+this.name + "logged in");
+        } else {
+            System.out.println("Use proxy to access);
+        }
+    }
+
+    private boolean isProxy() {
+    /*
+        if(this.proxy == null) {
+            return false;
+        } else {
+            return true;
+        }
+        */
+        return this.proxy != null;
+    }
+}
+```
+
+---
+
+The proxy:
+```java
+public class GamePlayerProxy implements IGamePlayer {
+    private IGamePlayer gamePlayer = null;
+    private GamePlayerProxy(IGamePlayer _gamePlayer) {
+        this.gamePlayer = _gamePlayer;
+    }
+
+    public void killBoos() {
+        this.gamePlayer.killBoss();
+    }
+
+    public void login(String user, String pwd) {
+        this.gamePlayer.login(user, pwd);
+    }
+
+    public IGamePlayer getProxy() {
+        return this;
+    }
+}
+```
+
+Use the proxy:
+
+```java
+public class Client {
+    public static void main(String[] args) {
+        IGamePlayer payer = new GamePlayer("name");
+        IGamePlayer proxy = player.getProxy();
+
+        proxy.killBoss();
+    }
+}
+```
+
