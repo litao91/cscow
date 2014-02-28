@@ -2,21 +2,21 @@
 This doc show the basic searching process of Lucene
 
 ## The process of `TermQuery`
-1. Create Reader and searcher with 
+1. Create Reader and searcher with:
 
-   ```Java
-   IndexReader reader = DirectoryReader.open(Directory directory);
-   IndexSearcher searcher = new IndexSearcher(reader);
-   ```
+     ```java
+     IndexReader reader = DirectoryReader.open(Directory directory);
+     IndexSearcher searcher = new IndexSearcher(reader);
+     ```
 * In `IndexSearcher`, the `IndexSearcher searcher` call `public TopDocs search(Query query, int nDocs)`
 
-    ```java
-    TopDocs results = new searcher.search(parser.parse(str), 20)
-    ```
+      ```java
+      TopDocs results = new searcher.search(parser.parse(str), 20)
+      ```
 * `search(Query query, int n)` will then call `public search(Query query,
   Filter filter, int n)`
 * It will then call the low-level search Implementation:
-    
+
     ```java
     protected TopDocs search(Weight weight, ScoreDoc after, int nDocs)
     ```
@@ -26,10 +26,10 @@ This doc show the basic searching process of Lucene
     protected TopDocs search(List<AtomicReaderContext> leaves, Weight
                             weight, ScoreDoc after, int nDocs)
     ```
-  The `leaves` argument uses the `protected final List<AtomicReaderContext
-  leafContexts` declared in `IndexSearcher`. This variable is initialized
-  in the construction time, get from the passed `IndexReader`.
-  (`IndexReader.getContext().leaves()`)
+  The `leaves` argument uses the `protected final
+  List<AtomicReaderContext> leafContexts` declared in `IndexSearcher`.
+  This variable is initialized in the construction time, get from the
+  passed `IndexReader`. (`IndexReader.getContext().leaves()`)
 * It will then creates a `TopScoreDocCollector`, and call 
         
     ```java
@@ -40,20 +40,23 @@ This doc show the basic searching process of Lucene
   This method executes the searches on all given leaves exclusively. To
   search across all the searchers, leaves use `leafContexts`.
 
-  Inside the function (deleted the exception handling)
+    Inside the function (deleted the exception handling)
 
     ```java
     protected void search(List<AtomicReaderContext> leaves, Weight
                         weight, Collector collector) {
-        for(AtomicReaderContext ctx : leaves {
+        for(AtomicReaderContext ctx : leaves) {
             collector.setNextReader(ctx);
+            // the scorer is able to iterate all mathcing docs with
+            // nextDoc()
             Scorer scorer = weight.scorer(ctx,
                                     !collector.acceptsDocsOutOfOrder(), true);
+            // scorer will iterate to each of document, collect will deal
+            // wiht each score
             scorer.score(collector);
         }
     }
     ```
-
 * `Scorer.score(Collector collector)` will score and collect all matching
   documents
 
@@ -72,6 +75,8 @@ This doc show the basic searching process of Lucene
     ```java
     @Override
     public void collect(int doc) throws IOException {
+        // scorer has the state of current doc, scorer.scoer() will give
+        // the score of current doc
         float score = scorer.score(); // setted by setScorer(this)
         totalHits++;
         if (score < pqTop.score) {
@@ -85,17 +90,16 @@ This doc show the basic searching process of Lucene
     }
     ```
 
-  Note that in this case, the concrete class of Scorer is `TermScorer`,
-  where the `nextDoc()` is implemented. 
+    Note that in this case, the concrete class of Scorer is `TermScorer`,
+    where the `nextDoc()` is implemented. 
 
-  The collector is of type `TopScoreDocCollector`, and the `collect`
-  method is implemented in `OutOfOrderTopScoreDocCollector`, in which the
-  `collect` function will update `PriorityQueue<T> pq` (priority queue) that defined in
-  `TopScoreDocCollector`. `collect()` is called for each document that
-  match the query.
+    The collector is of type `TopScoreDocCollector`, and the `collect`
+    method is implemented in `OutOfOrderTopScoreDocCollector`, in which the
+    `collect` function will update `PriorityQueue<T> pq` (priority queue) that defined in
+    `TopScoreDocCollector`. `collect()` is called for each document that
+    match the query.
 
-  So the document is actually collected in the `score` function.
-
+    So the document is actually collected in the `score` function.
 * The `nextDoc()` method of `TermScorer` relies on the
   `DocEnum`, The `DocEnum` is gotten in `TermWeight.scorer()`
   (`TermWeight` is a subclass of `Weight`). An
@@ -114,15 +118,17 @@ This doc show the basic searching process of Lucene
     }
     ```
 
-  In function `getTermsEnum()`:
+    Note that the `termEnum.docs()` get a `DocsEnum` for the current term.
+
+    In function `getTermsEnum()`:
 
     ```java
     final TermsEnum termsEnum = context.reader().terms(term.field()).iterator(null);
     termsEnum.seekExact(term.bytes(), state);
     return termsEnum;
     ```
-  So it will basically get the context with respect to the terms store in
-  the `Weight` (which is in turn generated from `Query`).
+    So it will basically get the context with respect to the terms store in
+    the `Weight` (which is in turn generated from `Query`).
 * The `Scorer` Make use of `Similarity.SimScorer.docScorer` to actually do the
   scoring. 
 

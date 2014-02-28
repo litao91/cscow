@@ -4,6 +4,7 @@ an interface for accessing an index.  Search of an index is done entirely
 through this abstract interface.
 
 Two different types of `IndexReader`s:
+
 * `AutomicReader`: These indexes do not consist of several sub-readers,
   they are atomic. They support retrieval of stored fields, doc values,
   terms and postings. 
@@ -55,6 +56,7 @@ sub-readers, they are *atomic*. They support retrieval of stored fields,
 doc values, terms, and postings.
 
 Methods:
+
 * `Fields fields()` return `Fields` for this reader. 
 * `NumericDocValues getNumericDocValues(String field)`: Returns
   `NumericDocValues` (a per-document numeric value) for this field. 

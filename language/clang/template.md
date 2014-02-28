@@ -19,6 +19,7 @@ Two types of Templates:
 
 ## Function Templates
 Here is a templated function:
+
 ```c++
 template<class T>
 void PrintTwice(T data) {
@@ -27,6 +28,7 @@ void PrintTwice(T data) {
 ```
 
 The first line:
+
 ```c++
 template<class T>
 ```
@@ -37,6 +39,7 @@ this function. Here, the name, `T` is known as **template type
 parameter**.
 
 For instance, if we call the function as:
+
 ```c++
 PrintTwice(124);
 ```
@@ -972,6 +975,7 @@ The mandatory requirement is having default constructor in type `T`. The
 ## Templates and Other Aspects of C++
 ### Class Templates, Friends
 Example, the template-based assignment operator in `Item<>` (in-class)
+
 ```c++
 template<typename U>
 void operator = (U other) {
@@ -987,6 +991,7 @@ can make them friend, that is, it's possible to make `Item<T>` and
 `Item<U>` friends of each other.
 
 Logically, it's like:
+
 ```c++
 class Item_T {
     ...
@@ -1075,6 +1080,7 @@ int main()
 ```
 
 And similarly, you may do:
+
 ```c++
 template<typename T>
 class Array64 : public Array<T, 64>
@@ -1085,5 +1091,32 @@ int main()
 {
   Array64<float> Floats;
   Floats[2] = 98.4f;
+}
+```
+
+## Partial Specialization
+```c++
+template <class I, class O>
+class testClass {
+public:
+    testClass(){ cout << "I, O" << endl; }
+};
+
+template<class T>
+class testClass<T*, T*> {
+public:
+    testClass() { cout << "T*, T*" << endl;}
+};
+
+template<>
+class testClass<int, bool> {
+public:
+    testClass() {cout << "int, bool" << endl;}
+};
+
+int main() {
+    testClass<int, char> obj1;  // I, O
+    testClass<int*, int*> obj2; // T*, T*
+    testClass<int, bool> obj3;  // int, bool
 }
 ```

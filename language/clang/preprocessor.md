@@ -88,11 +88,15 @@ like:
 Turn a token into a string containing the literal text of the token. The
 syntax is simply prefix the token with a pound sign (`#`).
 
-    #define PRINT_TOKEN(token) printf(#token " is %d", token)
+```c
+#define PRINT_TOKEN(token) printf(#token " is %d", token)
+```
 
-For instance `PRINT_TOKEN(foo) will expand to:
+For instance `PRINT_TOKEN(foo)` will expand to:
 
-    praintf("<foo>" "is %d" <foo>)
+```c
+praintf("<foo>" "is %d" <foo>)
+```
 
 
 
