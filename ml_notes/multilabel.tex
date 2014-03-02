@@ -66,3 +66,74 @@ Grouping: balanced k-means.
 Let $L = \{\lambda_i\}, i = 1 \dots |L|$ be the set of labels. A set
 $Y\subseteq L$ with $k = |Y|$ is called $k$-labelset.
 
+\subsection{MLkNN}
+\subsubsection{Preliminaries}
+Notations
+\begin{description}
+    \item[domain of instances] $\mathcal{X}$
+    \item[Finite set of labels] $\mathcal{Y} = \{(x_1, Y_1), (x_2, Y_2),
+        \dots, (x_m, Y_m)\}, (x_i \in \mathcal{X}, Y_i \subseteq
+        \mathcal{Y})$
+\end{description}
+
+Learning system will produce a real-valued function of the form:
+\[ f: \mathcal{X} \times \mathcal{Y} \rightarrow \mathcal{R}\]
+
+A successful learning system will tend to output larger values for labels
+in $Y_i$ than those not in $Y_i$. That is
+\[ f(x_i, y_1) > f(x_i, y_2), \forall y_1 \in Y_i, \mbox{and} y_2 \not\in
+Y_i\]
+
+The corresponding multi-label classifier $h(\cdot)$:
+\[ h(x_i) = \{ y|f(x_i, y) > t(x_i), y \in \mathcal{Y}\}\]
+Where $t(\cdot)$ is a threshold function which is usually set to be the
+zero constant.
+
+\subsection{ML-KNN}
+
+Given an instance $x$ and its associated label set $Y\in \mathcal{Y}$
+
+Let $\vec{y_x}$ be the category vector for $x$:
+\[
+    \vec{y_x}(l) = 
+    \begin{cases}
+    1 & l \in Y \\
+    0 & \mbox{otherwise}
+    \end{cases}
+\]
+
+Let $N(x)$ denote the set of the label sets of these neighbors, a
+\emph{membership counting vector} can be defined as:
+
+\[ \vec{C}(x) = \sum_{a \in N(x)}\vec{y_a}(l), l \in \mathcal{Y}\]
+
+$\vec{C_x}(l)$ counts the number of neighbors of $x$ belonging to the
+$l$th class.
+
+\begin{itemize}
+    \item  For each test instance $t$, ML-KNN firstly identifies its KNNs $N(t)$ in
+        the training set.
+    \item Let $H_1^l$ be the event that $t$ has label $l$, while $H_0^l$
+        be the event that $t$ has no label $l$.
+    \item Let $E_j^l (j \in \{0, 1, \dots, K\})$ denote the event that,
+        among the KNNs of $t$, there are exactly $j$ instances which have
+        label $l$. 
+\end{itemize}
+
+Based on the membership counting vector $\vec{C_t}$, the category vector
+$\vec{y_t}$ is determined using the following MAP principle:
+
+\[ 
+    \vec{y}_t(l) = \arg\max_{b\in \{0, \}} P(H_b^l|E_{\vec{C}_t(l)}^l), l
+    \in \mathcal{Y}
+\]
+
+Using the Bayesian rule:
+\begin{align*}
+    \vec{y}_t(l) &= \arg\max_{b\in \{0, 1\}} \frac{P(H_b^l)
+        P(E^l_{\vec{C}_t(l)}|H_b^l)}{P(E_{\vec{C}_t(l)}^l|H_b^l)} \\
+        &= \arg\max_{b \in \{0, 1\}} P(H_b^l)P(E_{\vec{C}_t(l)}^l|H_b^l)
+\end{align*}
+
+Algorithm
+

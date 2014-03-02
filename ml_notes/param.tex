@@ -6,7 +6,7 @@ $f(\bx)$.
 
 Dataset: \[\mathcal{X}=\{\x^{(l)}\}\]
 
-Follows the probability distribution: \[\x^{l}\sim p(\x)\], 
+Follows the probability distribution: \[\x^{l}\sim p(\x)\]
 
 Assume some parametric form for $p(\x|\theta)$. $\theta$ is the parameter
 (possibly a vector).
@@ -22,20 +22,26 @@ likely as possible
 Likelihood:\[L(\theta|\mathcal{X}) \equiv p(\mathcal{X}|\theta) =
     \prod^N_{l=1}p(\x^{(l)}|\theta)\]
 
-Log likelihood: \[\mathcal{L} \equiv \log L(\theta|X) = \sum^N_{l=1}\log
+That is: the probability of drawing $\cX$ (training data) giving the
+parameter $\theta$
+
+Log likelihood: 
+\[\mathcal{L} \equiv \log L(\theta|X) = \sum^N_{l=1}\log
 p(\x^{(l)}|\theta)\]
 
-\paragraph{Max Likelihood estimate} \[\hat{\theta} =
-arg\max_{\theta}\mathcal{L}(\theta|\mathcal{X})\]
+\paragraph{Max Likelihood estimate (MLE)} 
+\[\hat{\theta} = \arg\max_{\theta}\mathcal{L}(\theta|\mathcal{X})\]
 
 In words, find a parameter $\theta$ such that, if we sample some data
-point follow this distribution, then it is most likely that we will get
-our learning set.
+point follows this distribution with parameter $\theta$, then it is most
+likely that we will get our learning set.
 
 \subsection{Example: Assume the data follow Bernoulli}
 \paragraph{Bernoulli Distribution} $x \in\{0, 1\}$, take $1$ with success
 probability $p_0$.
-\[P(x|p_0) = p_0^x(1-p_0)^{1-x}\]
+\[P(x|p_0) = p_0^x{(1-p_0)}^{1-x}\]
+That is, the probability of drawing $x$ given $p_0$ (the parameter)
+
 \paragraph{Log Likelihood}\[\mathcal{L}(p_0|\cX) = \sum_{l=1}^N[x^{(l)}\log
 p_0+(1-x^{(l)})\log(1-p_0)]\]
 \paragraph{ML estimation} 
@@ -43,43 +49,52 @@ p_0+(1-x^{(l)})\log(1-p_0)]\]
 This is obtain by taking derivative of $\mathcal{L}$ with respect to
 $p_0$, and set the derivative to zero.
 
-\subsection{Example: Multinomial Ran Var.} 
+\begin{align*}
+    \frac{d \mathcal{L}(p_0|\cX)}{d p_0} & = \sum_l^N\left[
+        \frac{x^{(l)}}{p_0} - \frac{1-x^{(l)}}{1-p_0}
+    \right] \\
+    &= \sum_{l=1}^N \frac{x^l - p_0}{p_0(1-p_0)} = 0 \\
+    &\Leftrightarrow \sum_{l=1}^N x^{(l)} - Np_0 = 0 \\
+    &\Leftrightarrow p_0 = \frac{1}{N}\sum_{l=1}^N x^{(l)}
+\end{align*}
+
+\subsection{Example: Multinomial Ran Variable} 
 $\x$ with $K\geq 2$ possible value
-\paragraph{Indicator variable}: \[x_i = \begin{cases}1 & \mbox{if outcome
+\paragraph{Indicator variable} \[x_i = \begin{cases}1 & \mbox{if outcome
     is state }i \\ 0 & \mbox{otherwise}\end{cases}\]
 \paragraph{Density function}
 \[ P(\x|\theta) = P(x_1,\dots, x_K|p_1,\dots, p_K) =
 \prod^K_{i=1}p_i^{x_i}, \quad 
 \sum_{i=1}^K p_i = 1 \]
 
-\paragraph{Log likelihood}: \[\cL (p_0|\cX) = \sum_l^N\sum_{i=1}^K x_i^{(l)}
+\paragraph{Log likelihood} \[\cL (p_0|\cX) = \sum_l^N\sum_{i=1}^K x_i^{(l)}
     \log p_i\]
 
-\paragraph{ML estimate}: \[\hat{p_i} = \frac{1}{N}\sumln \xil\]
+\paragraph{ML estimate} \[\hat{p_i} = \frac{1}{N}\sumln \xil\]
 
 \subsection{Example Normal} \paragraph{p.\ d.\ f.}: \[p(x|\mu, \sigma ) =
-    \frac{1}{\sqrt{2\pi\sigma^2}}\exp[-\frac{(x-\mu)^2}{2\sigma^2}]\]
+    \frac{1}{\sqrt{2\pi\sigma^2}}\exp[-\frac{{(x-\mu)}^2}{2\sigma^2}]\]
     \paragraph{Log likelihood} \[\cL(\mu, \sigma|\cX) = -\frac{N}{2}\log(2\pi) - N\log\sigma -
-    \frac{1}{2\sigma^2}\sumln(\xl - \mu)^2\]
+    \frac{1}{2\sigma^2}\sum\ln{(\xl - \mu)}^2\]
     \paragraph{ML Estimates} \begin{align*}
         \hat{\mu} &= \frac{1}{N}\sumln \xl\\
-        \hat{\sigma^2} &= \frac{1}{N}\sumln (\xl - \hat{\mu})^2 \end{align*}
+        \hat{\sigma^2} &= \frac{1}{N}\sumln {(\xl - \hat{\mu})}^2 \end{align*}
 \subsection{Multivariable Normal} $\mathcal{N}(\bmu,\bSig)$, $\bmu$ mean vec, $\bSig$
     covariance matrix
- \[p(\x|\bmu, \bSig) = \frac{1}{(2\pi)^{d/2}|\bSig|^{1/2}}
-     \exp[-\frac{1}{2}(\x -\bmu)^T\bSig^{-1}(\x - \bmu)]\]
+    \[p(\x|\bmu, \bSig) = \frac{1}{{(2\pi)}^{d/2}|\bSig|^{1/2}}
+        \exp[-\frac{1}{2}{(\x -\bmu)}^T\bSig^{-1}(\x - \bmu)]\]
 \[\cL (\bmu,\bSig|\cX) = \frac{Nd}{2}\log(2\pi) - \frac{N}{2}\log|\bSig|
--\frac{1}{2}\sumln(\bxl - \bmu)^T\bSig^{-1}(\bxl - \bmu)\]
+-\frac{1}{2}\sumln{(\bxl - \bmu)}^T\bSig^{-1}(\bxl - \bmu)\]
 \paragraph{ML estimates} \begin{align*}\hat{\bmu} &= \frac{1}{N}\sumln
     \bxl \\
-    \hat{\bSig} &= \frac{1}{N}\sumln(\bxl - \hat{\bmu})(\bxl -
-    \hat{\bmu})^T\end{align*}
+    \hat{\bSig} &= \frac{1}{N}\sumln(\bxl - \hat{\bmu}){(\bxl -
+    \hat{\bmu})}^T\end{align*}
 \section{Bias and Variance} 
 Bias: \[b_\theta(d) = E[d] - \theta\]
-Variance: \[E[d-E[d]^2]\](d is estimator of param $\theta$)
+Variance: \[E[d-{E[d]}^2]\](d is estimator of param $\theta$)
 
 \paragraph{Mean Squared error}
-\[r(d,\theta) = E[(d-\theta)^2]= \mbox{bias}^2 + \mbox{variance}^2\]
+\[r(d,\theta) = E[{(d-\theta)}^2]= \mbox{bias}^2 + \mbox{variance}^2\]
 \section{Bayesian Estimation} Treat $\theta$ as a Random Variable,  that
 is, the parameter $\theta$ follows a prior distribution $p(\theta)$
 \paragraph{Posterior}: 
@@ -92,19 +107,19 @@ is, the parameter $\theta$ follows a prior distribution $p(\theta)$
     \[ y = \int g(x|\theta)p(\theta|\cX)d\theta \]
 \section{Computational Considerations}
 \paragraph{Max a posteriori (MAP)}
-\[\theta_{MAP}=arg\max_{\theta}p(\theta|\cX)\]
-\[p(x|\cX) \approx p(x|\theta_{MAP)}\] \[y\approx y_{MAP} =
-    g(x|\theta_{MAP}\]
+\[\theta_{MAP}=\arg\max_{\theta}p(\theta|\cX)\]
+\[p(x|\cX) \approx p(x|\theta_{MAP})\] \[y\approx y_{MAP} =
+    g(x|\theta_{MAP})\]
 
-    ML estimation: \[\theta_{ML} = arg \max_{\theta} p(\theta|\cX)\]
+    ML estimation: \[\theta_{ML} = \arg \max_{\theta} p(\theta|\cX)\]
 
-    Bayes' estimation -- expectation w.r.t.\ posterior density:
+    Bayes' estimation --- expectation w.r.t.\ posterior density:
     \[ \theta_{Bayes} = E[\theta|\cX] = \int \theta p(\theta|\cX)d\theta\]
 \begin{description}
 \item[] Example: Bayesian estimation with known $\mu$, $\sigma$ and $\sigma_0$\\
         $x^{(l)} \sim \mathcal{N}(\theta, \sigma_0^2)$, 
         $\theta  \sim \mathcal{N}(\mu, \sigma^2)$\\
-         MLE: $\theta_{ML} = \frac{1}{N}\sumln\x^{(l)}=m$ \\
+         MLE\@: $\theta_{ML} = \frac{1}{N}\sumln\x^{(l)}=m$ \\
          $\theta_{Map} = \theta_{Bayes}  =E(\theta|\cX) = 
             \frac{N/\sigma_0^2}{N/\sigma_0^2+1/\sigma^2} m +
             \frac{1/\sigma^2}{N/\sigma_0^2 + 1/\sigma^2} \mu$
