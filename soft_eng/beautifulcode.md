@@ -156,3 +156,31 @@ In processing `update` command:
 
 The `svn_delta_editor_t` structure is a set of callback functions to be 
 defined by a delta consumer and invoked by a delta producer
+
+The delta **consumer** implements the callback 
+
+* The delta consumer implements the callback function (callee)
+* The delta producer invokes them (caller)
+
+So the caller (producer) is pushing tree delta at the callee (consumer)
+
+1. At the start, the consumer provides `edit_baton`, a baton global to the
+   entire delta edit.
+* If there are any tree deltas to express, the producer should pass
+  `edit_baton` to the `open_root` function, to get a baton representing
+  root of the tree being edited.
+
+Example, if we already have subdirectories named `foo` and `foo/bar`, then
+the producer can create a new file name `foo/bar/baz.c`, by calling
+
+* `open_root()` --- yielding a baton `root` for the top directory
+* `open_directory(root, "foo")` --- yielding a baton `f` for `foo`
+* `open_directory(f, "foo/bar")` --- yielding a baton `b` for `foo/bar`
+* `add_file(b, "foo/bar/baz.c")` 
+
+When the producer is finished making changes to a directory, it should
+call `close_directory`
+
+The `add_file` and `open_file` callbacks each return a baton for the file
+being created or changed. This baton can then be passed to
+`apply_textdelta` to change the file's contents.
