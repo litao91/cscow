@@ -113,11 +113,13 @@ $l$th class.
 \begin{itemize}
     \item  For each test instance $t$, ML-KNN firstly identifies its KNNs $N(t)$ in
         the training set.
-    \item Let $H_1^l$ be the event that $t$ has label $l$, while $H_0^l$
-        be the event that $t$ has no label $l$.
-    \item Let $E_j^l (j \in \{0, 1, \dots, K\})$ denote the event that,
-        among the KNNs of $t$, there are exactly $j$ instances which have
-        label $l$. 
+    \item $N(t)$ --- neighbors of $t$
+    \item $\vec{C}_t(l)$ --- membership counting vector. Number of element
+        in $N(t)$ that has label $l$.
+    \item $H_b^l$, $b \in {0, 1}$ --- $t$ (the testing instance) has label
+        $l$ if $b = 1$, otherwise if $b = 0$
+    \item $\vec{y}_x(l)$ --- $1$ if instance $x$ has label $l$
+    \item $E_j^l, j \in \{0, 1, \dots, K\}$ --- Among $N(t)$ exactly $j$ instances have label $l$.
 \end{itemize}
 
 Based on the membership counting vector $\vec{C_t}$, the category vector
@@ -136,4 +138,51 @@ Using the Bayesian rule:
 \end{align*}
 
 Algorithm
+\begin{enumerate}
+    \item For each label $l \in \cY$, calculate the prior:
+        \[P(H_1^l) = \frac{(s + \sum_{i=1}^m y_{x_i}(l))}{s \times 2 +
+        m}\]
+        The probability that any instance has label $l$. $s$ is smoothing
+        parameter. It is basically $\frac{\#\mbox{instance has
+        }l}{\#\mbox{total training instances}}$.
+        \[ P(H_0^l) = 1 - P(H_1^l)\]
+    \item Identify the KNN $N(x_i), i \in \{1, 2, \dots, m\}$ ($m$ testing
+        instances)
+    \item for each label $l \in \cY$, do the following:
+        \begin{enumerate}
+            \item For $j \in \left\{ 0, 1,
+                \dots, K \right\}$ (the possible count of labels) initialize the counting $c[j] = 0$ and
+                $c'[j] = 0$
+            \item For each of the training instances $i \in \left\{ 1, 2,
+                \dots m \right\}$, the number of label $l$ in the
+                neighbors of $x_i$:
+                \[ \delta = C_{x_i}^(l) \leftarrow \sum_{a\in
+                N(x_i)\vec{y}_a(l)}\]
+
+                If $\vec{y}_{x_i}(l) =  1$, that is, if instance $x_i$
+                has label $l$,  then $c[\delta] \leftarrow
+                c[\delta] + 1$, else $c'[\delta] \leftarrow c'[\delta]
+                + 1$.
+
+                So $c[\delta]$ is the cases that the training instance
+                $x_i$ has label $l$ and among its neighbors, there are exactly
+                $\delta$ instances also have label $l$.
+            \item Calculate the posterior probabilities $P(E_j^l|H_b^l)$,
+                probability that produce $E_j^l$ ($j$ label $l$ in
+                the neighbor) given the instance $H_b^l$ (has or does not
+                have label $l$)
+                The probability that $l$ has $j$ instances
+                \[
+                    P(E_j^l|H_1^l) = \frac{s + c[j]}{s\times{K+1} +
+                    \sum_{p=0}^k c[p]}
+                \]
+                In words, it is (ignoring the smoothing terms):
+                \[ P(\mbox{$j$ neighbors with
+                label $l$}) = \frac{\#\mbox{num instances with $l$ has
+                $j$ neighbors labelled $l$ neighbors}}{\#\mbox{total
+                    number of $l$ instances whose
+                neighbors has label $l$}}
+            \]
+        \end{enumerate}
+\end{enumerate}
 

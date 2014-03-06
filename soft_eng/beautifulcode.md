@@ -1,4 +1,5 @@
-# A Regex Matcher
+# Beautiful Codes
+## A Regex Matcher
 The matching The code:
 
 ```c
@@ -41,7 +42,7 @@ int matchstar(int c, char *regexp, char *text) {
 }
 ```
 
-## Discussion
+### Discussion
 The function `match(regexp, text)` tests whether there is an occurrence of
 the regular expression **anywhere** within the text.
 
@@ -80,7 +81,7 @@ Special cases:
   point between the regular expression and the text.
 
 
-# Delta Editor
+## Delta Editor
 Task of Subversion: minimally expressing the difference between two
 similar directory trees.
 
@@ -114,7 +115,7 @@ Thus each revision in the repo points to the root node of a unique tree,
 and the difference between that tree and the preceding one is the change
 that was committed in the new revision.
 
-## Expressing Tree Differences
+### Expressing Tree Differences
 The most common action in Subversion is to transmit changes between the
 two sides:
 
@@ -126,7 +127,7 @@ two sides:
 The underlying task is the same in both cases. A tree difference is a tree
 difference, regardless of which direction it's traveling over the network.
 
-## The Delta Editor Interface
+### The Delta Editor Interface
 Some subversion jargon:
 
 * *pools* arguments are memory pools
@@ -184,3 +185,62 @@ call `close_directory`
 The `add_file` and `open_file` callbacks each return a baton for the file
 being created or changed. This baton can then be passed to
 `apply_textdelta` to change the file's contents.
+
+## Quicksort 
+A Quicksort function, implemented in C is shown as follow:
+
+```c
+void quicksort(int l, int u) {
+    int i, m;
+    if(l >= u) return;
+    swap(l, randint(l, u));
+    m = l;
+    for (i = l + 1; i <= u; i++) {
+        if (x[i] < x[l])
+            swap(++m, i);
+    }
+    swap(l, m);
+    quikcsort(l, m+1);
+    quicksort(m+1, u)
+}
+```
+
+This code sorts a global array `x[n]` when called with the arguments
+`quicksort(0, n-1)`.
+
+To determine the average number of comparisons, we first augment the
+program to count them:
+
+```c
+for ( i = l + 1; i <= u; i++) {
+    comps++;
+    if(x[i] < x[l]) {
+        swap(++m, i);
+    }
+}
+```
+
+Note that the inner loop always makes precisely `u-l` comparisons, we can
+make th program a tiny bit faster by:
+```c
+comps += u-1;
+for (i = l + 1; i <= u; i++) {
+    if (x[i] < x[l]) {
+        swap(++m, i);
+    }
+}
+```
+
+The following remoes the "real work" of sorting elements, and keeps only
+the "skeleton":
+
+```c
+void quickcount(int l, int u) {
+    int m;
+    if (l >= u) return;
+    m = randint(l, u)
+    comps += u - 1;
+    quickcount(l, m-1)
+    quickcount(m+1, u)
+}
+
