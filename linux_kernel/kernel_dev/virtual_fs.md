@@ -321,3 +321,106 @@ Each time a path name is accessed, the VFS can first try to look up the
 path name in the dentry cache. If the lookup succeeds, the required final
 dentry object is obtained without serious effort. Otherwise, VFS must
 follow each directory entry to resolve the full path.
+
+## The file Object
+The file object is used to represent a **file opened by a process.** 
+
+It's the in-memory response to the `open()` system call and destroyed in
+response to the `close()` system call. All these file-related calls are
+actually methods defined in the file operations table.
+
+Because multiple processes can open and manipulate a file at the same
+time, there can be multiple file objects in existence for the same file.
+The file object represents a **process's view of an open file**.
+
+The file object is represented by `struct file` and is defined in
+`<linux/fs.h>`
+
+```c
+struct file {
+    union {
+        struct list_head fu_list;    /* list of file objects */
+        struct rcu_head fu_rcuhead;  /* RCU list after freeing */
+    } f_u;
+    struct path f_path;              /* contains the dentry */
+    struct file_operations *f_op;    /* file operations table */
+    spinlock_t f_lock;               /* per-file struct lock */
+    atomic_t f_count;                /* file object’s usage count */
+    unsigned int f_flags;            /* flags specified on open */
+    mode_t f_mode;                   /* file access mode */
+    loff_t f_pos;                    /* file offset (file pointer) */
+    struct fown_struct f_owner;      /* owner data for signals */
+    const struct cred *f_cred;       /* file credentials */
+    struct file_ra_state f_ra;       /* read-ahead state */
+    u64 f_version;                   /* version number */
+    void *f_security;                /* security module */
+    void *private_data;              /* tty driver hook */
+    struct list_head f_ep_links;     /* list of epoll links */
+    spinlock_t f_ep_lock;            /* epoll lock */
+    struct address_space *f_mapping; /* page cache mapping */
+    unsigned long f_mnt_write_state; /* debugging state */
+};
+```
+
+Similar to the dentry object, the file object does not actually correspond
+to any on disk data. The file object does point to its associated dentry
+via `f_dentry`.
+
+## File Operations
+
+* `llseek()`: update the file pointer to the given offset
+* `aio_read()`: asynchronous read of `count` bytes into `buf` for the file
+  described in `iocb`.
+* `ioctl(inode, file, cmd, arg)` sends a command and argument pair to a device. It is used when
+  the file is an open device node. This function is called from the
+  `ioctl()`.
+* `mmap(file, vma)` maps the given file onto the given address space, and
+  is called by `mmap()` system call.
+* `int open(inode, file)` Creates a new file object and likes it to the
+  corresponding inode object. It is called by the `open()` system call.
+* `flush` called by the VFS whenever the reference count of a open file
+  decreases. 
+* `fsync` called by `fsync()` system call to write all cached data for the
+  file to disk.
+
+
+Note: Because BKL (Big Kernel Lock) is a coarse-grained, inefficient lock,
+drivers should implement `unlock_ioctl()` and not `ioctl()`.
+
+## Data Structure Associated with Filesystems
+Linux kernel have a special structure for **describing the capabilities
+and behavior of each filesystem**. The structure `file_system_type`
+structure, defined in `<linux/fs.h>` accomplishes this.
+
+The `get_sb()` function reads the superblock from the disk and populates
+the superblock object when the filesystem is loaded. 
+
+There is only one `file_system_type` per filesystem, regardless of how
+many instances of the filesystem are mounted on the system.
+
+When filesystem is actually mounted, at which point the `vfsmount`
+strucuture is created. This structure represents a specific instance fo a
+filesystem --- in other words, a mount point.
+
+The `vfsmount` strucuture is defined in `<linux/mount.h>`. The complicated
+part of maintaining the list of all mount points is the relation between
+the filesystem and all the other mount points. The various linked list in
+`vfsmount` keep track of this information.
+
+## Data Structure Associated with Process
+Each process on the system has its own list of open files, root
+filesystem, current working directory, mount points, and so on.
+
+The data structure tie together the VFS layer and the processes on the
+system: 
+
+* `files_struct` --- defined in `<linux/fdtable.h>`, pointed to by teh
+  `file` entry in the process descriptor. All per-process information
+  about open files and file descriptor is contained therein.
+* `fs_struct` --- Contains filesystem information related to a process and
+  is pointed at by the `fs` field in the process descriptor. defined in
+  `<linux/fs_struct.h>`. This structure holds the current working
+  directory (`pwd`) and root directory of the current process.
+* `namespace` --- Defined in `<linux/mnt_namespace.h>` and pointed by the
+  `mnt_namespace` field in the process descriptor. They enable each
+  process to have a unique view of the mounted filesystems on the system.
