@@ -114,3 +114,54 @@ function add(num1, num2) {
 var result = add(10, 20); //30
 alert(sum); //30
 ```
+
+### Nested scope
+Javascript use a static/lexical scope:
+
+```javascript
+var f = function() {
+    var scope = 'f0';
+    (function() {
+        var scope = 'f1';
+        (function() {
+            console.log(scope); // output f1
+        })();
+    })();
+};
+f();
+```
+
+```javascript
+var scope = 'top';
+
+var f1 = function() {
+    console.log(scope);
+};
+
+var f2 = function() {
+    var scope = 'f2';
+    f1(); 
+};
+
+f2(); // output top
+```
+
+## Closure
+JavaScript supports closure:
+
+```javascript
+var generateClosure = function() {
+    var count = 0;
+    var get = function() {
+        count++;
+        return count;
+    }
+    return get;
+}
+
+var counter = generateClosure();
+console.log(counter()); // output 1
+console.log(counter()); // output 2
+console.log(counter()); // output 3
+
+
