@@ -188,3 +188,46 @@ creates a new function instance with `this` value is *bound* to the value
 that was passed into `bind()`.
 
 ## Primitive Wrapper Types
+Three special reference types are designed to ease interaction with
+primitive values: the `Boolean`, `Number` and `String`. These types can
+act like the other reference types, but they also have special behavior
+related to their primitive wrapper type equivalents
+
+Every time a primitive value is read, an object of the corresponding
+primitive wrapper type is created behind the scenes, allowing access to
+any number of methods for manipulating the data.
+
+This behavior allows the primitive string to act like an object.
+
+The major different between ref types and primitive wrapper types is the
+lifetime of the object. When you instantiate a reference type using a new
+operator, it stays in memory until it goes out of scope, whereas
+automatically created primitive wrapper objects exist for only one line of
+code before they are destroyed.
+
+Example:
+
+```javascript
+var s1 = "some text";
+s1.color = "red";
+alert(s1.color); //undefined
+```
+
+## Singleton Built-in Objects
+Including the Global object and the Math object.
+
+### The global object
+It's not explicitly accessible. In fact, there is no
+such thing as a global variable, all variables and functions defined
+globally become properties of the `Global` object.
+
+The `eval()` method, works like an entire interpreter and accepts a string
+argument.
+
+```javascript
+eval("alert('hi')");
+```
+
+The code exec by `eval()` is considered to be part of the execution
+context in which the call is made, and executed code has the same scope as
+that context.

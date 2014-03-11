@@ -299,3 +299,204 @@ console.log(obj.likes); // 输出 [ 'node' ]
 console.log(newObj.likes); // 输出 [ 'node', 'python' ]
 console.log(newObj.display == obj.display); // 输出 false
 ```
+
+## Understanding Objects
+
+### Types of properties:
+Two types of properties: **data properties** and **accessor properties**.
+
+#### Data Properties
+
+Data properties contain a single location for a data value. Values are
+read from and written to this location.
+
+Four attributes:
+
+* `[[Configurable]]` -- can or cannot be removed from the obj
+* `[[Enumerable]]`
+* `[[Writable]]`
+* `[[Value]]`
+
+When a property is explicitly added to an object, `[[Value]]` is set to
+the assigned value and others are set to true.
+
+Example:
+
+```javascript
+var person = {
+    name: "Nicholas"
+};
+```
+
+A **property** called `name` is created and `[[value]]` is set to `Nicholas` is
+
+To change any of the default property, you must use
+`object.defineProperty()` method. 
+
+```javascript
+var person = {};
+Object.defineProperty(person, "name", {
+    writable: faluse,
+    value: "Nicholas"
+});
+
+console.log(person.name); //Nicholas
+person.name = "Greg"; 
+console.log(person.name); //Nicholas
+```
+
+#### Accessor Properties
+Do not contain a data value, they contain a combination of a getter
+function and a setting function.
+
+* When an accessor property is read from, the getter function is called
+  and it's the function's responsibility to return a valid value. 
+* When an accessor property is written to, a function is called with a new
+  value.
+
+Accessor has four attributes:
+
+* `[[Configurable]]`
+* `[[Enumerable]]` 
+* `[[Get]]`
+* `[[Set]]`
+
+It's not possible to define an accessor property, you must use
+`Object.defineProperty()`:
+
+```javascript
+var book = {
+    _year: 2004,
+    edition: 1
+};
+
+Object.defineProperty(book, "year", {
+    get: function() {
+        return this._year;
+    },
+    set: function(newValue) {
+        if (newValue > 2004) {
+            this._year = newValue;
+            this.edition += newValue - 2004;
+        }
+    }
+});
+book.year = 2005;
+console.log(book.edition); //2
+```
+
+### Reading Property Attributes and Define multiple properties
+
+Reading with `Object.getOwnPropertyDescriptor()` method.
+```javascript
+var book = {};
+Object.defineProperties(book, {
+    _year: {
+        value: 2004
+    },
+    edition: {
+        value: 1
+    },
+    year: {
+        get: function () {
+            return this._year;
+        },
+        set: function (newValue) {
+            if (newValue > 2004) {
+                this._year = newValue
+                this.edition += newValue - 2004;
+            }
+        }
+    }
+});
+var descriptor = Object.getOwnPropertyDescriptor(book, “_year”);
+alert(descriptor.value); //2004
+alert(descriptor.confi gurable); //false
+alert(typeof descriptor.get); //”undefi ned”
+var descriptor = Object.getOwnPropertyDescriptor(book, “year”);
+alert(descriptor.value); //undefi ned
+alert(descriptor.enumerable); //false
+alert(typeof descriptor.get); //”function”
+```
+
+## Object Creation
+
+### The Factory Pattern
+Create function to encapsulate the creation of objects with specific
+interfaces:
+
+```javascript
+function createPerson(name, age, job) {
+    var o = new Object();
+    o.name = name;
+    o.age = age;
+    o.job = job;
+    o.sayName = function () {
+        alert(this.name);
+    };
+    return o;
+}
+var person1 = createPerson(“Nicholas”, 29, “Software Engineer”);
+var person2 = createPerson(“Greg”, 27, “Doctor”)
+```
+
+It does not address the issue of object identification (what type of
+object an object is).
+
+###The Constructor Pattern
+There are native constructors, such as Object and Array, which are
+available automatically in the execution environment at runtime. It is
+also possible to define custom constructors that define properties and
+methods for your own type of object. 
+
+```javascript
+function Person(name, age, job) {
+    this.name = name;
+    this.age = age;
+    this.job = job;
+    this.sayName = function () {
+        alert(this.name);
+    };
+}
+var person1 = new Person(“Nicholas”, 29, “Software Engineer”);
+var person2 = new Person(“Greg”, 27, “Doctor”);
+```
+
+To create a new instance, use a `new` operator, essentially the following
+steps taken:
+
+1. create a new object
+* assign `this` value of the constructor to the new object (the `this`
+  point to the new object)
+* Exec the code inside the operator
+* return new object
+
+#### Constructors as Functions
+The only difference between constructor functions and other functions is
+**they way in which they are called**.
+
+Constructors are after all, just functions; there's no special syntax to
+define a constructor. Any function that is called with the `new` operator
+acts as a constructor, whereas any function called without it acts just as
+you would expect a normal function call.
+
+```javascript
+//use as a constructor
+var person = new Person(“Nicholas”, 29, “Software Engineer”);
+person.sayName(); //”Nicholas”
+
+//call as a function
+Person(“Greg”, 27, “Doctor”); //adds to window
+window.sayName(); //”Greg”
+
+//call in the scope of another object
+var o = new Object();
+Person.call(o, “Kristen”, 25, “Nurse”);
+o.sayName(); //”Kristen”
+```
+
+#### Problems with Constructors
+Methods are created once for each instance.
+
+So, in the previous example, both `person1` and `person2` have a method
+called `sayName()`, but those methods are not the same instance of Function
