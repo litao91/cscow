@@ -130,7 +130,7 @@ Using `Function` constructor:
 var sum = new Function(“num1”, “num2”, “return num1 + num2”); //not recommended
 ```
 
-## Function Declarations versus Function Expressions
+### Function Declarations versus Function Expressions
 Function declarations are read and available in an execution context
 before any code is executed, whereas function expressions aren't complete
 until the execution reaches that line of code.
@@ -152,7 +152,7 @@ var sum = function(num1, num2) {
     return num1 + num2;
 };
 ```
-## Function Internals
+### Function Internals
 Two special objects exist inside a function: `arguments` and `this`.
 
 The `arguments` object has a property named `callee`, which is a pointer
@@ -169,3 +169,22 @@ function factorial(num) {
     }
 }
 ```
+
+### Function Properties and Methods
+Each function has two properties: 
+
+* `length`: number of named arguments
+* `prototype`
+
+`prototype` is the actual location of all instance methods for reference
+types, meaning method such as `toString()` and `valueOf()` actually exist
+on `prototype` and then accessed from the object instances.
+
+Two additional functions `apply()` and `call()` for functions. They both
+call the function with a specific `this` value.
+
+ECMAScript 5 defines an additional method `bind()`. The `bind()` method
+creates a new function instance with `this` value is *bound* to the value
+that was passed into `bind()`.
+
+## Primitive Wrapper Types
