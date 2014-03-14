@@ -155,3 +155,6 @@ The basic logic:
   of the `TokenComponents` by calling `getTokenStream()` of it.
 * `createComponents()` create the decoration chain of the `TokenStream()`
 
+Decorator Pattern: Each `TokenStream` keep a reference to the input
+`TokenStream`, call the `incrementToken` of input in it's own
+`incrementToken()` 
