@@ -35,15 +35,44 @@ app.use(express.session({
         db: settings.db
     })
 }));
+
+app.use(function(req, res, next) {
+    res.locals.session = req.session;
+
+    res.locals.success = req.session.success;
+    res.locals.error = req.session.error;
+    next();
+});
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
-
+/*
+app.dynamicHelpers({
+    user: function(req, res) {
+        return req.session.user;
+    },
+    error: function(req, res) {
+        var err = req.flash('error');
+        if(err.length)
+            return err;
+        else
+            return null;
+    },
+    success: function(req, res) {
+        var succ = req.flash('success');
+        if(succ.length)
+            return succ;
+        else
+            return null;
+    }
+});
+*/
 
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+// set routes by calling the routes function, required above
 routes(app);
 
 

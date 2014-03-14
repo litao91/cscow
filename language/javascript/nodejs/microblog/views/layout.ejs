@@ -23,14 +23,29 @@
             <div class = "collapse navbar-collapse" id="iav-collapse">
                 <ul class="nav navbar-nav">
                     <li class="active"><a href="/">Home Page</a></li>
-                    <li><a href="/login">Sign in</a></li>
-                    <li><a href="/reg"> Register</a></li>
+
+                    <% if(!session.user) { %>
+                        <li><a href="/login">Sign in</a></li>
+                        <li><a href="/reg"> Register</a></li>
+                    <% } else { %>
+                        <li><a href="/logout">Log out</a></li>
+                    <% } %>
                 </ul>
             </div>
         </div>
     </div>
 
     <div id="container" class="container">
+        <% if(session.success && session.success.length > 0) { %>
+            <div class="alert alert-success">
+                <%= session.success.pop() %>
+            </div>
+        <% } %>
+        <% if (session.error && session.error.length > 0) { %>
+            <div class="alert alert-error">
+                <%= session.error.pop() %>
+            </div>
+        <% } %>
         <%- body %>
     </div>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
