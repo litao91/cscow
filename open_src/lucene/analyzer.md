@@ -11,6 +11,12 @@ policy for extracting index terms from text.
 In order to define what analysis is done, subclasses must define their
 `TokenStreamComponents` (class) in `createComponts(String, Reader)`.
 
+Note that the class `TokenStreamComponents` is defined in the abstract class
+`Analzyer`. It encapsulates the outer component of a token stream and the
+outer end(the source and the sink). A `TokenFilter` (also a `TokenStream`)
+returned by `Analyzer.tokenStream(String, Reader)`
+
+
 ### Parsing
 It is the responsibility of the application to convert the original format
 into plain text before passing that plain text to lucene.
@@ -22,7 +28,7 @@ It breaking input text into small indexing elements -- tokens.
 
 Lucene includes includes both pre- and post-tokenization facilities:
 
-* Stemming`
+* Stemming
 * Stop Words filtering
 * Text Normalization
 * Synonym Expansion
@@ -32,7 +38,7 @@ Lucene includes includes both pre- and post-tokenization facilities:
 The analysis package provides the mechanism to convert String and Readers
 into tokens that can be indexed by Lucene.
 
-* `Analyzer` -- buiding `TokenStream` which can be consumed by indexing
+* `Analyzer` -- building `TokenStream` which can be consumed by indexing
   and searching.
 * `CharFilter` -- extends `Reader` to perform pre-tokenization
   substitutions, deletions, and insertion on a input Reader's text.
@@ -52,7 +58,7 @@ Clarification:
 * `Tokenizer` is only responsible for **breaking** the text into token.
 * Tokens created by `Tokenizer` would be modified or omitted by the
   `Analyzer` (via `TokenFilter`s)
-* `Tokenizer` is a `TokenStream` but `Analyzer` is not
+* `Tokenizer` is a `TokenStream` but `Analyzer` is not 
 
 The UML is shown as follow for `StandardAnalyzer` as an example:
 
@@ -65,7 +71,9 @@ filter tokens
 Note: The `TokenStreamComponents` encapsulates the outer component of a
 token stream. It provides access to the source(`Tokenizer`) and the outer
 end (sink), an instance of `TokenFilter` which also serves as the
-`TokenStream` returned by `Analyzer.tokenStream(String, Reader)`
+`TokenStream` returned by `Analyzer.tokenStream(String, Reader)`.
+
+
 
 ### Invoking the Analyzer
 
