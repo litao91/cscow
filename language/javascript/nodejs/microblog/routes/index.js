@@ -31,7 +31,7 @@ module.exports = function(app) {
                 err = 'Username already exists.';
             }
             if(err) {
-                req.flash('error', err);
+                req.session.error = [err];
                 return res.redirect('/reg');
             }
 
@@ -41,7 +41,7 @@ module.exports = function(app) {
                     return res.redirect('/reg');
                 }
                 req.session.user = newUser;
-                res.session.success = ['Regsiteration success'];
+                req.session.success = ['Regsiteration success'];
                 res.redirect('/');
             });
         });
