@@ -46,4 +46,36 @@ module.exports = function(app) {
             });
         });
     });
+
+    app.get('/login', function(req, res) {
+        res.render('login', {
+            title: "User Login"
+        });
+    });
+
+    app.post('/login', function(req, res) {
+        var md5 = crypto.createHash('md5');
+        var password =
+            md5.update(req.body.password).digest('base64');
+        User.get(req.body.username, function(err, user) {
+            if(!user) {
+                req.session.error = ['User not exists'];
+                return res.redirect('/login');
+            }
+            if(user.password != password) {
+                req.session.error = ['Incorrect Password'];
+                return res.redirect('/login');
+            }
+
+            req.session.user = user;
+            req.session.success = ['Login success'];
+            res.redirect('/');
+        });
+    });
+
+    app.get('/logout', function(req, res) {
+        req.session.user = null;
+        req.session.success = ['Logout success'];
+        res.redirect('/');
+    });
 };

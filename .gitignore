@@ -10,4 +10,4 @@
 *.out
 *.in
 *.o
-language/javascript/nodejs/microblog/node_modules/
+webdev/nodejs/microblog/node_modules/
