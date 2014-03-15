@@ -53,6 +53,7 @@ module.exports = function(app) {
         });
     });
 
+    app.get('login', checkNotLogin);
     app.post('/login', function(req, res) {
         var md5 = crypto.createHash('md5');
         var password =
@@ -73,9 +74,41 @@ module.exports = function(app) {
         });
     });
 
+    app.get('/logout', checkLogin);
     app.get('/logout', function(req, res) {
         req.session.user = null;
         req.session.success = ['Logout success'];
         res.redirect('/');
     });
+
+
+    app.post('/post', checkLogin);
+    app.post('/post', functioin(req, res) {
+        var currentUser = req.session.user;
+        var post = new Post(currentUser.name, req.body.post);
+        post.save(function(err) {
+            if(err) {
+                req.session.error = [err];
+                return res.redirect('/');
+            }
+            req.session.success = ["Post success"]
+            res.redirect('/u/' + currentUser.name);
+        });
+    });
 };
+
+function checkLogin(req, res, next) {
+    if(!req.session.user) {
+        req.session.error = ["Not logged in"];
+        return res.redirect('/login');
+    }
+    next();
+}
+
+function checkNotLogin(req, res, next) {
+    if (req.session.user) {
+        req.session.erro = ["Already logged in"];
+        return res.redirect('/');
+    }
+    next();
+}
