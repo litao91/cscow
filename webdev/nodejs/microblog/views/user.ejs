@@ -1,0 +1,6 @@
+<% layout('layout.ejs') -%>
+<% if(session.user) { %>
+    <%- partial('say') %>
+<% }%>
+<%- partial('posts') %>
+
