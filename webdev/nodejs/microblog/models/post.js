@@ -1,4 +1,4 @@
-var mongodb = require('/db');
+var mongodb = require('./db');
 
 function Post(username, post, time) {
     this.user = username;

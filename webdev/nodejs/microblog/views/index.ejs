@@ -1,4 +1,5 @@
 <% layout('layout') -%>
+<% if(!session.user) {%>
 <div class="jumbotron">
     <h1>Welcome to Microblog</h2>
     <p> It's based on node.js</p>
@@ -7,25 +8,7 @@
         <a class="btn btn-large" href="/reg"> Register Now</a>
     </p>
 </div>
-<div class="row">
-    <div class="col-sm-6 col-md-4">
-        <div class="thumbnail">
-            <h2> My first try of Bootstrap</h2>
-            <p> This is elegant</p>
-        </div>
-    </div>
-
-    <div class="col-sm-6 col-md-4">
-        <div class="thumbnail">
-            <h2> Copying coid</h2>
-            <p> Copying code from byvoid</p>
-        </div>
-    </div>
-
-    <div class="col-sm-6 col-md-4">
-        <div class="thumbnail">
-            <h2>WTF ByVoid is good</h2>
-            <p> He wrote a good book</p>
-        </div>
-    </div>
-</div>
+<% } else { %>
+    <%- partial('say') %>
+<% } %>
+<%- partial('posts') %>

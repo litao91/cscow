@@ -1,10 +1,17 @@
 var User = require('../models/user.js');
+var Post = require('../models/post.js');
 var crypto = require('crypto')
 module.exports = function(app) {
     // homepage
     app.get('/', function(req, res) {
-        res.render('index', {
-            title: 'Home Page'
+        Post.get(null, function(err, posts) {
+            if(err) {
+                posts = [];
+            }
+            res.render('index', {
+                title: 'Home Page',
+                posts: posts
+            });
         });
     });
     // load the registration form
@@ -83,7 +90,7 @@ module.exports = function(app) {
 
 
     app.post('/post', checkLogin);
-    app.post('/post', functioin(req, res) {
+    app.post('/post', function(req, res) {
         var currentUser = req.session.user;
         var post = new Post(currentUser.name, req.body.post);
         post.save(function(err) {
@@ -93,6 +100,25 @@ module.exports = function(app) {
             }
             req.session.success = ["Post success"]
             res.redirect('/u/' + currentUser.name);
+        });
+    });
+
+    app.get('/u/:user', function(req, res) {
+        User.get(req.params.user, function(err, user) {
+            if(!req.session.user) {
+                req.session.error = ["User doesn't exist"];
+                return res.redirect('/');
+            }
+            Post.get(user.name, function(err, posts) {
+                if(err) {
+                    req.session.error = err;
+                    return res.redirect('/');
+                }
+                res.render('user', {
+                    title: user.name,
+                    posts: posts
+                });
+            });
         });
     });
 };
