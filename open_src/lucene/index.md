@@ -12,6 +12,7 @@ Logic relationships:
 
 ```java
 Fields fields = reader.fields();
+Fields fields = MultiFields.getFields(reader);
 Fields fields = reader.getTermVectors(docId);
 ```
 

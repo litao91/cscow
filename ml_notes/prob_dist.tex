@@ -1,0 +1,106 @@
+\chapter{Probability Distributions}
+Density estimation: model the probability distribution $p(\bx)$ of a
+random variable $\bx$, given a finite set $\bx_1 \dots \bx_N$ of
+observation.
+
+Assumption: data points are independent and identically distributed
+(i.i.d)
+
+\begin{itemize}
+    \item \emph{binomial} and \emph{multinomial} distribution for discrete
+    \item \emph{Gaussian distribution} for continuous random variables.
+\end{itemize}
+
+These are specific examples of \emph{parametric} distribution because they
+are governed by a samll number of adaptive parameters.
+
+\begin{itemize}
+    \item Frequentist treatment: choose specific value for the parameters
+        by optimizing some criterion, such as likelihood function
+    \item Bayesian treatment: introduce \textbf{introduce prior
+        distributions over the parameter}, and then use Baye's theorem to
+        compute the corresponding posterior distribution given the
+        observed data.
+\end{itemize}
+
+\section{Binary Variables}
+(Flipping coins) $x \in \{0, 1\}$, $p(x=1|\mu) = \mu$, $p(x=0|\mu) = 1 -
+\mu$, where $\mu$ is the parameter, the probability distribution:
+\[
+    \mbox{Bern}(x|\mu) = \mu^x{(1-\mu)}^{1-x}
+\]
+It's the \emph{Bernoulli} distribution.
+
+The mean and variance are given by:
+\begin{align*}
+    \mathbb{E}[x] &= \mu \\
+    \mbox{var}[x] &= \mu(1-\mu)
+\end{align*}
+
+Now dataset $\mathcal{D} = \left\{ x_1, \dots, x_N \right\}$. We can
+construct the \textbf{likelihood function} (function of $\mu$). 
+
+The likelihood function is the probability of drawing this dataset.
+
+Assume that the data set is drawn from $p(x|\mu)$, the likelihood
+function:
+
+\[ 
+    p(\mathcal{D}|\mu) = \prod_{n=1}^N p(x_n|\mu) = \prod_{n=1}^N
+    \mu^{x_n}{(1-\mu)}^{1-x_n}
+\]
+
+In a frequentist setting, we can estimate a value for $\mu$ by maximizing
+the likelihood function. Or the log likelihood:
+
+\[
+    \ln p(\mathcal{D}|\mu) = \sum_{n=1}^N \ln p(x_n|\mu) =
+    \sum_{n=1}^N\left\{ x_n \ln \mu + (1-x_n)\ln(1-\mu) \right\}
+\]
+
+If we set the derivative of $\ln p(\mathcal{D}|\mu)$ w.r.t. $\mu$ equal to
+zero, we have an maximum likelihood estimator:
+
+\[
+    \mu_{ML} = \frac{1}{N}\sum_{n=1}^N x_n
+\]
+
+It's the \emph{sample mean}
+
+Binomial distribution: number $m$ of observations of $x=1$ given that the
+data set has size $N$:
+
+\begin{align*}
+    \mbox{Bin}(m|N, \mu) = {N \choose m} \mu^m{(1-\mu)}^{N-m} \\
+    \mathbb{E}[m] = \sum_{m=1}^N \mbox{mbox}(m|N, \mu) = N\mu \\
+    \mbox{var}[m] = \sum_{m=0}^N {(m -\mathbb{E}[m])}^2 \mbox{Bin}(m|N,
+    \mu) = N \mu (1-\mu)
+\end{align*}
+
+\subsection{The beta distribution}
+Prior distribution $p(\mu)$ over the parameter $\mu$
+
+Take the form of the products of factors of the form
+$\mu^x{(1-\mu)}^{1-x}$
+
+Choose a prior to be proportional to power of $\mu$ and $(1-\mu)$ then the
+posterior will have the same functional form as the prior.
+
+Posterior and prior have the same form.
+
+The prior is \emph{beta} distribution:
+\begin{align*}
+    \mbox{Beta}(\mu|a, b) = \frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}
+    \mu^{a-1}{(1-\mu)}^{b-1} \\
+    \mathbb{E}[\mu] = \frac{a}{a+b}\\
+    \mbox{var}[\mu] = \frac{ab}{{(a+b)}^2(a+b+1)}
+\end{align*}
+
+$a$ and $b$ are hyperparameters (parameters of parameters)
+
+Then the posterior:
+\[ p(\mu|m, l, a, b) = \frac{\Gamma(m+a+l+b)}{\Gamma(m+a)\Gamma(l+b)}\mu^{m+a-1} {(1-\mu)}^{l+b-1}\]
+
+Simple interpretation of $a$ and $b$: effective number of observations of
+$x=1$ and $x = 0$. (They add to the counts of samples).
+
