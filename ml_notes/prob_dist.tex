@@ -17,7 +17,7 @@ are governed by a samll number of adaptive parameters.
 \begin{itemize}
     \item Frequentist treatment: choose specific value for the parameters
         by optimizing some criterion, such as likelihood function
-    \item Bayesian treatment: introduce \textbf{introduce prior
+    \item Bayesian treatment: \textbf{introduce prior
         distributions over the parameter}, and then use Baye's theorem to
         compute the corresponding posterior distribution given the
         observed data.
@@ -104,3 +104,83 @@ Then the posterior:
 Simple interpretation of $a$ and $b$: effective number of observations of
 $x=1$ and $x = 0$. (They add to the counts of samples).
 
+\emph{Sequential} approach to learning:
+\begin{enumerate}
+    \item Taking observations one at a time
+    \item After each observation updating the current posterior.
+        Posterior is gotten by Multiplying by the likelihood ($P(\mathcal{D}|\theta)$) for the
+        new observation, and then normalizing to obtain new posterior.
+    \item At each stage, the posterior is a beta distribution with some
+        total number of (prior plus actual) observed values for $x = 1$
+        and $x = 0$, given by the parameter $a$ and $b$.
+    \item Incorporation of an additional observation of $x = 1$ simply
+        corresponds to incrementing the value of $a$ by $1$.
+\end{enumerate}
+
+Sequential methods make use of observations one at a time, or in small
+batches, and then discard them befroe the next observations are used.
+
+To predict:
+
+\[ p(x = 1|\mathcal{D}) = \int_0^1 p(x = 1|\mu) p(\mu|\mathcal{D}) du =
+    \int_0^1 \mu p(\mu|\mathcal{D}) du = \mathbb{E}[\mu|\mathcal{D}]\]
+
+Using the result of the mean of beta distribution:
+
+\begin{equation}
+ p(x = 1|\mathcal{D}) = \frac{m+a}{m+a+l+b}
+\end{equation}
+
+The total fraction of observations (real obsercations and fictitious prior
+observations) that correspond to $x = 1$.
+
+Note that in the limit of an infinitely large $m, l \rightarrow \infty$
+the result reduces to the maximum likelihood result.
+
+\section{Multinomial Variables}
+Variables ca take on one of $K$ possible mutually exclusive states.
+
+Represented by a $K$-D vector $\bx$ in which one of $x_k = 1$. Denote the
+probability of $x_k = 1$ by parameter $\mu_k$, then the distribution of
+$\bx$:
+\begin{equation}
+    p(\bx|\bmu) = \prod_{k=1}^K \mu_k^{x_k}
+\end{equation}
+
+The likelihood
+\begin{equation}
+    P(\calD|\bmu) = \prod_{n=1}^K \prod_{k=1}^K \mu_k^{x_{nk}} =
+    \prod_{k=1}^K \mu_k^{\sum_{n}x_{nk}} = \prod_{k=1}^K \mu_k^{m_k}
+\end{equation}
+The estimation can be achieved with the help of Lagrange:
+\begin{equation}
+    \mu_k^{\mbox{ML}} = \frac{m_k}{N}
+\end{equation}
+
+Multinominal distribution, the joint distribution of $m_1, \dots, m_K$
+conditioned on the parameters $\bmu$ and $N$
+\begin{equation}
+    \mbox{Mult}(m_1,m_2, \dots, m_K|\bmu, N) = {N \choose m_1m_2\dots m_K}
+    \prod_{k=1}^K \mu_k^{m_k}
+    \label{multi-dist}
+\end{equation}
+
+Where 
+
+\begin{equation}
+    {N \choose m_1m_2\dots m_K} = \frac{N!}{m_1!m_2!\dots m_K!}
+\end{equation}
+
+\subsection{The Dirichlet distribution}
+The conjugate prior:
+\begin{equation}
+    p(\bmu|\balpha) \propto \prod_{k=1}^K {\mu_k}^{\alpha_k -1}
+\end{equation}
+
+The normalized form:
+\begin{equation}
+    \mbox{Dir}(\bmu|\balpha) = \frac{\Gamma(\alpha_0)}{\Gamma(\alpha_1)
+    \cdots \Gamma(\alpha_K)} \prod_{k=1}^K \mu_k^{\alpha_k -1}
+\end{equation}
+
+Where $\Gamma(x)$ is the gamma function and $a_0 = \sum_{k=1}^K \alpha_k$.

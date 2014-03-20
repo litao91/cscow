@@ -1,0 +1,100 @@
+\chapter{Probability Theory}
+\section{Expectations and covariances}
+\subsection{Expectation}
+The average value of some function $f(x)$ under a probability
+distribution $p(x)$ is called the \emph{expectation} of $f(x)$ and will be
+denoted by $\mathbb{E}[f]$, for discrete:
+
+\begin{equation}
+    \mathbb{E}[f] = \sum_x p(x) f(x)
+    \label{expectation-discrete}
+\end{equation}
+
+In the case of continuous variables:
+
+\begin{equation}
+    \bbE[f] = \int p(x) f(x) dx
+    \label{expectation-cont}
+\end{equation}
+
+Approximation:
+
+\begin{equation}
+    \mathbb{E}[f] \approx \frac{1}{N} \sum_{n=1}^N f(x_n)
+    \label{expectation-approx}
+\end{equation}
+
+Sometimes we will be considering expectations of functions of several
+variables, in which case we can use a subscript to indicate which variable
+is being averaged over:
+\begin{equation}
+    \bbE_x[f(x,y)]
+    \label{partial-avg}
+\end{equation}
+The average of the function $f(x, y)$ average with respect to the
+distribution of $x$, it will be a function of $y$.
+
+The conditional expectation:
+\begin{equation}
+    \bbE_x[f|y] = \sum_x p(x|y) f(x)
+    \label{conditional-expectation}
+\end{equation}
+
+\subsection{Variance}
+The \emph{variance} of $f(x)$:
+\begin{equation}
+    \var[f] = \bbE\left[ {(f(x) - \bbE[f(x)])}^2 \right] = \bbE[{f(x)}^2] -
+    {\bbE[f(x)]}^2
+    \label{var}
+\end{equation}
+
+In particular:
+\begin{equation}
+    \var[x] = \bbE[x^2] - {\bbE[f(x)]}^2
+    \label{var-x}
+\end{equation}
+
+For the two variables $x$ and $y$ the \emph{covariance} is defined by:
+\begin{align}
+    \mbox{cov}[x,y] &= \bbE_{x,y}\left[ \left\{ x - \bbE[x] \right\}\left\{
+    y-\bbE[y] \right\}\right] \\
+    &= \bbE_{x,y}[xy] - \bbE[x]\bbE[y]
+\end{align}
+Express the extent to which $x$ and $y$ \textbf{vary together}.
+If $x$ and $y$ are independent, then their covariance vanishes.
+\section{Bayesian Probabilities}
+View probabilities in terms of hte frequencies of random, repeatable
+events: \emph{classical} or \emph{frequentist}
+
+Now we turn to Bayesian view, in which probabilities provide a
+quantification of uncertainty.
+
+We capture out assumptions about $\mathbf{w}$, \emph{before } observing
+the data, in the form of a prior probability distribution $p(\mathbb{w})$
+
+The effect of the observed data $\mathcal{D}$ is expressed through the
+conditional probability $p(calD|\bw)p(\bw)$, then the Bayesian's theorem:
+
+\begin{equation}
+    p(\bw|\calD) = \frac{p(\calD|\bw)p(\bw)}{p(\calD)}
+    \label{bayes}
+\end{equation}
+
+Evaluate the uncertainty in $\bw$ \emph{after} we have observed $\calD$
+
+Likelihood function: $p(\calD|\bw)$: evaluated for the observed data set
+$\calD$ and can be viewed as a function of $\bw$. It expresses how
+probable the observed data set is for different settings of the parameter.
+
+In both Bayesian and frequentist, likelihood function $p(\calD|\bw)$ plays
+a central role. However, they are different in:
+E\begin{itemize}
+    \item In a frequentist setting, $\bw$ is considered to be a
+        \textbf{fixed} parameter, whose value is determined by some form
+        of ``estimator'', and error bars on this estimate are obtained by
+        considering the distribution of possible data sets $\calD$.
+    \item From the Bayesian view point there is only a single data set
+        $\calD$ and the uncertainty in th eparameters is expressed through
+        a probability distribution over $\bw$
+\end{itemize}
+
