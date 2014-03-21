@@ -240,6 +240,74 @@ The third line performs an assignment and then calls the result. Because
 of this assignment expression is the function itself, the `this` value is
 not maintained, so `"The Window"` is returned.
 
+#### As a method
+A method is a function that's attached to an object
+
+```javascript
+var foo = {};
+foo.someMethod = function() {
+    alert(this);
+}
+```
+
+When invoked as a method, `this` will be bound to the object the
+function/method is part of.
+
+#### As A Function
+If you have a stand alone function, the `this` variable will be bound to
+the `global` object, almost always the `window` object
+
+```javascript
+var foo = function() {
+    alert(this);
+}
+```
+Many people consider this as a bad design. Since a **callback is invoked
+as a function and not as a method**, this is why you are seeing what
+appears to be inconsistent behavior. 
+
+Get around the problem by:
+
+```javascript
+var foo = {};
+foo.someMethod = function() {
+    var that = this;
+    function bar() {
+        alert(that);
+    }
+}
+```
+
+#### As a Constructor
+You can also invoke a function as a constructor. 
+
+```javascript
+function Foo() {
+    this.confusing = 'hell yeah';
+}
+
+var myObject = new Foo();
+```
+
+When invoked as a constructor, a new Object will be created, and `this`
+will be bound to that object. 
+
+#### With the Apply Method
+Finally, every function has a method. Apply lets you determine what the
+value of `this` will be, and also lets you pass in an array of arguments:
+
+```javascript
+function foo(a, b) {
+    alert(a);
+    alert(b);
+    alert(this);
+}
+
+var args = ['ah', 'be'];
+foo.apply('omg', args);
+```
+
+
 ### Memory Leaks
 Storing a scope in which an HTML element is stored effectively ensures
 that the element cannot be destroyed.

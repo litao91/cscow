@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.11.5/TweenLite.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.11.5/plugins/CSSPlugin.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<style>
+#anmi {
+    position: relative;
+    width=60px;
+}
+</style>
+</head>
+<script>
+$(document).ready(function() {
+    var anmi = $('#anmi');
+    TweenLite.to(anmi, 1, {left: "632px"});
+})
+
+
+
+</script>
+
+<body>
+<div id="demo">
+<div id="anmi">
+    <p> This is a test</p>
+</div>
+</div>
