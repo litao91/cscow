@@ -184,3 +184,36 @@ The normalized form:
 \end{equation}
 
 Where $\Gamma(x)$ is the gamma function and $a_0 = \sum_{k=1}^K \alpha_k$.
+
+\section{Gaussian Distribution}
+The D-dimensional vector $\bx$, the multivariate Gaussian distribution
+takes the form:
+
+\begin{equation}
+    \mathcal{N}(\bx|\bmu, \bSig) = \frac{1}{{(2\pi)}^{D/2}}
+    \frac{1}{{|\bSig|}^{1/2}} \exp\left\{ -\frac{1}{2} {(\bx -
+    \bmu)}^T\bSig^{-1}(\bx - \bmu) \right\} 
+    \label{gaussian}
+\end{equation}
+Where $\mu$ is a $D$-dimensional mean vector, $\bSig$ is a $D \times D$
+covariance matrix, and $|\bSig|$ denotes the determinant of $\bSig$.
+
+\subsection{Partitioned Gaussians}
+Given a joint Gaussian distribution $\mathcal{N}(\bx|\bmu, \bSig)$ with
+$\boldsymbol\Lambda \equiv \bSig^{-1}$ and 
+\begin{align}
+    \bx = \begin{pmatrix}\bx_a \\ \bx_b \end{pmatrix}, \quad \bmu =
+    \begin{pmatrix}\bmu_a, \bmu_b
+    \end{pmatrix} \\
+    \bSig = \begin{pmatrix}\bSig_{aa} & \bSig_{ab} \\ \bSig_{ba} &
+        \bSig_{bb} \end{pmatrix} , \quad 
+    \bLam = \begin{pmatrix} \bLam_{aa} & \bLam_{ab} \\ \bLam_{ba} &
+        \bLam_{bb} \end{pmatrix}
+\end{align}
+
+Conditional distribution:
+\begin{align}
+    p(\bx_a|\bx_b) &= \mathcal{N}(\bx|\bmu_{a|b}, \bLam^{-1}_{aa}) \\
+    \bum_{a|b} &= \mu_a - \bLam^{-1}_{aa}\bLam_{ab}(\bx_b -
+    \bmu_{b})
+\end{align}
