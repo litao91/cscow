@@ -23,6 +23,8 @@ Basic version of `gulp` that can read from `java.io.File` only:
   (:import (java.io FileInputStream InputStreamReader BufferedReader)))
 (defn gulp [src]
   (let [sb (StringBuilder.)]
+    ;reader = new BufferedReader(new InputStreamReader(new
+    ;         FileInputStream(src)))
     (with-open [reader (-> src
                            FileInputStream.
                            InputStreamReader.
@@ -77,7 +79,7 @@ So:
 ```
 
 You can now add support for additional source and destination types to
-`gulp` and `exectorate`:
+`gulp` and `exectorate`.
 
 ```clojure
 (defn make-reader [src]
@@ -93,6 +95,9 @@ You can now add support for additional source and destination types to
       BufferedReader.))
 ```
 
+This is basically creating different type of reader based on the type of
+input.
+
 ## Interfaces
 We can create Java interface in Clojure with `definterface` macro.
 
@@ -106,6 +111,11 @@ Example:
   (^java.io.BufferReader make-rader [this])
   (^java.io.BufferedWriter make-writer [this]))
 ```
+
+The signature follows the syntax:
+
+    ^return-type function-name [params]
+
 This will create an interface called `IOFactory` that includes two abstract
 functions, make-readerand make-writer. Any class that implements this
 interface must include `make-readerand` `make-writer` functions that take
@@ -120,6 +130,7 @@ implementation, and by letting datatypes implement multiple protocols.
 ```clojure
 (defprotocol name & opts+sigs)
 ```
+
 
 Example Redefine `IOFactory` as a protocol:
 ```clojure
@@ -144,6 +155,9 @@ The parameter to extend:
 (extend type & proto+mmaps)
 ```
 
+
+Basically extend protocols to a new type with name `name`.
+
 Or a full version:
 ```clojure
 (extend AType
@@ -155,8 +169,9 @@ Or a full version:
     {...}
 ...)
 ```
+
 * Will extend the polymorphism of the protocol's methods to call the
-  supplied function when an `AType` is provided as the first argument
+  supplied function **when an `AType` is provided as the first argument**
 * Function maps are maps of the keywordized method names to ordinary fns.
 * You can implement a protocol on an interface.
 
@@ -171,12 +186,17 @@ Example:
                   "Can't open as an InputStream")))})
 ```
 
+So when we called the `IOFactory`'s functions with `InputStream` as the
+first argument, this version of methods will be called.
+
 `extend-type` macro provides a slightly cleaner syntax than `extend`
+
 ```clojure
 (extend-type type & specs)
 ```
 
 Example:
+
 ```clojure
 (extend-type File
    IOFactory
@@ -194,12 +214,12 @@ macro
 ```
 
 ```clojure
-(extend-protocolIOFactory
+(extend-protocol IOFactory
   Socket
   (make-reader [src]
     (make-reader (.getInputStreamsrc)))
-    (make-writer [dst]
-      (make-writer (.getOutputStreamdst)))
+  (make-writer [dst]
+    (make-writer (.getOutputStreamdst)))
   URL
   (make-reader[src]
     (make-reader
@@ -248,14 +268,14 @@ Put all together:
     (-> src InputStreamReader. BufferedReader.))
   (make-writer [dst]
     (throw
-           (IllegalArgumentException.
-             "Can't open as an InputStream.")))
+      (IllegalArgumentException.
+        "Can't open as an InputStream.")))
   
   OutputStream
   (make-reader [src]
     (throw
-           (IllegalArgumentException.
-             "Can't open as an OutputStream.")))
+      (IllegalArgumentException.
+        "Can't open as an OutputStream.")))
   (make-writer [dst]
     (-> dst OutputStreamWriter. BufferedWriter.)) 
 

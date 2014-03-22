@@ -14,22 +14,30 @@ efficient manner because they are persistent data structures.
 
 A java function call like this:
 
-    methodName(arg1, arg2, arg3);
+```clojure
+methodName(arg1, arg2, arg3);
+```
 
 A clojure function call:
 
-    (function-name arg1 arg2 arg3)
+```clojure
+(function-name arg1 arg2 arg3)
+```
 
 Defining a function in Clojure:
 
-    (defn hello [name]
-        (println "Hello," name))
+```clojure
+(defn hello [name]
+   (println "Hello," name))
+```
 
 Equivalent to:
 
-    public void main(String name) {
-        System.out.println("Hello, " + name);
-    }
+```java
+public void main(String name) {
+    System.out.println("Hello, " + name);
+}
+```
 
 ## Getting Started
 Managed by Leiningen Project management tool:
@@ -50,7 +58,7 @@ Managed by Leiningen Project management tool:
 Special cases in Clojure:
 
 | Purpose   | Sugar                | Function                  |
-| ---       | ---                  | ---                       |
+| :---      | :---                 | :---                      |
 | Comment   | `;text`              | `(comment text)`          |
 | Character | `\char \tab \space`  | `(char ascii-code)`       |
 | String    | `"text"`             | `(str char1 char2 ...)`   |
@@ -67,6 +75,7 @@ Clojure provides bindings to Vars, which are container bound to mutable
 storage locations.
 
 Types of bindings:
+
 * Global bindings
 * thread-local binds
 * bindings that are local to a function
@@ -92,42 +101,44 @@ with an asterisk. Examples that appear in this article include
 `*load-tests*`, and
 `*stack-trace-depth*`. Functions that use these bindings are affected by
 their values. For example, binding a new value to `*out*` changes the output
-destination of the println function.
+destination of the `println` function.
 
 Demo: 
 
-    (def ^:dynamic v 1)
+```clojure
+(def ^:dynamic v 1)
 
-    (defn f1 []
-      (println "f1: v:" v))
+(defn f1 []
+  (println "f1: v:" v))
 
-    (defn f2 []
-      (println "f2: before let v" v)
-      (let [v 2]
-        (println "f2: in let, v:" v)
-        (f1))
-      (println "f2: after let v:" v))
+(defn f2 []
+  (println "f2: before let v" v)
+  (let [v 2]
+    (println "f2: in let, v:" v)
+    (f1))
+  (println "f2: after let v:" v))
 
-    (defn f3 []
-      (println "f3: before binding v:" v)
-      (binding [v 3]
-        (println "f3: within binding function v: " v)
-        (f1))
-      (println "f3: after binding v:" v))
+(defn f3 []
+  (println "f3: before binding v:" v)
+  (binding [v 3]
+    (println "f3: within binding function v: " v)
+    (f1))
+  (println "f3: after binding v:" v))
 
-    (defn f4 []
-      (def v 4))
+(defn f4 []
+  (def v 4))
 
-    (println "(= v 1) => " (= v 1))
-    (println "Calling f2: ")
-    (f2)
-    (println)
-    (println "Calling f3: ")
-    (f3)
-    (println)
-    (println "Calling f4: ")
-    (f4)
-    (println "after calling f4, v = " v)
+(println "(= v 1) => " (= v 1))
+(println "Calling f2: ")
+(f2)
+(println)
+(println "Calling f3: ")
+(f3)
+(println)
+(println "Calling f4: ")
+(f4)
+(println "after calling f4, v = " v)
+```
 
 Gives:
 
@@ -170,38 +181,44 @@ them are immutable, heterogeneous and persistent.
   created.
 
 ### Some functions:
-* `count` returns num of items:
-    
-        (count [19 "yellow" true]) ; -> 3
+1. `count` returns num of items:
+```clojure
+(count [19 "yellow" true]) ; -> 3
+```
 
 * `conj` adds one ore more items to a collection
-    
-        (conj [1] 2 3) ; -> [1 2 3]
+```clojure    
+(conj [1] 2 3) ; -> [1 2 3]
+```
 
 * `reverse`
-
-        (reverse [2 4 7]) ; -> (7 4 2)
+```clojure
+(reverse [2 4 7]) ; -> (7 4 2)
+```
 
 * `map` applies a given function that takes one parameter to each item in
   a collection, returning a lazy sequence of the results. It can also
   apply functions that take more than one parameter if a collection is
   supplied for each argument.
-
-        (map #(+ % 3) [2 4 7]) ; -> (5 7 10)
-        (map + [2 4 7] [5 6] [1 2 3 4]) ; -> 8 12
+```clojure
+(map #(+ % 3) [2 4 7]) ; -> (5 7 10)
+(map + [2 4 7] [5 6] [1 2 3 4]) ; -> 8 12
+```
 
 * `apply` returns the result of a given function when all the items in a
   given collection are used as arguments:
-
-        (apply + [2 4 7]) ; -> 13
+```clojure
+(apply + [2 4 7]) ; -> 13
+```
 
 * Functions to retrieve items:
-
-        (def stooges ["Moe" "Larry" "Curly" "Shemp"])
-        (first stooges)  ; -> "Moe"
-        (second stooges) ; -> "Larry"
-        (last stooges)   ; -> "Shemp"
-        (nth stooges 2)  ; indexes start at 0 -> "Curly"
+```clojure
+(def stooges ["Moe" "Larry" "Curly" "Shemp"])
+(first stooges)  ; -> "Moe"
+(second stooges) ; -> "Larry"
+(last stooges)   ; -> "Shemp"
+(nth stooges 2)  ; indexes start at 0 -> "Curly"
+```
 
 * Functions retrieve several items:
     ```clojure
@@ -214,7 +231,6 @@ them are immutable, heterogeneous and persistent.
     ```
 
 * Several predicate functions:
-
     ```clojure
     (every? #(instance? String %) stooges)     ; -> true
     (not-every? #(instance? String %) stooges) ; -> false
@@ -225,34 +241,42 @@ them are immutable, heterogeneous and persistent.
 ### Lists
 Create list:
 
-    (def stooges (list "Moe" "Larry" "Curly"))
-    (def stooges (quote ("Moe" "Larry" "Curly")))
-    (def stooges '("Moe" "Larry" "Curly"))
+```clojure
+(def stooges (list "Moe" "Larry" "Curly"))
+(def stooges (quote ("Moe" "Larry" "Curly")))
+(def stooges '("Moe" "Larry" "Curly"))
+```
 
 Searching a item:
 
-    (some #(= % "Moe") stooges) ; -> true 
-    (some #(= % "Mark") stooges) ; -> nil 
+```clojure
+(some #(= % "Moe") stooges) ; -> true 
+(some #(= % "Mark") stooges) ; -> nil 
 
-    ; Another approach is to create a set from the list
-    ; and then use the contains? function on the set as follows.
-    (contains? (set stooges) "Moe") ; -> true
+; Another approach is to create a set from the list
+; and then use the contains? function on the set as follows.
+(contains? (set stooges) "Moe") ; -> true
+```
 
 While the `conj` function will create a new list, the `cons` function will
 create a new sequence. In each case the new item(s) are added to the
 front. The remove function creates a new list containing only the items
 for which a predicate function returns false. For example:
 
-    (def more-stooges (conj stooges "Shemp"))               ; -> ("Shemp" "Moe" "Larry" "Curly")
-    (def less-stooges (remove #(= % "Curly") more-stooges)) ; -> ("Shemp" "Moe" "Larry")
+```clojure
+(def more-stooges (conj stooges "Shemp"))               ; -> ("Shemp" "Moe" "Larry" "Curly")
+(def less-stooges (remove #(= % "Curly") more-stooges)) ; -> ("Shemp" "Moe" "Larry")
+```
 
 The into function creates a new list that contains all the items in two
 lists. For example:
 
-    (def kids-of-mike '("Greg" "Peter" "Bobby"))
-    (def kids-of-carol '("Marcia" "Jan" "Cindy"))
-    (def brady-bunch (into kids-of-mike kids-of-carol))
-    (println brady-bunch)                               ; -> (Cindy Jan Marcia Greg Peter Bobby)
+```clojure
+(def kids-of-mike '("Greg" "Peter" "Bobby"))
+(def kids-of-carol '("Marcia" "Jan" "Cindy"))
+(def brady-bunch (into kids-of-mike kids-of-carol))
+(println brady-bunch)                               ; -> (Cindy Jan Marcia Greg Peter Bobby)
+```
 
 The peek and pop functions can be used to treat a list as a stack. They operate on the beginning or head of the list.
 
@@ -291,24 +315,32 @@ items. It takes a vector, a start index and an optional end index.
 ## Sets
 Sets are collections of unique items. Create a set:
 
-    (def stooges (hash-set "Moe" "Larry" "Curly"))
-    (def stooges #{"Moe" "Larry" "Curly"})
-    (def stooges (sorted-set "Moe" "Larry" "Curly"))
+```clojure
+(def stooges (hash-set "Moe" "Larry" "Curly"))
+(def stooges #{"Moe" "Larry" "Curly"})
+(def stooges (sorted-set "Moe" "Larry" "Curly"))
+```
 
 The `contains?` function operates on sets and maps:
 
-    (contains? stooges "Moe")
+```clojure
+(contains? stooges "Moe")
+```
 
 Sets can be used as functions of their items:
 
-    (stooges "Moe") ; -> "Moe"
-    (stooges "Mark") ; -> nil
-    (println (if stooges person) "stooge" "regular person"))
+```clojure
+(stooges "Moe") ; -> "Moe"
+(stooges "Mark") ; -> nil
+(println (if stooges person) "stooge" "regular person"))
+```
 
 The `conj` and `disj` do conjunction and disjoint respectively:
 
-    (def more­stooges (conj stooges "Shemp")) ; ­> #{"Moe" "Larry" "Curly" "Shemp"}
-    (def less­stooges (disj more­stooges "Curly")) ; ­> #{"Moe" "Larry" "Shemp"}
+```clojure
+(def more­stooges (conj stooges "Shemp")) ; ­> #{"Moe" "Larry" "Curly" "Shemp"}
+(def less­stooges (disj more­stooges "Curly")) ; ­> #{"Moe" "Larry" "Shemp"}
+```
 
 ## Maps
 Maps associate keys and values. Often **keywords** are used for map keys.
@@ -321,7 +353,7 @@ Create maps:
 (def popsicle-map
     {:red :cherry, :green :apple, :purple :grape}) ; same as previous
 (def popsicle-map
-    (sorted­map :red :cherry, :green :apple, :purple :grape))
+    (sorted-map :red :cherry, :green :apple, :purple :grape))
 ```
 
 Maps can be sued as functions of their keys. In some cases keys can be
@@ -358,9 +390,11 @@ removed
 When used in the context of a sequence, maps are treated like a sequence
 of `clojure.lang.MapEntry` objects.
 
-    (doseq [[color flavor] popsicle-map]
-      (println (str "The flavor of " (name color)
-        " popsicles is " (name flavor) ".")))
+```clojure
+(doseq [[color flavor] popsicle-map]
+  (println (str "The flavor of " (name color)
+    " popsicles is " (name flavor) ".")))
+```
 
 The output:
 
@@ -371,7 +405,9 @@ The output:
 The select­keys function takes a map and a sequence of keys. It returns a new map where only those
 keys are in the map
 
-    ((select­keys popsicle­map [:red :green :blue]) ; ­> {:green :apple, :red :cherry}select­keys popsicle­map [:red :green :blue]) ; ­> {:green :apple, :red :cherry}
+```clojure
+((select­keys popsicle­map [:red :green :blue]) ; ­> {:green :apple, :red :cherry}select­keys popsicle­map [:red :green :blue]) ; ­> {:green :apple, :red :cherry}
+```
 
 The `conj` function adds all the key/value pairs from one map to another. If any keys in the source map
 already exist in the target map, the target map values are replaced by the corresponding source map
@@ -442,16 +478,20 @@ Function definition must appear before their first use. The `declare`
 special form takes any number of functions names and creates forward
 declarations that resolve these cases.
 
-    (declare function-names)
+```clojure
+(declare function-names)
+```
 
 Functions can take a *variable number* of parameters. Optional parameters
 must appear at the end. They are gathered into a list by adding an `&` and
 a name for the list:
 
-    (defn power [base & exponents]
-      ; Using java.lang.Math static method pow.
-      (reduce #(Math/pow %1 %2) base exponents))
-    (power 2 3 4) ; 2 to the 3rd = 8; 8 to the 4th = 4096
+```clojure
+(defn power [base & exponents]
+  ; Using java.lang.Math static method pow.
+  (reduce #(Math/pow %1 %2) base exponents))
+(power 2 3 4) ; 2 to the 3rd = 8; 8 to the 4th = 4096
+```
 
 Function definitions can contain more than one parameter list and corresponding body. Each parameter list
 must contain a different number of parameters. This supports overloading functions based on arity. Often it
@@ -460,16 +500,18 @@ default values for some of them.
 
 Example:
 
-    (defn parting
-      "returns a String parting in a given language"
-      ([] (parting "World"))
-      ([name] (parting name "en"))
-      ([name language]
-        (condp = language
-          "en" (str "Goodbye, " name)
-          "es" (str "Adios, " name)
-          (throw (IllegalArgumentException.
-            (str "unsupported language " language))))))
+```clojure
+(defn parting
+  "returns a String parting in a given language"
+  ([] (parting "World"))
+  ([name] (parting name "en"))
+  ([name language]
+    (condp = language
+      "en" (str "Goodbye, " name)
+      "es" (str "Adios, " name)
+      (throw (IllegalArgumentException.
+        (str "unsupported language " language))))))
+```
 
 **Anonymous functions** have no name. These are often passed as arguments
 to a named function.
@@ -478,23 +520,29 @@ When an anonymous function is defined using the `fn` special form, the body can 
 expressions. It can also have a name (following "fn") which makes it no longer anonymous and enables it to
 call itself recursively.
 
-    (def years [1940 1944 1961 1985 1987])
-    (filter (fn [year] (even? year)) years)
+```clojure
+(def years [1940 1944 1961 1985 1987])
+(filter (fn [year] (even? year)) years)
+```
 
 When an anonymous function is defined in the short way using `#(...)` , it can only contain a single
 expression.
 
-    (println (pair­test #(even? (+ %1 %2)) 3 5)) ; ­-> pass
+```clojure
+(println (pair­test #(even? (+ %1 %2)) 3 5)) ; ­-> pass
+```
 
 Overload base on type
 
-    (defmulti what-am-i-class) ; class is the dispatch function
-    (defmethod what-am-i-Number [arg] (println arg "is a Number"))
-    (defmethod what-am-i String [arg] (println arg "is a String"))
-    (defmethod what-am-i :default [arg] (println arg "is something else"))
-    (what-am-i 19)      ; ­-> 19 is a Number
-    (what-am-i "Hello") ; ­-> Hello is a String
-    (what-am-i true)    ; ­-> true is something else
+```clojure
+(defmulti what-am-i-class) ; class is the dispatch function
+(defmethod what-am-i-Number [arg] (println arg "is a Number"))
+(defmethod what-am-i String [arg] (println arg "is a String"))
+(defmethod what-am-i :default [arg] (println arg "is something else"))
+(what-am-i 19)      ; ­-> 19 is a Number
+(what-am-i "Hello") ; ­-> Hello is a String
+(what-am-i true)    ; ­-> true is something else
+```
 
 The `complement` function returns a new function that returns opposite
 logical true value.
@@ -502,67 +550,85 @@ logical true value.
 The `comp` function composes a new function by combining existing ones,
 they are called from *right to left*:
 
-    (defn times2 [n] (* n 2))
-    (defn minus3 [n] (- n 3))
-    (def my-composition (comp minus3 times2))
-    (my-composition 4) ; 4 * 2 -3 -> 5
+```clojure
+(defn times2 [n] (* n 2))
+(defn minus3 [n] (- n 3))
+(def my-composition (comp minus3 times2))
+(my-composition 4) ; 4 * 2 -3 -> 5
+```
 
 The `partial` function creates a new function from an existing one so that
 it provides fixed values for initial parameters and calls the original
 function. 
 
-    ; note the use of def instead of defn
-    (def times2 (partial * 2)
-    (times2 3 4) ; 2 * 3 * 4 -> 24
+```clojure
+; note the use of def instead of defn
+(def times2 (partial * 2)
+(times2 3 4) ; 2 * 3 * 4 -> 24
+```
 
 ## Java Interoperability
 Import:
 
-    (import
-      '(java.util Calendar GregorianCalendar)
-      '(javax.swing JFrame JLabel))
+```clojure
+(import
+  '(java.util Calendar GregorianCalendar)
+  '(javax.swing JFrame JLabel))
+```
 
 Tow ways to invoke static method:
 
-    (. Math pow 2 4) ; ­-> 16.0
-    (Math/pow 2 4)
+```clojure
+(. Math pow 2 4) ; ­-> 16.0
+(Math/pow 2 4)
+```
 
 Two ways to invoke a constructor to create a java object:
 
-    (import '(java.util Calendar GregorianCalendar))
-    (def calendar (new GregorianCalendar 2008 Calendar/APRIL 16)) ; April 16, 2008
-    (def calendar (GregorianCalendar. 2008 Calendar/APRIL 16))
+```
+(import '(java.util Calendar GregorianCalendar))
+(def calendar (new GregorianCalendar 2008 Calendar/APRIL 16)) ; April 16, 2008
+(def calendar (GregorianCalendar. 2008 Calendar/APRIL 16))
+```
 
 Two ways to invoke an instance method on a java object:
 
-    (. calendar add Calendar/MONTH 2)
-    (. calendar get Calendar/MONTH) ; ­> 5
-    (.add calendar Calendar/MONTH 2)
-    (.get calendar Calendar/MONTH) ; ­> 7
+```clojure
+(. calendar add Calendar/MONTH 2)
+(. calendar get Calendar/MONTH) ; ­> 5
+(.add calendar Calendar/MONTH 2)
+(.get calendar Calendar/MONTH) ; ­> 7
+```
 
 The method name appears first is generally preferred.
 
 Call in the chain
 
-    (. (. calendar getTimeZone) getDisplayName) ; long way
-    (.. calendar getTimeZone getDisplayName) ; ­> "Central Standard Time"
+```clojure
+(. (. calendar getTimeZone) getDisplayName) ; long way
+(.. calendar getTimeZone getDisplayName) ; ­> "Central Standard Time"
+```
 
 The `doto` macro is used to invoke many methods on the same object.
 
-    (doto calendar
-      (.set Calendar/YEAR 1981)
-      (.set Calendar/MONTH Calendar/AUGUST)
-      (.set Calendar/DATE 1))
-    (def formatter (java.text.DateFormat/getDateInstance))
-    (.format formatter (.getTime calendar)) ; ­> "Aug 1, 1981"
+```clojure
+(doto calendar
+  (.set Calendar/YEAR 1981)
+  (.set Calendar/MONTH Calendar/AUGUST)
+  (.set Calendar/DATE 1))
+(def formatter (java.text.DateFormat/getDateInstance))
+(.format formatter (.getTime calendar)) ; ­> "Aug 1, 1981"
+```
 
 `memfn` macro expands to code that allows a Java method to be treaded as a
 first class function:
 
-    (println (map #(.substring %1 %2)
-               ["Moe" "Larry" "Curly"] [1 2 3])) ; -> (oe rry ly)
-    (println (map (memfn substring beginIndex)
-               ["Moe" "Larry" "Curly"] [1 2 3])) ; -> same
+```clojure
+(println (map #(.substring %1 %2)
+           ["Moe" "Larry" "Curly"] [1 2 3])) ; -> (oe rry ly)
+(println (map (memfn substring beginIndex)
+           ["Moe" "Larry" "Curly"] [1 2 3])) ; -> same
+```
 
 ### Proxies
 The `proxy` macro expands to code that creates a Java object that extends
@@ -573,29 +639,33 @@ a given Java class and/or implements zero or more Java interfaces.
 All Clojure functions implement both the `java.lang.Runnable` and
 `java.until.concurrent.Callable`.
 
-    (defn delayed­print [ms text]
-      (Thread/sleep ms)
-      (println text))
-    ; Pass an anonymous function that invokes delayed­print
-    ; to the Thread constructor so the delayed­print function
-    ; executes inside the Thread instead of
-    ; while the Thread object is being created.
-    (.start (Thread. #(delayed­print 1000 ", World!"))) ; prints 2nd
-    (print "Hello") ; prints 1st
-    ; output is "Hello, World!
+```
+(defn delayed­print [ms text]
+  (Thread/sleep ms)
+  (println text))
+; Pass an anonymous function that invokes delayed­print
+; to the Thread constructor so the delayed­print function
+; executes inside the Thread instead of
+; while the Thread object is being created.
+(.start (Thread. #(delayed­print 1000 ", World!"))) ; prints 2nd
+(print "Hello") ; prints 1st
+; output is "Hello, World!
+```
 
 ## Conditional Processing
 Syntax: `(if condition then-expr else-expr)`, use the `do` special form to
 wrap them in a single expression.
 
-    (import '(java.util Calendar GregorianCalendar))
-    (let [gc (GregorianCalendar.)
-          day­of­week (.get gc Calendar/DAY_OF_WEEK)
-          is-weekend (or (= day­of­week Calendar/SATURDAY) (= day­of­week Calendar/SUNDAY))]
-      (if is-weekend
-        (println "play")
-        (do (println "work")
-            (println "sleep"))))
+```clojure
+(import '(java.util Calendar GregorianCalendar))
+(let [gc (GregorianCalendar.)
+      day­of­week (.get gc Calendar/DAY_OF_WEEK)
+      is-weekend (or (= day­of­week Calendar/SATURDAY) (= day­of­week Calendar/SUNDAY))]
+  (if is-weekend
+    (println "play")
+    (do (println "work")
+        (println "sleep"))))
+```
 
 The `when` and `when-not` provide alternatives to `if` when only one
 branch is needed.
@@ -607,30 +677,36 @@ whether the value is logically true or false
 The `dotimes` macro executes the expression in its body a given number of
 times:
 
-    (dotimes [card­number 3]
-      (println "deal card number" (inc card­number))) ; adds one to card­number
+```clojure
+(dotimes [card­number 3]
+  (println "deal card number" (inc card­number))) ; adds one to card­number
+```
 
 Example of while loop:
 
-    (while (.isAlive thread)
-        (print ".")
-        (flush))
+```clojure
+(while (.isAlive thread)
+    (print ".")
+    (flush))
+```
 
 
 ##List Comprehension:
 Example:
 
-    (def cols "ABCD")
-    (def rows (range 1 4)) ; purposely larger than needed to demonstrate :while
-    (println "for demo")
-    (dorun
-      (for [col cols :when (not= col \B)
-            row rows :while (< row 3)]
-        (println (str col row))))
-    (println "\ndoseq demo")
-    (doseq [col cols :when (not= col \B)
-            row rows :while (< row 3)]
-      (println (str col row)))
+```clojure
+(def cols "ABCD")
+(def rows (range 1 4)) ; purposely larger than needed to demonstrate :while
+(println "for demo")
+(dorun
+  (for [col cols :when (not= col \B)
+        row rows :while (< row 3)]
+    (println (str col row))))
+(println "\ndoseq demo")
+(doseq [col cols :when (not= col \B)
+        row rows :while (< row 3)]
+  (println (str col row)))
+```
 
 ## Recursion
 Clojure doesn't support tail call optimization. One way to avoid this
@@ -638,11 +714,13 @@ issue in Clojure is to use the `loop` and `recur` special forms.
 
 Example:
 
-    (defn factorial-1 [number]
-      (loop [n number factorial 1]
-        (if (zero? n)
-          factorial
-          (recur (dec n) (* factorial n)))))
+```clojure
+(defn factorial-1 [number]
+  (loop [n number factorial 1]
+    (if (zero? n)
+      factorial
+      (recur (dec n) (* factorial n)))))
+```
 
 The `loop` special form form is like the `let` special form in that they
 both establish local bindings. But it also establishes a recursion point
@@ -655,10 +733,12 @@ Instead of using a `loop`, you can `recur` back to the top of a function.
 This make it simple to write a function whose entire body an implicit
 `loop`:
 
-    (defn countdown [result x]
-        (if (zero? x)
-        result
-        (recur (conj result x) (dec x))))
+```java
+(defn countdown [result x]
+    (if (zero? x)
+    result
+    (recur (conj result x) (dec x))))
+```
 
 ## Predicates
 Used to test a condition.
@@ -671,7 +751,9 @@ calls that *aren't evaluated until they are needed*.
 
 Example:
 
-    (map #(println %) [1 2 3])
+```
+(map #(println %) [1 2 3])
+```
 
 When run in a REPL, this outputs the values 1, 2 and 3 on separate lines
 interspersed with a sequence of three nil s which are the return values
@@ -687,10 +769,10 @@ The `dorun` and `doall` functions force the evaluation of items in a
 single lazy sequence. The `doseq` macro forces the evaluation of items in
 one or more lazy sequences. 
 
-`doseq` or `dorun` simply cause the side effects, the results are not
+* `dorun` simply cause the side effects, the results are not
 retained. 
-
-`doall` will retain retain the results. It holds teh head of the sequence
+* `doseq` usually used in for loop
+* `doall` will retain retain the results. It holds the head of the sequence
 which causes the results to be cached and it returns the evaluated
 sequence.
 
@@ -820,11 +902,13 @@ a string and then `loop` on `re-find` to iterate over the matches
 
 Example:
 
-    (let [m (re-matcher #"\w+" "the quick brown fox")]
-      (loop [match (re-find m)]
-        (when match
-          (println match)
-          (recur (re-find m)))))
+```clojure
+(let [m (re-matcher #"\w+" "the quick brown fox")]
+  (loop [match (re-find m)]
+    (when match
+      (println match)
+      (recur (re-find m)))))
+```
 
 
 Much better is to use the higher-level `re-seq`:
@@ -838,14 +922,18 @@ Example:
 ## Lazier than Lazy
 `comp` is used to *compose* two or more functions:
 
-    (comp f & fs)
+```clojure
+(comp f & fs)
+```
 
 Return a new function that applies the right most function to tis
 argument, the next-rightmost function to that result and so on.
 
 Example:
 
-    (def count-if (comp count filter))
+```clojure
+(def count-if (comp count filter))
+```
 
 So:
 
@@ -934,16 +1022,18 @@ recursion:
 
 Example:
 
-    (defn trampoine-fibo [n]
-      (let [fib (fn fib [f-2 f-1 current]
-                  (let [f (+ f-2 f-1)]
-                    (if (= n current)
-                      f
-                      #(fib f-1 f (inc current)))))]
-      (cond
-        (= n 0) 0
-        (= n 1) 1
-        :else (fib 0N 1 2))))
+```clojure
+(defn trampoine-fibo [n]
+  (let [fib (fn fib [f-2 f-1 current]
+              (let [f (+ f-2 f-1)]
+                (if (= n current)
+                  f
+                  #(fib f-1 f (inc current)))))]
+  (cond
+    (= n 0) 0
+    (= n 1) 1
+    :else (fib 0N 1 2))))
+```
 
 Then bounce `trampoline-fibo` on a `trampoline`
 
