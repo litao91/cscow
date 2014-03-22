@@ -163,5 +163,4 @@ var counter = generateClosure();
 console.log(counter()); // output 1
 console.log(counter()); // output 2
 console.log(counter()); // output 3
-
-
+```
