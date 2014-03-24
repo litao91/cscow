@@ -1,4 +1,5 @@
 \documentclass[a4paper, parskip=half*, PIV=20]{scrbook}
+\usepackage[bookmarks]{hyperref}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{graphicx}
@@ -9,9 +10,13 @@
 \def \xil {x^{(l)}_i}
 \def\x{\mathbf{x}}
 \def\bx{\mathbf{x}}
+\def \bX{\mathbf{X}}
 \def \cL {\mathcal{L}}
 \def \bw {\mathbf{w}}
-\def \w {mathbf{w}}
+\def \bi {\mathbf{i}}
+\def \grad {\mathbf{grad}}
+\def \bj {\mathbf{j}}
+\def \bu {\mathbf{u}}
 \def \sumln {\sum_{l=1}^N}
 \def \r {\mathbf{r}}
 \def \brl {\mathbb{r}^{(l)}}
@@ -20,6 +25,7 @@
 \def \bSig {\boldsymbol\Sigma}
 \def \bLam {\boldsymbol\Lambda}
 \def \bPhi {\boldsymbol\Phi}
+\def \boeta {\boldsymbol\eta}
 \def \byl {\mathbf{y}^{(l)}}
 \def \by{\mathbf{y}}
 \def \yil {y^{(l)}_i}
@@ -50,6 +56,11 @@
 \def \bbE{\mathbb{E}}
 \def \calD{\mathcal{D}}
 \def \var{\mbox{var}}
+
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{dfn}{Definition}[section]
+
 \title{Machine Learning}
 \author{LI Tao}
 \begin{document}
@@ -73,4 +84,5 @@
 \input{dA}
 \input{Sda}
 \input{multilabel}
+\input{appen}
 \end{document}

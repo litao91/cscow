@@ -1,0 +1,50 @@
+\chapter{Appendix}
+\section{Gradients and Directional Derivatives}
+\begin{dfn} [Gradient]
+At any point $(x, y)$ where the first partial derivatives of the function
+$f(x,y)$ exists, we define the \emph{gradient vector} $\nabla f(x,y) = \grad{f(x,y)}$ by 
+\begin{equation}
+    \nabla f(x,y) = \grad{f(x,y)} = f_1(x,y)\bi + f_2(x,y) \bj
+\end{equation}
+
+The symbol $\nabla$ is a \emph{vector differential operator}
+
+\begin{equation}
+    \nabla = \bi \frac{\partial}{\partial x} + \bj
+    \frac{\partial}{\partial y}
+\end{equation}
+\end{dfn}
+
+\begin{thm}
+If $f(x,y)$ is differentiable at the point $(a,b)$ and $\nabla f(a,b) \neq
+0$, then $\nabla f(a,b)$ is a normal vector to the level curve of $f$
+5that passes through $(a,b)$
+\end{thm}
+
+\begin{dfn} [Directional Derivative]
+    Let $\bu = u \bi + v \bj$ be a unit vector. The \textbf{directional
+    derivative} of $f(x,y)$ at $(a,b)$ in the direction of $\bu$ is the
+    rate of change of $f(x,y)$ with respect to distance measured at
+    $(a,b)$ along a ray in the direction of $\bu$ in the $xy$-plane. Given
+    by 
+
+    \begin{align}
+        D_{\bu} f(a,b) &= \lim_{h\rightarrow 0+} \frac{f(a+hu, b+hv) -
+        f(a,b)}{h} \\
+        &= \left. D_{\bu}f(a,b) = \frac{d}{dt} f(a+tu, b+tv) \right|_{t=0}
+    \end{align}
+\end{dfn}
+
+\begin{thm}
+    \begin{equation}
+        D_{\bu}f(a,b) = \bu \cdot \nabla f(a,b)
+    \end{equation}
+\end{thm}
+
+\begin{dfn} [Chain Rule]
+    \begin{equation}
+        \frac{dz}{dt} = \frac{\partial{z}}{\partial{t}} \frac{dx}{dt} +
+        \frac{\partial{z}}{\partial{y}}\frac{dy}{dt}
+    \end{equation}
+\end{dfn}
+    

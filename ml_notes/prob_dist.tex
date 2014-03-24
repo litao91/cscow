@@ -214,8 +214,77 @@ $\boldsymbol\Lambda \equiv \bSig^{-1}$ and
 Conditional distribution:
 \begin{align}
     p(\bx_a|\bx_b) &= \mathcal{N}(\bx|\bmu_{a|b}, \bLam^{-1}_{aa}) \\
-    \bum_{a|b} &= \mu_a - \bLam^{-1}_{aa}\bLam_{ab}(\bx_b -
+    \bmu_{a|b} &= \mu_a - \bLam^{-1}_{aa}\bLam_{ab}(\bx_b -
     \bmu_{b})
 \end{align}
 
+\section{The Exponential Family}
+Members of the \emph{exponential family} have many important properties in
+common, and it is illuminating to discuss these properties in some
+generality.
+
+The exponential family of distributions over $\bx$, given parameter
+$\boeta$, is defined to be the set of distributions of the from:
+
+\begin{equation}
+    p(\bx|\boeta) = h(\bx) g(\boeta) \exp\left\{ \boeta^T \mathbf{u}(\bx)
+\right\}
+\label{exp-family}
+\end{equation}
+
+Here the $\boeta$ are called the \emph{natural parameters} of the
+distribution, and $\mathbf{u}(\bx)$ is some function of $\bx$. 
+
+The function $g(\boeta)$ can be interpreted as the coefficient that
+ensures that the distribution is normalized and therefore satisfies
+\begin{equation} 
+    g(\boeta) \int h(\bx) \exp\left\{ \boeta^T \bu(\bx) \right\}d\bx
+= 1
+\label{exp-normalized}
+\end{equation}
+
+\subsubsection{Maximum likelihood and sufficient statistics}
+Problem: estimating the parameter vector $\boeta$ in the general
+exponential family distribution~\ref{exp-family} using the technique of
+maximum likelihood.
+
+Taking the gradient of both sides of~\ref{exp-normalized}:
+\begin{equation}
+    \nabla g(\boeta) \int h(\bx) \exp\left\{ \boeta^T \bu(\bx) \right\} dx
+    + g(\boeta) \int h(\bx) \exp\left\{ \boeta^T \bu(\bx) \right\}\bu(\bx)
+    d\bx = 0
+\end{equation}
+
+Rearrange and make use again of~\ref{exp-normalized}
+
+\begin{equation}
+    -\frac{1}{g(\boeta)} \nabla g(\boeta) = g(\boeta)\int \int \exp\left\{
+    \boeta^T \bu(\bx) \right\}\bu(\bx)d\bx = \mathbb{E}[\bu(\bx)]
+\end{equation}
+
+We therefore have 
+\begin{equation}
+    -\nabla\ln{g(\boeta)} = \mathbb{E}[\bu(\bx)]
+\end{equation}
+
+Now a dataset $\bX = \{\bx_1, \dots \bx_n\}$, the likelihood:
+
+\begin{equation}
+    p(\bX|\boeta) = \left( \prod_{n=1}^N h(\bx_n) \right) {g(\boeta)}^N
+    \exp\left\{ \boeta^T \sum_{n=1}^N \bu(\bx_n) \right\}
+\end{equation}
+
+Setting the gradient of $\ln p(\bX|\boeta)$ w.r.t $\boeta$ to zero, we get
+the following condition to be satisfied by MLE $\boeta_{ML}$
+\begin{equation}
+    -\nabla \ln{g(\boeta_{ML})} v= \frac{1}{N} \sum_{n=1}^N \bum
+    (\bx_{n})
+\end{equation}
+
+The solution for the maximum likelihood estimator depends on the data only
+through $\sum_n \bu(\bx_n)$, which is therefore called the
+\emph{sufficient statistic} of the distribution.
+
+We do not need to store the entire data set itself but only the value of
+sufficient statistic.
 

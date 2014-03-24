@@ -43,13 +43,13 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
         \begin{align*}
             logit(P(C_1|x)) & = \log\frac{p(C_1|\x)}{1 - p(C_1|\x)} \\
             & = \log\frac{p(\x|C_1)}{p(\x|C_2)} + \log\frac{p(C_1)}{p(C_2)} \\
-            & = \w^T\x + w_0
+            & = \bw^T\x + w_0
         \end{align*}
         where $w_0 = w_0^o + \log\frac{P(C_1)}{P(C_2)}$
 
        Rearranging terms: 
-        \begin{align*} y  & = sigmoid(\w^T\x + w_0) \\
-            & =  \hat{P}(C_1|\x) = \frac{1}{1 + \exp\left[-(\w^T\x + w_0 )\right]}
+        \begin{align*} y  & = sigmoid(\bw^T\x + w_0) \\
+            & =  \hat{P}(C_1|\x) = \frac{1}{1 + \exp\left[-(\bw^T\x + w_0 )\right]}
         \end{align*}
         As our estimator of $P(C_1|\x)$
 
@@ -92,11 +92,11 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
         \[\r^{(l)}|\x^{(l)} \sim Bernoulli(y^{(l)}) \]
         Note that in this discriminant-based approach, we model directly $\r|\x$
         The sample likelihood is:
-        \[ L(\w,w_0|\cX) = \prod_t(y^{(l)})^{(r^{(l)})}(1-y^{(l)})^{1-r^{(l)}}
+        \[ L(\bw,w_0|\cX) = \prod_t(y^{(l)})^{(r^{(l)})}(1-y^{(l)})^{1-r^{(l)}}
             \]
         We can always turn it in an error function to minimize: $E = -\log L$
         So we have \emph{cross-entropy}:
-        \[ E(\w, w_0| \cX) = -\sum_t \r^{(l)}\log y^{(l)} + (1-r^{(l)})\log(1 - y^{(l)}) \]
+        \[ E(\bw, w_0| \cX) = -\sum_t \r^{(l)}\log y^{(l)} + (1-r^{(l)})\log(1 - y^{(l)}) \]
 
         We use gradient descent to minimize cross-entropy 
         If $y = sigmoid(a) = \frac{1}{1 + exp(-a)}$, its derivative is given as:
@@ -116,10 +116,10 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
 \subsubsection{Generalization of sigmoid}
     Take one of the classes $C_k$, as reference class
         and assume that: \\
-        $ \log\frac{p(\x|C_i)}{p(\x|C_K)} = \w_i^T\x+ w_{i0}^o $,
+        $ \log\frac{p(\x|C_i)}{p(\x|C_K)} = \bw_i^T\x+ w_{i0}^o $,
         $i=1,\dots,K-1$\\
         Then we have:
-        \[ \frac{P(C_i|\x)}{P(C_K|\x)} = \exp[\w_i^T\x+w_{i0}] \]
+        \[ \frac{P(C_i|\x)}{P(C_K|\x)} = \exp[\bw_i^T\x+w_{i0}] \]
         With $w_{i0} = w_{i0}^o + \log\frac{P(C_i)}{P(C_K)}$
 
      Summing over $i$ we can deduce: 
