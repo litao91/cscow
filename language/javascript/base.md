@@ -1,12 +1,12 @@
-# ECMAScript Basics 
+﻿# ECMAScript Basics 
 ## Primitive Types
 ECMAScript has five *primitive types*:
 
-* Undefined
-* Null
-* Boolean
-* Number
-* String
+* `Undefined`
+* `Null`
+* `Boolean`
+* `Number`
+* `String`
 
 *Type* is defined as a set of values, and each of the primitive types
 defines a range of value it can contain as well as literal representations

@@ -277,7 +277,7 @@ Now a dataset $\bX = \{\bx_1, \dots \bx_n\}$, the likelihood:
 Setting the gradient of $\ln p(\bX|\boeta)$ w.r.t $\boeta$ to zero, we get
 the following condition to be satisfied by MLE $\boeta_{ML}$
 \begin{equation}
-    -\nabla \ln{g(\boeta_{ML})} v= \frac{1}{N} \sum_{n=1}^N \bum
+    -\nabla \ln{g(\boeta_{ML})} v= \frac{1}{N} \sum_{n=1}^N \bmu
     (\bx_{n})
 \end{equation}
 
@@ -288,3 +288,47 @@ through $\sum_n \bu(\bx_n)$, which is therefore called the
 We do not need to store the entire data set itself but only the value of
 sufficient statistic.
 
+\section{Nonparametric Methods}
+\emph{parametric} approach: Probability distributions having specific
+functional forms governed by a small number of parameters whose values are
+to be determined from a data set.
+
+\emph{nonparametric} approaces to density estimation that make few
+assumptions about the form of the distribution. 
+
+Histogram methods: partition $x$ into distinct bins of width $\Delta_i$
+and then count the number $n_i$ of observations of $x$ falling in bin
+$i$. The probability for each bin is given by:
+\begin{equation}
+    p_i = \frac{n_i}{N\Delta_i}
+\end{equation}
+
+
+\subsection{Kernel density estimators}
+Observations are drawn from unknown density $p(\bx)$, in $D$-dimensional
+space, and we wish to estimate the value of $p(\bx)$
+
+Consider some small region $\mathcal{R}$ containing $\bx$. The probability
+mass associated with this region is given by:
+\begin{equation}
+    P = \int_{\mathcal{R}} p(\bx) d\bx
+\end{equation}
+
+Each data point has probability $P$ of falling in $\mathcal{R}$, the
+total number $K$ inside $\mathcal{R}$ will be distributed according tot he
+binomial distribution:
+
+\begin{equation}
+    Bin(K|N,) = \frac{N!}{K!(N-K)!} P^K{(1-P)}^{N-K}
+\end{equation}
+
+So we have 
+\begin{align*}
+    \bbE[K/N] = P
+    \var[K/N] = P(1-P)/N
+\end{align*}
+
+We obtain our estimate in the form:
+\begin{equation}
+    p(\bx) = \frac{K}{NV}
+\end{equation}

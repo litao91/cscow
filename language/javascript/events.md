@@ -1,4 +1,4 @@
-# Events
+﻿# Events
 ## Event Flow
 When you click on a button, you're clicking not just on the button but
 also on its container and on the page as a whole.
