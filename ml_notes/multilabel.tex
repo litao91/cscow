@@ -1,6 +1,6 @@
-\section{Multi-Label Classification}
-\subsection{HOMER Algorithm}
-\subsubsection{Training}
+\chapter{Multi-Label Classification}
+\section{HOMER Algorithm}
+\subsection{Training}
 General idea: transform large set of labels $L$ into a tree-shaped
 hierarchy of simpler multi-label classification tasks.
 \begin{itemize}
@@ -26,7 +26,7 @@ children. Set of labels for $h_n$
 \]
 
 
-\subsubsection{Prediction}
+\subsection{Prediction}
 \begin{enumerate}
     \item Starts with $h_{root}$
     \item Follows a recursive process forwarding $x$ to the multilabel
@@ -37,7 +37,7 @@ children. Set of labels for $h_n$
     \item The union of these predicted single-labels is the output of hte
         proposed approach in this case.
 \end{enumerate}
-\subsubsection{Training}
+\subsection{Training}
 \begin{enumerate}
     \item Assume the existence of a set $D = \{(\bx_i, \bY_i) | i = 1
         \cdots |D|\}$, each one consists of a feature vector $\bx_i$ and
@@ -62,12 +62,12 @@ children. Set of labels for $h_n$
 
 Grouping: balanced k-means.
 
-\subsection{RAKEL}
+\section{RAKEL}
 Let $L = \{\lambda_i\}, i = 1 \dots |L|$ be the set of labels. A set
 $Y\subseteq L$ with $k = |Y|$ is called $k$-labelset.
 
-\subsection{MLkNN}
-\subsubsection{Preliminaries}
+\section{MLkNN}
+\subsection{Preliminaries}
 Notations
 \begin{description}
     \item[domain of instances] $\mathcal{X}$
@@ -186,3 +186,113 @@ Algorithm
         \end{enumerate}
 \end{enumerate}
 
+\section{Label Partition}
+A data set of pairs $(x_i, y_i)$, $i = 1, \dots, m$. Possible labels
+$\mathcal{D}$.
+
+Goal: given a new example $x^*$, to rank the entire set of labels
+$\mathcal{D}$ and output the top $k$ to the user which should contain the
+most relevant results possible.
+
+It is assumed that user has already trained a label scorer $f(x,y)$ that
+for a given label returns a real-valued score.
+
+Two components:
+\begin{itemize}
+    \item An \emph{input partitioner} that given an input example, maps it
+        to one or more partitions of the input space.
+    \item \emph{label assignment} which assigns a subset of labels to each
+        partition.
+\end{itemize}
+
+For given example, the label scorer is applied to only the subset of
+labels present in the corresponding partitions.
+
+At prediction time:
+
+\begin{enumerate}
+    \item Given a test input $x$, the input partitioner maps $x$ to a set
+        of partitions $p = g(x)$.
+    \item We retrieve the label sets assigned to each partition $p_j: L =
+        \cup_{j=1}^{|p|} \mathcal{L}_{p_j}, \quad p_j \in p$ where $\mathcal{L}_{p_j}
+        \subseteq \mathcal{D}$ is the subset of labels assigned to
+        partition $p_j$
+    \item We score the labels $y \in L$ with the label scorer $f(x,y)$,
+        and rank them to produce our final result.
+\end{enumerate}
+
+\subsection{Input Partitioner}
+$g(x) \rightarrow p \subseteq \mathcal{P}$o
+Where there are $P$ possible partitions, $\mathcal{P} = \left\{ 1, \dots P
+\right\}$
+
+Goal: to partition the input space such that examples that have the same
+relevant labels highly ranked by the label scorer are in the same
+partition.
+
+For given example $(x_i, y_i)$, the accuracy:
+\[\hat{l}(f(x_i), y_i)\]
+
+The loss is to be minimized as (equivalent to max accuracy):
+\begin{equation}
+    l(f(x_i), y_i) = 1- \hat{l}(f(x_i), y_i)
+\end{equation}
+
+Here $f(x)$ is the vector of scores for all labels:
+\[ f(x) = f_{\mathcal{D}}(x) = \left( f(x, \mathcal{D}_1), \dots,
+f(x, \mathcal{D}_{|\mathcal{D}|}) \right)\]
+where $\mathcal{D}_i$ is the $i$th label.
+
+To measure the loss of partitioner:
+\begin{equation}
+    l(f_{g(x_i)}(x_i), y_i)
+\end{equation}
+Where $f_{g(x)}(x) = \left( f(x, L_1), \dots, f(x, L_{|L|}) \right)$
+
+That is, the loss within it's partition.
+
+Then the overall loss:
+\begin{equation}
+    \sum_{i=1}^m l(f_{g(x_i)}(x_i), y_i)
+\end{equation}
+
+The sum of loss of all data in their partition.
+
+The label assignment (to partitions) $\mathcal{L}$ are unknown making the
+computation above infeasible. 
+
+The errors incurred by this model can be decomposed into components. For
+given example, it receives a low or zero precision at $k$ if either
+
+\begin{itemize}
+    \item It is in a partition where the relevant labels are not in the
+        set
+    \item The original label scorer was doing poorly in the first place.
+\end{itemize}
+
+Guidelines:
+
+\begin{itemize}
+    \item Examples that share highly relevant labels should be mapped into
+        the same partition
+    \item Examples for which the label scorer performs well should be
+        prioritized when learning a partitioner.
+\end{itemize}
+
+Consider the case of a partitioner that works by using the closest
+assigned partition as defined by partition centroids:
+$c_i$, $i = 1, \dots, P$:
+\begin{equation}
+    g(x) = argmin_{i=1,\dots, P}\|x - c_i\|
+\end{equation}
+
+\paragraph{Weighted Hierarchical Partitioner}
+Ensuring the input partitioner prioritizes examples which already perform
+well with the given label scorer is to weight each training example with
+tis label scorer result:
+\begin{equation}
+    \sum_{i=1}^m\sum_{j=1}^P \hat{l}(f(x_i), y_i) \|x_i - c_j\|^2
+\end{equation}
+
+So if the precision of the scorer with that particular instance is high,
+then the distance of that instance weights more.
