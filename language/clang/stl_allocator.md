@@ -1,7 +1,7 @@
-# STL
+﻿# STL
 ## Some C++ syntax
 ### Static Template Member
-```c++
+```cpp
 template<typename T>
 class testClass {
 public:
@@ -13,7 +13,7 @@ int testClass<char>::_data = 2;
 ```
 
 ### Member Templates
-```c++
+```cpp
 class alloc {};
 
 template<class T, class Alloc = alloc>
@@ -34,7 +34,7 @@ public:
 Note that the class `Sequence` is defined depending on the previous
 class type
 
-```c++
+```cpp
 template <class T, class Sequence = deque<T> >
 class stack {
 public:
@@ -46,7 +46,7 @@ private:
 
 ### Null Template Args
 
-```c++
+```cpp
 template<class T, class Sequence>
 class stack;
 
@@ -89,7 +89,7 @@ int main() {
 ## Allocator
 Note the Explicit way to call the `new` operator, including allocate
 memory and calling constructor.
-```c++
+```cpp
 // construction
 T* p = operator new(sizeof(T)); // allocate memory
 new(p) T;                       // calling constructor
@@ -103,13 +103,13 @@ SGI has the ability of **sub-allocation**
 
 So don't use the standard name:
 
-```c++
+```cpp
 vector<int, std::allocator<int> > iv;
 ```
 
 Write it as:
 
-```c++
+```cpp
 vector<int, std::alloc> iv;
 ```
 
@@ -119,7 +119,7 @@ vector<int, std::alloc> iv;
 * `::destroy`
 
 ### `construct()` and `destroy()`
-```c++
+```cpp
 template<class T>
 inline void construct(T1* p, const T2& value) {
     new (p) T1(value); // explicitly call constructor
@@ -135,7 +135,7 @@ inline void destroy(T* pointer) {
 ### Usage of allocate
 Explicitly calling `new` and `delete` operator.
 
-```c++
+```cpp
 template <class T>
 inline T* _allocate(ptrdiff_t size, T*) {
     T* tmp = (T*) (::operator new((size_t)(size * sizeof(T)));
@@ -156,7 +156,7 @@ Some notes:
   blocks. 
 * To find a free block is to find the hash set.
 
-```c++
+```cpp
 enum {__ALIGN = 8};
 enum {__MAX_BYTES = 128};
 enum {__NFREELISTS = __MAX_BYTES/__ALIGN}; // number of free-lists
@@ -179,7 +179,7 @@ private:
 // 16 free-lists
 static obj * volatile free_list[__NFREELISTS];
 static size_t FREELIST_INDEX(size_t bytes) {
-    return (((bytes) + __ALIGN - 1/__ALIGN - 1);
+    return (((bytes) + __ALIGN - 1)/__ALIGN - 1);
 }
 
 // return a object with size n, and add to the free-list
@@ -229,3 +229,82 @@ static void * reallocate(void *p, size_t old_sz, size_t new_sz);
 };
 ```
 
+#### The refill function
+* When it finds that there is no free space in `free_list`, it will call
+  `refill()`
+* New spaces are get from memory pool by calling `chunk_alloc()`
+
+```cpp
+// return an object of size n
+template<bool threads, int inst>
+void* __default_alloc_template<threads, inst>::refill(size_t n) {
+    int nojbs = 20; // number of objects
+    // get the number of objects specified in nobjs
+    char* chuck = chunk_alloc(n, nobjs);
+    obj * volatile *my_free_list;
+    obj * result;
+    obj * current_obj, * next_obj;
+    if(1 == nobjs) return(chunk); // if only one get, use it
+
+    // fill the extra objects to the free list
+    my_free_list = free_list + FREELIST_INDEX(n);
+
+    // create free_list inside the chuck
+    result = (obj *)chunk; //this block is for client
+
+    // directing the free_list to point to new spaces
+    *my_free_list = next_obj = (obj *) (chunk + n);
+    for (i=1; ; i++) {
+        current_obj = next_obj;
+        next_obj = (obj *) ((char *)next_obj + n);
+        if(nobjs - 1 == i) {
+            current_obj -> free_list_link = 0;
+        } else {
+            current_obj -> free_list_link = next_obj;
+        }
+    }
+    return (result);
+}
+```
+
+The memory pool
+
+```cpp
+template<bool threads, int inst>
+__default_alloc_template<threads, inst>::
+chunk_alloc(size_t size, int& nobjs) {
+    char * result;
+    size_t total_bytes = size * nobjs;
+    sizet_t bytes_left = end_free - start_free;
+    if(bytes_left >= total) {
+        // enough space, directly return
+        result = start_free;
+        start_free += total_bytes;
+        return (result);
+    } else if (bytes_left >= size) {
+        nobjs = bytes_left/size;
+        total_bytes = size * nobjs;
+        result = start_free;
+        start_free+= total_bytes;
+        return (result);
+    } else {
+        size_t bytes_to_get = total_bytes + ROUND_UP(heap_size >> 4);
+
+        if(bytes_left > 0) {
+        //make use of the left bytes
+            obj* volatile * my_free_list = free_list + FREELIST_INDEX(bytes_left);
+            ((obj *)start_free) -> free_list_link = *my_free_list;
+        }
+
+        start_free = (char *)malloc(bytes_to_get);
+        if(0 == start_free) {
+            // deal with malloc fail, ignore here
+        }
+        heap_size += bytes_to_get;
+        end_free = start_free + bytes_to_get;
+        //how has enough space, recursively call itself
+        return(chunk_alloc(size, nobjs));
+    }
+}
+
+```
