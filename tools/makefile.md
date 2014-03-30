@@ -1,4 +1,4 @@
-# Manage Project with Makefile
+﻿# Manage Project with Makefile
 ## Simple Makefiles
 ### Targets and prerequisites
 Essentially a makefile contains a set of rules used to build an
@@ -331,7 +331,7 @@ targets:
     $(OBJECTS): %.o: %.c
         $(CC) -c $(CFLAGS) $< -o $@
 
-The `$(OBJECTS) limtes the rule to the flies listed in the `$(OBJECT)`
+The `$(OBJECTS) limits the rule to the flies listed in the `$(OBJECT)`
 variable.
 
 #### Suffix Rules
