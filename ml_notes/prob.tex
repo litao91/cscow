@@ -50,7 +50,7 @@ The \emph{variance} of $f(x)$:
 
 In particular:
 \begin{equation}
-    \var[x] = \bbE[x^2] - {\bbE[f(x)]}^2
+    \var[x] = \bbE[x^2] - {\bbE[x]}^2
     \label{var-x}
 \end{equation}
 
@@ -63,17 +63,17 @@ For the two variables $x$ and $y$ the \emph{covariance} is defined by:
 Express the extent to which $x$ and $y$ \textbf{vary together}.
 If $x$ and $y$ are independent, then their covariance vanishes.
 \section{Bayesian Probabilities}
-View probabilities in terms of hte frequencies of random, repeatable
+View probabilities in terms of the frequencies of random, repeatable
 events: \emph{classical} or \emph{frequentist}
 
-Now we turn to Bayesian view, in which probabilities provide a
-quantification of uncertainty.
+Now we turn to Bayesian view, in which probabilities \textbf{provide a
+quantification of uncertainty}.
 
-We capture out assumptions about $\mathbf{w}$, \emph{before } observing
-the data, in the form of a prior probability distribution $p(\mathbb{w})$
+We capture out assumptions about $\mathbf{w}$, \emph{before} observing
+the data, in the form of a prior probability distribution $p(\mathbf{w})$
 
 The effect of the observed data $\mathcal{D}$ is expressed through the
-conditional probability $p(calD|\bw)p(\bw)$, then the Bayesian's theorem:
+conditional probability $p(\calD|\bw)p(\bw)$, then the Bayesian's theorem:
 
 \begin{equation}
     p(\bw|\calD) = \frac{p(\calD|\bw)p(\bw)}{p(\calD)}
@@ -82,7 +82,7 @@ conditional probability $p(calD|\bw)p(\bw)$, then the Bayesian's theorem:
 
 Evaluate the uncertainty in $\bw$ \emph{after} we have observed $\calD$
 
-Likelihood function: $p(\calD|\bw)$: evaluated for the observed data set
+Likelihood function $p(\calD|\bw)$: evaluated for the observed data set
 $\calD$ and can be viewed as a function of $\bw$. It expresses how
 probable the observed data set is for different settings of the parameter.
 
@@ -92,9 +92,10 @@ E\begin{itemize}
     \item In a frequentist setting, $\bw$ is considered to be a
         \textbf{fixed} parameter, whose value is determined by some form
         of ``estimator'', and error bars on this estimate are obtained by
-        considering the distribution of possible data sets $\calD$.
-    \item From the Bayesian view point there is only a single data set
-        $\calD$ and the uncertainty in th eparameters is expressed through
-        a probability distribution over $\bw$
+        considering the distribution of \textbf{possible data sets}
+        $\calD$.
+    \item From the Bayesian view point there is only a \textbf{single data
+        set} $\calD$ and the uncertainty in the parameters is expressed
+        through a probability distribution over $\bw$
 \end{itemize}
 

@@ -296,3 +296,9 @@ tis label scorer result:
 
 So if the precision of the scorer with that particular instance is high,
 then the distance of that instance weights more.
+
+The hard version, only run the $k$-means over the set of training example
+with higher enough quality:
+\[ \left\{ (x_i, y_i): \hat{l}(f(x_i), y_i) \geq \rho \right\} \]
+We take $\rho = 1$
+

@@ -1,6 +1,94 @@
-\chapter{Linear Model}
+\chapter{Linear Models for Regression}
+\section{Linear Basis Function Models}
+Simplest, linear combination of input:
+\begin{equation}
+    y(\bx, \bw) = w_0 + w_1 x_1 + \dots + w_D x_D
+\end{equation}
+
+Extend to a linear combination of fixed nonlinear functions of input
+variables:
+\begin{equation}
+    y(\bx, \bw) = w_0 + \sum_{j=1}^{M-1} w_j \phi_i(\bx)
+\end{equation}
+Where $\phi_j(\bx)$ are \textbf{basis functions}.
+
+The parameter $w_0$ allows for any fixed offset in the data and is called
+\textbf{bias} parameter.
+
+Define an dummy basis function $\phi_0(\bx) = 1$ so that 
+\begin{equation}
+    y(\bx, \bw) = \sum_{j=0}^{M-1}w_j \phi_j(\bx) = \bw^T \phi(\bx)
+\end{equation}
+where $\bw = (w_0, \dots, w_{M-1})$ and $\boldsymbol\phi = (\phi_0, \dots,
+\phi_{M-1})^T$
+
+Features can be expressed in terms of basis function $\{\phi_j(\bx)\}$.
+
+\subsection{Some choices of basis functions}
+Gaussian basis:
+\begin{equation}
+    \phi_j(x) = \exp\left\{ -\frac{(x-\mu_j)^2}{2s^2} \right\}
+\end{equation}
+$\mu_j$ govern the location and $s$ governs the spatial scale.
+
+Sigmoidal basis function of the form
+\begin{equation}
+    \phi_j(x) = \sigma\left( \frac{x-\mu_j}{s} \right)
+\end{equation}
+Where $\sigma(a)$ is the logistic sigmoid function:
+\begin{equation}
+    \sigma(a) = \frac{1}{1+\exp(-a)}
+\end{equation}
+
+\section{Maximum likelihood and least square}
+Assume that target variable $t$ is given by:
+\begin{equation}
+    t = y(\bx, \bw) + \epsilon
+\end{equation}
+Where $\epsilon$ is a zero mean Gaussian random variable with precision
+$\beta$ (inverse variance), works as noise. So we have
+\begin{equation}
+    p(t|\bx, \bw, \beta) = \mathcal{N}(t|y(\bx, \bw), \beta^{-1})
+\end{equation}
+
+Then the conditional mean will be 
+\begin{equation}
+    \bbE[t|\bx] = \int t p(t|\bx) dt = y(\bx, \bw)
+\end{equation}
+
+Note: the Gaussian noise assumption implies that the conditional
+distribution of $t$ given $\bx$ is unimodal.
+
+A data set of input $\mathbf{X} = \left\{ \bx_1, \dots, \bx_N \right\}$
+with targets $\mathbf{t}=(t_1, \dots, t_N)^T$ (col vector). 
+\begin{equation}
+    p(\mathbf{t}|\bX, \bw, \beta)= \prod_{n=1}^N \mathcal{N}(t_n|\bw^T
+    \boldsymbol\phi(\bx_n), \beta^{-1})
+\end{equation}
+
+Note that in supervised learning, we are not seeking to model the
+distribution of the input variables. Thus $\bx$ will always appear in the
+set of conditioning variables, and so we can drop the explicit $\bx$ from
+the expression.
+
+Taking the log-likelihood:
+\begin{align}
+    \ln p(\mathbf{t}| \bw, \beta) &= \sum_{n=1}^N \ln
+    \mathcal{N}(t_n|\bw^T\boldsymbol\phi(\bx_n), \beta^{-1})
+    &=\frac{N}{2} \ln \beta - \frac{N}{2}\ln(2\pi) - \beta E_D(\bw)
+\end{align}
+Where the sum-of-square error is defined by:
+\begin{equation}
+    E_D(\bw) = \frac{1}{2}\sum_{n=1}^N \left\{ t_n - \bw^T
+    \boldsymbol\phi(\bx_n) \right\}^2
+\end{equation}
+Maximization of likelihood function under a conditional Gaussian noise
+distribution for a linear model is equivalent of minimizing a
+sum-of-square error function given by $E_D(\bw)$.
+
+\chapter{Linear Model for Classification}
 \section{Linear Discriminant functions}
-A discriminant is a function that take an input vector $\bx$ and assignes
+A discriminant is a function that take an input vector $\bx$ and assigns
 it to one of $K$ classes:
 \[g_i(\bx|\bw_i, w_{i0}) =\bw_i^T\bx + w_{i0}\] generalized use base
 function $g_i(\bx) = \sum_{j=1}^k w_j \phi_{ij}(\bx)$

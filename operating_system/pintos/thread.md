@@ -224,3 +224,7 @@ char get (void) {
 ## Optimization Barriers
 An optimization barrier is a special statement that prevents teh compiler
 from making assumptions about the state of memory accross the barrier.
+
+## Note
+
+* Current running thread won't in the ready list!!

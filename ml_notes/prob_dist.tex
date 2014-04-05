@@ -42,8 +42,8 @@ construct the \textbf{likelihood function} (function of $\mu$).
 
 The likelihood function is the probability of drawing this dataset.
 
-Assume that the data set is drawn from $p(x|\mu)$, the likelihood
-function:
+Assume that the data set is drawn from $p(x|\mu)$, the \textbf{likelihood
+function}:
 
 \[ 
     p(\mathcal{D}|\mu) = \prod_{n=1}^N p(x_n|\mu) = \prod_{n=1}^N
@@ -67,14 +67,13 @@ zero, we have an maximum likelihood estimator:
 
 It's the \emph{sample mean}
 
-Binomial distribution: number $m$ of observations of $x=1$ given that the
+\textbf{Binomial distribution}: number $m$ of observations of $x=1$ given that the
 data set has size $N$:
 
 \begin{align*}
     \mbox{Bin}(m|N, \mu) = {N \choose m} \mu^m{(1-\mu)}^{N-m} \\
-    \mathbb{E}[m] = \sum_{m=1}^N \mbox{mbox}(m|N, \mu) = N\mu \\
-    \mbox{var}[m] = \sum_{m=0}^N {(m -\mathbb{E}[m])}^2 \mbox{Bin}(m|N,
-    \mu) = N \mu (1-\mu)
+    \mathbb{E}[m] = \sum_{m=1}^N m\mbox{Bin}(m|N, \mu) = N\mu \\
+    \mbox{var}[m] = \sum_{m=0}^N {(m -\mathbb{E}[m])}^2 \mbox{Bin}(m|N, \mu) = N \mu (1-\mu)
 \end{align*}
 
 \subsection{The beta distribution}
@@ -84,9 +83,9 @@ Take the form of the products of factors of the form
 $\mu^x{(1-\mu)}^{1-x}$
 
 Choose a prior to be proportional to power of $\mu$ and $(1-\mu)$ then the
-posterior will have the same functional form as the prior.
-
-Posterior and prior have the same form.
+posterior will have the same functional form as the prior. Then the
+posterior and prior have the same form. (Posterior $\propto$ prior
+$\times$ likelihood).
 
 The prior is \emph{beta} distribution:
 \begin{align*}
@@ -100,9 +99,12 @@ $a$ and $b$ are hyperparameters (parameters of parameters)
 
 Then the posterior:
 \[ p(\mu|m, l, a, b) = \frac{\Gamma(m+a+l+b)}{\Gamma(m+a)\Gamma(l+b)}\mu^{m+a-1} {(1-\mu)}^{l+b-1}\]
+Where $l = N - m$ (count of $x = 0$).
 
-Simple interpretation of $a$ and $b$: effective number of observations of
-$x=1$ and $x = 0$. (They add to the counts of samples).
+Simple interpretation of $a$ and $b$: Increase $a$ by $l$ and $b$ by $m$
+in going from prior to posterior. $a$ and $b$ can be interpreted as
+effective number of observations of $x=1$ and $x = 0$. (They add to the
+counts of samples).
 
 \emph{Sequential} approach to learning:
 \begin{enumerate}
@@ -258,7 +260,7 @@ Taking the gradient of both sides of~\ref{exp-normalized}:
 Rearrange and make use again of~\ref{exp-normalized}
 
 \begin{equation}
-    -\frac{1}{g(\boeta)} \nabla g(\boeta) = g(\boeta)\int \int \exp\left\{
+    -\frac{1}{g(\boeta)} \nabla g(\boeta) = g(\boeta)\int \exp\left\{
     \boeta^T \bu(\bx) \right\}\bu(\bx)d\bx = \mathbb{E}[\bu(\bx)]
 \end{equation}
 
