@@ -76,6 +76,7 @@ Taking the log-likelihood:
     \ln p(\mathbf{t}| \bw, \beta) &= \sum_{n=1}^N \ln
     \mathcal{N}(t_n|\bw^T\boldsymbol\phi(\bx_n), \beta^{-1})
     &=\frac{N}{2} \ln \beta - \frac{N}{2}\ln(2\pi) - \beta E_D(\bw)
+    \label{lin-likelihood}
 \end{align}
 Where the sum-of-square error is defined by:
 \begin{equation}
@@ -85,6 +86,41 @@ Where the sum-of-square error is defined by:
 Maximization of likelihood function under a conditional Gaussian noise
 distribution for a linear model is equivalent of minimizing a
 sum-of-square error function given by $E_D(\bw)$.
+
+Take gradient of ~\ref{lin-likelihood} and set to zero, we get:
+\begin{equation}
+    W_{ML} = (\boldsymbol\Phi^T\boldsymbol\Phi)^{-1}\boldsymbol\Phi^T
+    \mathbf{t}
+\end{equation}
+
+Where $\boldsymbol\Phi$ is called \emph{designed matrix}, whose elements are
+given by $\phi_{nj} = \phi_j(\bx_n)$
+\begin{equation}
+    \boldsymbol\Phi = \begin{pmatrix}
+        \phi_0(\bx_1) & \phi_1(\bx_1) \cdots \phi_{M-1}(\bx_1) \\
+        \phi_0(\bx_2) & \phi_1(\bx_2) \cdots \phi_{M-1}(\bx_2)\\
+        \cdots \\
+        \phi_0(\bx_N) & \phi_1(\bx_N) \cdots \phi_{M-1}(\bx_N) 
+    \end{pmatrix}
+\end{equation}
+
+The quantity
+\begin{equation}
+    (\boldsymbol\Phi^T\boldsymbol\Phi)^{-1}\boldsymbol\Phi^T
+\end{equation}
+Is known as \textbf{pseudo-inverse} of the matrix .
+\subsection{Geometry of least squares}
+\begin{enumerate}
+    \item N-dimensional space whose axes are given by $t_n$
+    \item Each basis $\phi_j(\bx_n)$ can be represented as a vector in the
+    same space, denoted by $\phi_j$ ($j$-th column of $\boldsymbol\Phi$
+    \item The $M$ vectors $\phi_j(\bx_n)$ will span a linear subspace
+        $\mathcal{S}$ of dimensionality $M$.
+    \item the least square error solution is the orthogonal projection of
+        $\mathbf{t}$ to the subspace.
+\end{enumerate}
+
+\subsection{Regularized least squares}
 
 \chapter{Linear Model for Classification}
 \section{Linear Discriminant functions}
