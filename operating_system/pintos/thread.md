@@ -228,3 +228,127 @@ from making assumptions about the state of memory accross the barrier.
 ## Note
 
 * Current running thread won't in the ready list!!
+
+## The lifespan of a thread
+1. `thread_create()` create a thread, it will:
+    - Allocate `struct thread`
+    - Initialize `struct_kernel_thread_frame *kf`
+    - Initialize `swithc_entry_frame *ef`
+    - Initialize `switch_tread_frame *sf`
+    - Note that the function will be assigned to `kernel_thread_frame`.
+    - The new thread will be unblocked in this function
+* `thread_unblock()` will be called, this function will insert the nwe
+   thread to the `ready_list`.
+* The `schedule(void)` do the scheduling, it finds the next thread
+   (by calling `next_thread_to_run()` ) and do the content switch work 
+* `thread_switch()` called in the `schedule()`, it's a asm code in
+   `swithc.S`, it will
+   - Save the current stack pointer to old thread's stack
+   - Restore the stack pointer from the new thread's stack.
+* `thread_schedule_tail(struct thread* prev)` then called in
+   `schedule()`, it will activate the process and clear the previous
+   process if it is dying.
+* `process_activate(void)` is called in `thread_schedule_tail()`, it will
+    - Activate the thread's page table
+    - Update tss (task state segment)
+
+The calling stack:
+
+```
+thread_create()
+    thread_unblock(t)
+        list_insert_ordered(&ready_list, &t->elem, priority_less_func, 0);
+        t->status = THREAD_READY
+```
+
+Note that the `schedule()` is running in the context of current thread.
+After executing the next thread, the schedule tail will be run to do.
+## Timer
+Alarm testing code:
+```c
+static void
+test_sleep (int thread_cnt, int iterations)
+{
+  struct sleep_test test;
+  struct sleep_thread *threads;
+  int *output, *op;
+  int product;
+  int i;
+
+  /* This test does not work with the MLFQS. */
+  ASSERT (!thread_mlfqs);
+
+  msg ("Creating %d threads to sleep %d times each.", thread_cnt, iterations);
+  msg ("Thread 0 sleeps 10 ticks each time,");
+  msg ("thread 1 sleeps 20 ticks each time, and so on.");
+  msg ("If successful, product of iteration count and");
+  msg ("sleep duration will appear in nondescending order.");
+
+  /* Allocate memory. */
+  threads = malloc (sizeof *threads * thread_cnt);
+  output = malloc (sizeof *output * iterations * thread_cnt * 2);
+  if (threads == NULL || output == NULL)
+    PANIC ("couldn't allocate memory for test");
+
+  /* Initialize test. */
+  test.start = timer_ticks () + 100;
+  test.iterations = iterations;
+  lock_init (&test.output_lock);
+  test.output_pos = output;
+
+  /* Start threads. */
+  ASSERT (output != NULL);
+  for (i = 0; i < thread_cnt; i++)
+    {
+      struct sleep_thread *t = threads + i;
+      char name[16];
+
+      t->test = &test;
+      t->id = i;
+      t->duration = (i + 1) * 10;
+      t->iterations = 0;
+
+      snprintf (name, sizeof name, "thread %d", i);
+      thread_create (name, PRI_DEFAULT, sleeper, t);
+    }
+
+  /* Wait long enough for all the threads to finish. */
+  timer_sleep (100 + thread_cnt * iterations * 10 + 100);
+
+  /* Acquire the output lock in case some rogue thread is still
+     running. */
+  lock_acquire (&test.output_lock);
+
+  /* Print completion order. */
+  product = 0;
+  for (op = output; op < test.output_pos; op++)
+    {
+      struct sleep_thread *t;
+      int new_prod;
+
+      ASSERT (*op >= 0 && *op < thread_cnt);
+      t = threads + *op;
+
+      new_prod = ++t->iterations * t->duration;
+
+      msg ("thread %d: duration=%d, iteration=%d, product=%d",
+           t->id, t->duration, t->iterations, new_prod);
+
+      if (new_prod >= product)
+        product = new_prod;
+      else
+        fail ("thread %d woke up out of order (%d > %d)!",
+              t->id, product, new_prod);
+    }
+
+  /* Verify that we had the proper number of wakeups. */
+  for (i = 0; i < thread_cnt; i++)
+    if (threads[i].iterations != iterations)
+      fail ("thread %d woke up %d times instead of %d",
+            i, threads[i].iterations, iterations);
+
+  lock_release (&test.output_lock);
+  free (output);
+  free (threads);
+}
+```

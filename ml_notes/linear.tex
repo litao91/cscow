@@ -1,8 +1,20 @@
 \chapter{Linear Models for Regression}
+The outline:
+\begin{itemize}
+    \item Transform the input into features with basis function
+        $\phi(\bx)$
+    \item Linear combination of features
+        \[
+            y(\bx, \bw) = w_0 + \sum_{j=1}^{M-1}w_j\phi_j(\bx)
+        \]
+    \item Minimize the squared-error to find the parameters.
+    \item Geometry of least squares: orthogonal projection of target
+        vector to the feature plane.
+\end{itemize}
 \section{Linear Basis Function Models}
 Simplest, linear combination of input:
 \begin{equation}
-    y(\bx, \bw) = w_0 + w_1 x_1 + \dots + w_D x_D
+    y(\bx, \bw) = w_0 + w_1 x_1 + \cdots + w_D x_D
 \end{equation}
 
 Extend to a linear combination of fixed nonlinear functions of input
@@ -19,15 +31,15 @@ Define an dummy basis function $\phi_0(\bx) = 1$ so that
 \begin{equation}
     y(\bx, \bw) = \sum_{j=0}^{M-1}w_j \phi_j(\bx) = \bw^T \phi(\bx)
 \end{equation}
-where $\bw = (w_0, \dots, w_{M-1})$ and $\boldsymbol\phi = (\phi_0, \dots,
-\phi_{M-1})^T$
+where $\bw = (w_0, \dots, w_{M-1})$ and $\boldsymbol\phi = {(\phi_0, \dots,
+\phi_{M-1})}^T$
 
 Features can be expressed in terms of basis function $\{\phi_j(\bx)\}$.
 
 \subsection{Some choices of basis functions}
 Gaussian basis:
 \begin{equation}
-    \phi_j(x) = \exp\left\{ -\frac{(x-\mu_j)^2}{2s^2} \right\}
+    \phi_j(x) = \exp\left\{ -\frac{{(x-\mu_j)}^2}{2s^2} \right\}
 \end{equation}
 $\mu_j$ govern the location and $s$ governs the spatial scale.
 
@@ -60,9 +72,9 @@ Note: the Gaussian noise assumption implies that the conditional
 distribution of $t$ given $\bx$ is unimodal.
 
 A data set of input $\mathbf{X} = \left\{ \bx_1, \dots, \bx_N \right\}$
-with targets $\mathbf{t}=(t_1, \dots, t_N)^T$ (col vector). 
+with targets $\bsft={(t_1, \dots, t_N)}^T$ (col vector). 
 \begin{equation}
-    p(\mathbf{t}|\bX, \bw, \beta)= \prod_{n=1}^N \mathcal{N}(t_n|\bw^T
+    p(\bsft|\bX, \bw, \beta)= \prod_{n=1}^N \mathcal{N}(t_n|\bw^T
     \boldsymbol\phi(\bx_n), \beta^{-1})
 \end{equation}
 
@@ -73,24 +85,24 @@ the expression.
 
 Taking the log-likelihood:
 \begin{align}
-    \ln p(\mathbf{t}| \bw, \beta) &= \sum_{n=1}^N \ln
+    \ln p(\bsft| \bw, \beta) &= \sum_{n=1}^N \ln
     \mathcal{N}(t_n|\bw^T\boldsymbol\phi(\bx_n), \beta^{-1})
     &=\frac{N}{2} \ln \beta - \frac{N}{2}\ln(2\pi) - \beta E_D(\bw)
     \label{lin-likelihood}
 \end{align}
 Where the sum-of-square error is defined by:
 \begin{equation}
-    E_D(\bw) = \frac{1}{2}\sum_{n=1}^N \left\{ t_n - \bw^T
-    \boldsymbol\phi(\bx_n) \right\}^2
+    E_D(\bw) = \frac{1}{2}\sum_{n=1}^N {\left\{ t_n - \bw^T
+    \boldsymbol\phi(\bx_n) \right\}}^2
 \end{equation}
 Maximization of likelihood function under a conditional Gaussian noise
 distribution for a linear model is equivalent of minimizing a
 sum-of-square error function given by $E_D(\bw)$.
 
-Take gradient of ~\ref{lin-likelihood} and set to zero, we get:
+Take gradient of~\ref{lin-likelihood} and set to zero, we get:
 \begin{equation}
-    W_{ML} = (\boldsymbol\Phi^T\boldsymbol\Phi)^{-1}\boldsymbol\Phi^T
-    \mathbf{t}
+    W_{ML} = {(\boldsymbol\Phi^T\boldsymbol\Phi)}^{-1}\boldsymbol\Phi^T
+    \bsft
 \end{equation}
 
 Where $\boldsymbol\Phi$ is called \emph{designed matrix}, whose elements are
@@ -106,21 +118,61 @@ given by $\phi_{nj} = \phi_j(\bx_n)$
 
 The quantity
 \begin{equation}
-    (\boldsymbol\Phi^T\boldsymbol\Phi)^{-1}\boldsymbol\Phi^T
+    {(\boldsymbol\Phi^T\boldsymbol\Phi)}^{-1}\boldsymbol\Phi^T
 \end{equation}
-Is known as \textbf{pseudo-inverse} of the matrix .
+Is known as \textbf{pseudo-inverse} of the matrix.
 \subsection{Geometry of least squares}
 \begin{enumerate}
     \item N-dimensional space whose axes are given by $t_n$
     \item Each basis $\phi_j(\bx_n)$ can be represented as a vector in the
-    same space, denoted by $\phi_j$ ($j$-th column of $\boldsymbol\Phi$
+    same space, denoted by $\phi_j$ ($j$-th column of $\boldsymbol\Phi$)
     \item The $M$ vectors $\phi_j(\bx_n)$ will span a linear subspace
         $\mathcal{S}$ of dimensionality $M$.
     \item the least square error solution is the orthogonal projection of
-        $\mathbf{t}$ to the subspace.
+        $\bsft$ to the subspace.
 \end{enumerate}
 
 \subsection{Regularized least squares}
+Add regularization term to control over-fitting:
+\[ E_D(\bw) + \lambda E_w(\bw)\]
+Where
+\[ E_w(\bw) = \frac{1}{2} \bw^T \bw\]
+The total error function becomes:
+\[\frac{1}{2}\sum_{n=1}^{N} {\left\{ t_n - \bw^T\phi(\bx_n) \right\}}^2 +
+\frac{\lambda}{2}\bw^T\bw\]
+This particular choice of regularizer is \emph{weight decay} as it
+encourages weight values to decay towards zero, unless supported by the
+data. Minimize it we get:
+\[\bw = {(\lambda \bI + \bPhi^T\bPhi)}^{-1}\bPhi^T\bsft \]
+
+\vspace{1cm}
+
+A more general regularizer:
+\begin{equation}
+    \frac{1}{2} \sum_{n=1}^N {\left\{ t_n - \bw^T\bphi(\bx_n) \right\}}^2
+    + \frac{\lambda}{2}\sum_{j=1}^M|w_j|^q
+    \label{err-gen}
+\end{equation}
+
+If $\lambda$ is sufficiently large, some of the coefficients $w_j$ are
+\textbf{driven to zero}, leading to a \emph{sparse} model.
+
+To see this, Minimize~\ref{err-gen} is equivalent to:
+\begin{align}
+    \mbox{minimize} & E_D(\bw) = \frac{1}{2}\sum_{n=1}^N{\left\{ t_n -
+        \bw^T\bphi(\bx_n)
+    \right\}}^2 \\
+    \mbox{subject to} & \sum_{j=1}^M |w_j|^q \leq \eta
+\end{align}
+The problem of determining model complexity is shifted from one of finding
+the appropriate number of basis functions to one of determining a suitable
+value of regularization coefficient $\lambda$
+
+Note that $\sum_{j=1}^M |w_j|^q \leq \eta$ form a region.
+
+\subsection{Multiple Output}
+$K > 1$ target variables.
+
 
 \chapter{Linear Model for Classification}
 \section{Linear Discriminant functions}
@@ -129,7 +181,8 @@ it to one of $K$ classes:
 \[g_i(\bx|\bw_i, w_{i0}) =\bw_i^T\bx + w_{i0}\] generalized use base
 function $g_i(\bx) = \sum_{j=1}^k w_j \phi_{ij}(\bx)$
 \subsection{Two classes}
-\[g(\bx) = g_1(\bx) - g_2(\bx) \], $C_1$ if $g(\bx)>0$
+\[g(\bx) = g_1(\bx) - g_2(\bx) \] 
+Choose $C_1$ if $g(\bx)>0$
 
 \subsection{Geometry Interpretation}
 The decision boundary is defined by 
@@ -147,7 +200,7 @@ K discriminant:
 Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
         C_i$
         
-        Choose $C_i$ if \[g_i(\bx) = \max_{j=1}^Kg_i(\bx)\]
+        Choose $C_i$ if \[g_i(\bx) = \max_{j=1}^K g_i(\bx)\]
 
 \subsection{Pairwise Separation} 
     Discriminant function for class $i$ and $j$:
@@ -185,14 +238,14 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
     \item[Error]$\bw$ denotes the set of parameters and $E(\bw|\cX)$ is the
         error parameters $\bw$ on the given training set 
         $\cX$, we look for: 
-        \[ \bw*= arg\min_{\bw}E(\bw|\cX)\]
+        \[ \bw*= \arg\min_{\bw}E(\bw|\cX)\]
         No analytical solution
     \item[Gradient Vector] When $E(\bw)$ is a differentiable function of a
         vector of variables, we have the gradient vector composed of the
            partial derivatives:
-            \[ \nabla_\bw E = \left[ \frac{\partial E}{\partial w_1},
+            \[ \nabla_\bw E = {\left[ \frac{\partial E}{\partial w_1},
                 \frac{\partial E}{\partial w_2}, \dots, \frac{\partial
-                E}{\partial w_d} \right]^T
+                E}{\partial w_d} \right]}^T
                 \]
             \item [Gradient Descent] starts from a \emph{random} $\bw$, at each
                 step, update $w$ in a \emph{opposite direction} of the gradient:
@@ -212,18 +265,18 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
         = 1$ if $\x\in C_1$
 
         We assume $\r^{(l)}$, given $\x^{(l)}$ is Bernoulli with probability $y^{(l)} =
-        p(C_1|\x^{(l)})$ :
+        p(C_1|\x^{(l)})$:
         \[\r^{(l)}|\x^{(l)} \sim Bernoulli(y^{(l)}) \]
         Note that in this discriminant-based approach, we model directly $\r|\x$
         The sample likelihood is:
-        \[ L(\bw,w_0|\cX) = \prod_t(y^{(l)})^{(r^{(l)})}(1-y^{(l)})^{1-r^{(l)}}
+        \[ L(\bw,w_0|\cX) = \prod_t{(y^{(l)})}^{(r^{(l)})}{(1-y^{(l)})}^{1-r^{(l)}}
             \]
         We can always turn it in an error function to minimize: $E = -\log L$
         So we have \emph{cross-entropy}:
         \[ E(\bw, w_0| \cX) = -\sum_t \r^{(l)}\log y^{(l)} + (1-r^{(l)})\log(1 - y^{(l)}) \]
 
         We use gradient descent to minimize cross-entropy 
-        If $y = sigmoid(a) = \frac{1}{1 + exp(-a)}$, its derivative is given as:
+        If $y = sigmoid(a) = \frac{1}{1 + \exp(-a)}$, its derivative is given as:
         \[ \frac{dy}{da} = y(1-y) \]
         and we get the following update equations:
         \begin{align*}
@@ -250,7 +303,7 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
          \[P(C_K|\bx) =
          \frac{1}{1+\sum_{i=1}^{K-1}\exp(\bw_i^T\bx + w_{i0})}\]
         \[P(C_i|\bx)
-        =\frac{\exp(\bw_i^T+w_{i0})}{1+\sum_{j=1}^{K-1}\exp(\bw_j^T\bx+w_{j0})}\],
+        =\frac{\exp(\bw_i^T+w_{i0})}{1+\sum_{j=1}^{K-1}\exp(\bw_j^T\bx+w_{j0})}\]
     where $k=1,\dots, K-1$
 \subsubsection{Softmax}
     Treat all classes uniformly\\ $y_i = \hat{P}(C_i|\bx) =
@@ -259,20 +312,20 @@ Linear separable: \[g_i(\bx|\bw_i, \bw_{i0}) > 0\] if $\bx \in
     \paragraph{Learning} 
         \[\frac{\partial y_i}{\partial a_j} = y_i (\delta_{ij}-y_i)\]
         $\Delta\bw_j = \eta\sum_l(r_j^{(l)}-y_j^{(l)})\bxl$, $
-        \Delta w_{j0} = \eta\sum_l(r_j^{(l)}-y_j^{(l))}$
+        \Delta w_{j0} = \eta\sum_l(r_j^{(l)}-y_j^{(l)})$
     \paragraph{Regression for two-class Classification} $r^{(l)} = y^{(l)}+\epsilon$,
         $r^{(l)}\in \left\{ 0,1 \right\}, \epsilon \sim \cN(0, \sigma^2)$,
         $y^{(l)} = sigmoid(\bw^T\bxl+w_0)$,
 
         Likelihood:$L(\bw, w_0|\cX) =
         \prod_l\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left[
-        -\frac{(\rl-\yl)^2}{2\sigma^2} \right]$, 
+        -\frac{{(\rl-\yl)}^2}{2\sigma^2} \right]$, 
 
         Error: $E(\left\{ \bw_i, w_{i0} \right\}_i|\cX) =
-        \frac{1}{2}\sum_l(r^{(l)}-\yl)^2$, 
+        \frac{1}{2}\sum_l{(r^{(l)}-\yl)}^2$, 
 
-        Learning $\Delta \bw = \eta\sum_l(\rl - \yl)\yl(1-\yl)\bxl$, \\$\Delta
-        w_0 = \eta\sum_l(\rl-\yl)\yl(1-\yl)$
+        Learning $\Delta \bw = \eta\sum_l(\rl - \yl)\yl(1-\yl)\bxl$:
+        \[\Delta w_0 = \eta\sum_l(\rl-\yl)\yl(1-\yl)\]
     \paragraph{$K>2$ classes} $\brl = \byl +\boldsymbol\epsilon$, \\$\epsilon\sim
         \cN_K(0, \sigma^2\mathbf{I}_K)$, $\yil = \frac{1}{1+\exp\left[
             -(\bw_i^T\bxl + w_{i0})
