@@ -156,8 +156,8 @@ Algorithm
             \item For each of the training instances $i \in \left\{ 1, 2,
                 \dots m \right\}$, the number of label $l$ in the
                 neighbors of $x_i$:
-                \[ \delta = C_{x_i}^(l) \leftarrow \sum_{a\in
-                N(x_i)\vec{y}_a(l)}\]
+                \[ \delta = C_{x_i}(l) \leftarrow \sum_{a\in
+                N(x_i)}\vec{y}_a(l)\]
 
                 If $\vec{y}_{x_i}(l) =  1$, that is, if instance $x_i$
                 has label $l$,  then $c[\delta] \leftarrow
@@ -166,23 +166,29 @@ Algorithm
 
                 So $c[\delta]$ is the cases that the training instance
                 $x_i$ has label $l$ and among its neighbors, there are exactly
-                $\delta$ instances also have label $l$.
+                $\delta$ instances also have label $l$, and $c'[\delta]$
+                is the that $x_i$ has $\delta$ instances labeled $l$ in
+                its neighbor but it is not labeled $l$.
             \item Calculate the posterior probabilities $P(E_j^l|H_b^l)$,
                 probability that produce $E_j^l$ ($j$ label $l$ in
                 the neighbor) given the instance $H_b^l$ (has or does not
                 have label $l$)
                 The probability that $l$ has $j$ instances
-                \[
+                \begin{equation}
                     P(E_j^l|H_1^l) = \frac{s + c[j]}{s\times{K+1} +
                     \sum_{p=0}^k c[p]}
-                \]
+                \end{equation}
                 In words, it is (ignoring the smoothing terms):
                 \[ P(\mbox{$j$ neighbors with
                 label $l$}) = \frac{\#\mbox{num instances with $l$ has
-                $j$ neighbors labelled $l$ neighbors}}{\#\mbox{total
+                $j$ neighbors labeled $l$ neighbors}}{\#\mbox{total
                     number of $l$ instances whose
-                neighbors has label $l$}}
-            \]
+                neighbors has label $l$}} \]
+                
+                Similarly:
+                \begin{equation}
+                    P(E_j^l|H_0^l) = \frac{(s+ c'[j])}{s\times(K+1) +
+                        \sum_{p=0}^k c'[p]} \end{equation}
         \end{enumerate}
 \end{enumerate}
 
