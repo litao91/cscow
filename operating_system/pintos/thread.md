@@ -352,3 +352,105 @@ test_sleep (int thread_cnt, int iterations)
   free (threads);
 }
 ```
+
+## The Conditional Lock
+The code related to Conditional lock
+```c
+//synch.h
+struct condition {
+    struct list waiters;                /* List of waiting threads. Type of semaphore_elem */
+};
+
+
+// synch.c
+/* One semaphore in a list. */
+struct semaphore_elem {
+    struct list_elem elem;                            /* List element. */
+    struct semaphore semaphore;                 /* This semaphore. */
+};
+
+void cond_init (struct condition *cond) {
+    ASSERT (cond != NULL);
+
+    // waiters are a list of semaphores.
+    list_init (&cond->waiters);
+}
+
+//lock must be held before going to this function
+void cond_wait (struct condition *cond, struct lock *lock) {
+    struct semaphore_elem waiter;
+
+    ASSERT (cond != NULL);
+    ASSERT (lock != NULL);
+    ASSERT (!intr_context ());
+    ASSERT (lock_held_by_current_thread (lock));
+
+    //clear the waiters, just let it wait
+    sema_init (&waiter.semaphore, 0);
+
+    //The waiters are basically semaphres
+    list_push_back (&cond->waiters, &waiter.elem);
+    // release here to avoid dead lock
+    lock_release (lock);
+
+    // lock it for the condition
+    sema_down (&waiter.semaphore);
+
+    lock_acquire (lock);
+}
+
+void cond_signal (struct condition *cond, struct lock *lock UNUSED) {
+    ASSERT (cond != NULL);
+    ASSERT (lock != NULL);
+    ASSERT (!intr_context ());
+    ASSERT (lock_held_by_current_thread (lock));
+
+    if (!list_empty (&cond->waiters)) {
+        sema_up(&find_cond_highest_priority(&cond->waiters)->semaphore);
+    }
+}
+
+```
+A given condition variable is associated with only a single lock, but one
+lock may be associated with any number of condition variables. That is,
+there is a one-to-many mapping from locks to condition variables.
+
+The lock is protecting the condition. It makes sure that each time only
+one thread holding the condition and all the other threads are waiting for
+the condition.
+
+Each condition is basically a list of semaphore (with elements of type
+`semaphore_elem`) , each waiter is actually waiting for a semaphore in the
+semaphore list.
+
+A thread must hold the lock before going into `cond_wait`, so there can
+only be one thread executing this function, for each condition. Then if it
+will sleep by the `sema_down()`
+
+When the condition is satisfied, the `cond_signal()` is called and the
+thread attached with the semaphore is executed. 
+
+## Pintos Project 1 implementation
+### Timer
+To implemented the non-spinning timer. The following changes has been
+made:
+
+1. Add a new entry in the `struct thread`: `int64_t sleep_ticks`. It is
+   the number of ticks to sleep.
+* Add new function `thread_sleep(int64_t ticks)` function, implemented in
+  `thread.c` and called in the `timer_sleep()` function in `timer_tick.c`.
+  The `thread_sleep()` basically block the current thread (the target of
+  sleep is always the current thread, the current thread sleeps itself)
+  and add the current thread into a `wait_list` defined in `thread.h`. It
+  a list of type `struct thread`. All the sleeping threads are listed
+  here.
+* The `thread_tick()` is called in `timer_interrupt()`, which will be
+  triggered by the timer interruption on every tick. It then calls
+  `update_sleeps()`, which is a newly added function in `thread.c`
+* The `update_sleeps()` will traverse each item in the `wait_list`,
+  decrease each `sleep_ticks` by one, and unblock the sleeping threads
+  whose `sleep_ticks` is zero. 
+* Unblock means adding the threads that finished sleeping to the
+  `ready_list`. So the scheduler will consider it for next time calling
+  `schedule()`.
+

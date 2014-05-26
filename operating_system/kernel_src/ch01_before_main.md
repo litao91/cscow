@@ -51,3 +51,26 @@ BIOS executed and after self-checking:
 ## PART II: setup
 Turn on 32bit addressing space, turn on protection mode, set up interrupt
 handling in protected mode.
+
+1. Turn off interruption (set the `IF` (interrupt flag) in `EFLAGS` to 0)
+* Copy the kernel instructions from `0x10000`to `0x00000`, override the
+  interrupt vector table and BIOS data. (Clear the 16bit interrupt
+  handling mechanism).
+* Create IDTR and GDTR, note in 32bit interrupt mechanism, the address of
+  IDT can be varied, pointed by IDTR, at initial time
+    - GDT's first entry is empty
+    - GDT's second entry is the descriptor of kernel code segment
+    - GDT's third entry is the kernel data segment descriptor.
+    - IDT is an empty table.
+* Set `A20`, allow 32bit addressing.
+* Reprogram the interrupt controller `8259A`
+
+Some terms:
+* GDT: global descriptor table. Contains the addresses of LDT (local
+  descriptor table) and TSS (Task Structure Segment)
+* GDTR: global descriptor table register, store the base address of GDT
+* IDT: interrupt descriptor table, the addresses of interrupt handler.
+* IDTR: interrupt descriptor table register, the IDT's starting address
+
+## PART III: head.s
+In memory, the head program locates at the "head" of the kernel. 
