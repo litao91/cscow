@@ -54,3 +54,15 @@ In practice, user virtual memory laid out like this:
 * The linker sets the layout of a user program in memory, as directed by a
   "linker script" that tells it the names and locations of the various
   program segments.
+
+
+## Loading ELF executable
+The function is implemented in `bool load(const char *file_name, void
+(**eip) (void), void **esp)`
+
+1. Allocate and activate page directory
+* open executable file
+* Read and verify executable header.
+* Set up stack
+* Set start address (eip, instruction pointer)
+

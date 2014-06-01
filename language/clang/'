@@ -1,0 +1,144 @@
+# Inline assembly for x86 in Linux
+## GNU assembler syntax in brief
+**Source and destination ordering**: source first and destination follows:
+    
+    movl %eax, %ebx
+
+**Size of operand**: suffixed by `b`, `w`, `l` for byte, word and long
+respectively. 
+
+    movb %al, %bl -- Byte move
+    movw %ax, %bx -- word move
+    movl %eax, %ebx -- Longword move
+
+**Immediate operand**: An immediate operand is specified by using `$`:
+
+    movl $0xffff, %eax -- move value of 0xffff to eax register
+
+**Indirect memory reference**: Done by using `()`
+
+    movb (%esi), %al -- transfer the byte pointed by esi to al
+
+## Inline Assembly
+The `asm` keyword allows you to embed assembler instructions within C
+code. 
+
+You can read and write C variables from assembler and perform jumps from
+assembler code to C labels.
+
+     asm [volatile] ( AssemblerTemplate : [OutputOperands] [ : [InputOperands] [ : [Clobbers] ] ] )
+     asm [volatile] goto ( AssemblerTemplate : : [InputOperands] : [Clobbers] : GotoLabels )
+
+To create headers compatible with ISO C, with `__asm__` instead of `asm`
+and `__volatile__` instead of volatile.
+
+* `volatile` Disable certain optimization
+* `goto` informs the compiler that the asm statement may perform a jump to
+  one of the labels listed in the GotoLables section.
+
+### Parameters
+* **AssemblerTemplate**: the assembler code. A combination of *fixed text*
+  and *tokens* that refer to the input, output and goto parameters.
+* **OutputOperands**: comma-separated list of the C variables **modified** by
+  the instructions in the AssemblerTemplate.
+* **InputOperands**: A comma-separated list of C expressions read by the
+  instructions in the AssemblerTemplate.
+* **Clobbers**: A comma-separated list of registers or other values
+  changed by the AssemblerTemplate, beyond those listed as outputs
+* **GotoLabels**: When you are using the goto form of asm, this section
+  contains the list of all C labels to which the AssemblerTemplate may
+  jump
+
+### Remarks
+Think of an `asm` statement as a series of low-level instructions that
+convert input parameters to output parameters.
+
+Example:
+
+```c
+int src = 1;
+int dst;
+
+asm ("mov %1, %0\n\t"
+    "add $1, %0"
+    : "=r" (dst)
+    : "r" (src));
+
+printf("%d\n", dst);
+```
+This code will copy `src` to `dst` and add 1 to `dst`.
+
+### Assembler Template
+An assembler template is a literal string containing assembler
+instructions. The compiler will replace any references to inputs, outputs,
+and goto labels in the template, and then output the resulting string to
+the assembler. 
+
+GCC does not parse the assembler instructions themselves and does not know
+what they mean or even whether they are valid assembler input.
+
+You may place multiple assembler instructions together in a single asm
+string, separated by the characters normally used in assembly code for the
+system.
+
+Accessing data from C programs without using input/output operands (such
+as by using global symbols directly from the assembler template) may not
+work as expected. Similarly, calling functions directly from an assembler
+template requires a detailed understanding of the target assembler and
+ABI.
+
+* `%%` outputs a single `%` into the assembler code
+* `%=` outputs a number that is unique to each instance of the `asm`
+  statement in the entire compilation.
+
+
+### Output Operands
+An asm statement has zero or more output operands indicating the names of
+C variables *modified* by the assembler code.
+
+In this example, `old` (referred to in the template string as `%0` and
+`*Base` (as `%1`) are outputs and `Offset` (`%2`) is an input:
+
+```c
+bool old;
+
+__asm__ ("btsl %2,%1\n\t" // Turn on zero-based bit #Offset in Base.
+         "sbb %0,%0"      // Use the CF to calculate old.
+   : "=r" (old), "+rm" (*Base)
+   : "Ir" (Offset)
+   : "cc");
+
+return old;
+```
+
+Operands use this format
+
+    [ [asmSymbolicName] ] "constraint" (c_variable_name) asmSymbolicName 
+
+#### asmSymbolicName
+When not using `asmSymbolicNames`, use the zero-based position of the
+operand in the list of operands in the assembler template. 
+
+Example, if there are three output operands, `%0` for the first, `%1` for
+the second and `%2` for the third.
+
+When using an `asmSymbolicName`, reference it by enclosing the name in
+square brackets `%[Value]`.
+
+#### Constraint
+Begin with either:
+* `=` a variable overwriting an existing value, or
+* `+` when reading and writing.
+
+
+
+
+
+
+
+
+
+
+
+
+
