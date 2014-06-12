@@ -234,8 +234,13 @@ $\boeta$, is defined to be the set of distributions of the from:
 \label{exp-family}
 \end{equation}
 
-Here the $\boeta$ are called the \emph{natural parameters} of the
-distribution, and $\mathbf{u}(\bx)$ is some function of $\bx$. 
+Here the:
+
+\begin{itemize}
+    \item $\boeta$ are called the \emph{natural parameters}, and 
+    \item $\mathbf{u}(\bx)$ is some function of $\bx$. 
+\end{itemize}
+
 
 The function $g(\boeta)$ can be interpreted as the coefficient that
 ensures that the distribution is normalized and therefore satisfies
@@ -246,11 +251,13 @@ ensures that the distribution is normalized and therefore satisfies
 \end{equation}
 
 \subsubsection{Maximum likelihood and sufficient statistics}
+\paragraph{Continuous variable}
 Problem: estimating the parameter vector $\boeta$ in the general
 exponential family distribution~\ref{exp-family} using the technique of
 maximum likelihood.
 
-Taking the gradient of both sides of~\ref{exp-normalized}:
+Taking the gradient of both sides of~\ref{exp-normalized} with respect to
+parameter $\boeta$:
 \begin{equation}
     \nabla g(\boeta) \int h(\bx) \exp\left\{ \boeta^T \bu(\bx) \right\} dx
     + g(\boeta) \int h(\bx) \exp\left\{ \boeta^T \bu(\bx) \right\}\bu(\bx)
@@ -260,26 +267,28 @@ Taking the gradient of both sides of~\ref{exp-normalized}:
 Rearrange and make use again of~\ref{exp-normalized}
 
 \begin{equation}
-    -\frac{1}{g(\boeta)} \nabla g(\boeta) = g(\boeta)\int \exp\left\{
+    -\frac{1}{g(\boeta)} \nabla g(\boeta) = g(\boeta)\int h(\bx) \exp\left\{
     \boeta^T \bu(\bx) \right\}\bu(\bx)d\bx = \mathbb{E}[\bu(\bx)]
 \end{equation}
 
-We therefore have 
+We therefore have the following after \emph{setting the gradient to zero}
 \begin{equation}
     -\nabla\ln{g(\boeta)} = \mathbb{E}[\bu(\bx)]
 \end{equation}
 
+\paragraph{Discrete Variables}
 Now a dataset $\bX = \{\bx_1, \dots \bx_n\}$, the likelihood:
 
 \begin{equation}
     p(\bX|\boeta) = \left( \prod_{n=1}^N h(\bx_n) \right) {g(\boeta)}^N
     \exp\left\{ \boeta^T \sum_{n=1}^N \bu(\bx_n) \right\}
+    \label{likelihood-exp-family}
 \end{equation}
 
 Setting the gradient of $\ln p(\bX|\boeta)$ w.r.t $\boeta$ to zero, we get
-the following condition to be satisfied by MLE $\boeta_{ML}$
+the following condition to be satisfied by MLE $\boeta_{\text{ML}}$
 \begin{equation}
-    -\nabla \ln{g(\boeta_{ML})} v= \frac{1}{N} \sum_{n=1}^N \bmu
+    -\nabla \ln{g(\boeta_{ML})} = \frac{1}{N} \sum_{n=1}^N \bmu
     (\bx_{n})
 \end{equation}
 
@@ -289,6 +298,39 @@ through $\sum_n \bu(\bx_n)$, which is therefore called the
 
 We do not need to store the entire data set itself but only the value of
 sufficient statistic.
+\subsubsection{Conjugate Priors}
+In general, for given probability distribution $p(\bx|\boeta)$, we can
+seek a prior $p(\boeta)$ that is \emph{conjugate} to the likelihood
+function.
+
+For any member of the exponential family, there exists a conjugate prior
+that can be written in the form:
+
+\begin{equation}
+    {p(\boeta|\boldsymbol{\mathcal{X}},
+    \mathcal{V})g(\boeta)}^{\mathcal{V}}\exp{\left\{\mathcal{V}\boeta^T\boldsymbol{\mathcal{X}}\right\}}
+    \label{prior-exp-family}
+\end{equation}
+
+Where
+\begin{itemize}
+    \item $f(\boldsymbol{calX}, \mathcal{V})$ is a \emph{normalization
+        coefficient}, and
+    \item $g(\boeta)$ is the same function as appears in
+        equation~\ref{exp-family}
+\end{itemize}
+
+Multiply the likelihood~\ref{likelihood-exp-family} and
+prior~\ref{prior-exp-family} we have the form:
+\begin{equation}
+    p(\boeta|\bX, \boldsymbol\cX, \mathcal{V})\propto
+    {g(\boeta)}^{\mathcal{V}+N}\exp\left\{ \boeta^T\left( \sum_{n=1}^N
+    \mathbf{u}(\bx_n) + \mathcal{V}\boldsymbol{\cX} \right) \right\}
+    \label{prior-times-likelihood}
+\end{equation}
+
+It is the same functional form as the prior.
+
 
 \section{Nonparametric Methods}
 \emph{parametric} approach: Probability distributions having specific
