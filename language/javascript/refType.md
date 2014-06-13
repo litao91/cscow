@@ -1,11 +1,11 @@
 # Reference Types
 A ref value is an instance of a specific *reference type*. Reference types
-are structures used to group data dn functionality together and are often
+are structures used to group data and functionality together and are often
 **incorrectly** called *classes*.
 
 Reference types are also sometimes called *object definitions*.
 
-Again, objects are considered to be *instances* of a particular reference
+Again, **objects** are *instances* of a particular reference
 type.
 
 New obj are created by using `new` operator followed by a *constructor*. A

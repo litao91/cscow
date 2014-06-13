@@ -56,7 +56,7 @@ var someuser = new User('byvoid, 'www.byvoid.com');
 ```
 
 ### Context Object
-The context is the this pointer.
+The context is the `this` pointer.
 
 Example:
 ```javascript
@@ -75,6 +75,8 @@ var foo = {
 };
 foo.bar();// output foobar
 ```
+
+Meaning that the `this` is tie to the current scope (object)!!
 
 Another example:
 ```javascript
@@ -217,7 +219,7 @@ console.log(foo1.func1 == foo1.func1); // false
 console.log(foo1.func2 == foo2.func2); // true
 ```
 
-So the function defined in `prototype` won't construct again.
+So the function defined in `prototype` **won't construct again**.
 
 ### Prototype Chain
 Three type of object:
@@ -241,7 +243,7 @@ Foo.prototype.name = 'Bar';
 var obj = new Object();
 var foo = new Foo();
 console.log(obj.name); // 输出 My Objectc
-onsole.log(foo.name); // 输出 Bar
+console.log(foo.name); // 输出 Bar
 console.log(foo.__proto__.name); // 输出 Bar
 console.log(foo.__proto__.__proto__.name); // 输出 My Object
 console.log(foo. __proto__.constructor.prototype.name); // 输出 Bar
@@ -338,7 +340,7 @@ To change any of the default property, you must use
 ```javascript
 var person = {};
 Object.defineProperty(person, "name", {
-    writable: faluse,
+    writable: false,
     value: "Nicholas"
 });
 
