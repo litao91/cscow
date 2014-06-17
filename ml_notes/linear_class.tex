@@ -1,0 +1,45 @@
+\chapter{Linear Model for Classification}
+
+\section{Discriminant Functions}
+\subsection{Two Classes}
+The linear discriminant:
+\begin{equation}
+    y(\bx) = \bw^T\bx + w_0
+    \label{linear_dis}
+\end{equation}
+
+\begin{itemize}
+    \item $\bw$ --- the weight vector
+    \item $w_0$ --- bias, the negative is the \emph{threshold}
+    \item $y(\bx) = 0$ --- the decision surface
+\end{itemize}
+
+Then the decision:
+\begin{equation}
+    \begin{cases}
+        C_1 & \text{if } y(\bx) >= 0\\
+        C_2 & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+The Geometry:
+\begin{itemize}
+    \item $\bw$ the weight vector, orthogonal to the decision surface.
+    \item The normal distance from origin to the decision surface:
+        \begin{equation}
+            \frac{\bw^T \bx}{\|\bw\|} = -\frac{w_0}{\|\bw\|}
+        \end{equation}
+    \item Let $\bx_{\perp}$ be $\bx$'s orthogonal projection onto the
+        decision surface, let $r$ be the distance from the point $\bx$ to
+        the decision surface:
+        \begin{equation}
+            \bx = \bx_{\perp} + r \frac{\bw}{\|\bw\|}
+        \end{equation}
+    \item We have
+        \begin{equation}
+            r = \frac{y(x)}{\|\bw\|}
+        \end{equation}
+\end{itemize}
+\subsection{Multiple Classes}
+Single $K$-class discriminant comprising $K$ linear function of the form:
+
