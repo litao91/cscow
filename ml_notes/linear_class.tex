@@ -40,6 +40,163 @@ The Geometry:
             r = \frac{y(x)}{\|\bw\|}
         \end{equation}
 \end{itemize}
+
 \subsection{Multiple Classes}
 Single $K$-class discriminant comprising $K$ linear function of the form:
+\begin{equation}
+    y_k(\bx) = \bw^T_k\bx + w_{k0}
+\end{equation}
 
+Decision:
+\begin{equation}
+    C_k \hspace{0.5cm} \text{if}\vspace{0.2cm} y_k(\bx) > y_j(\bx) \forall i \neq k
+\end{equation}
+
+The decision plane is then a $(D-1)$-dimensional hyperplane defined by
+\begin{equation}
+    {(\bw_k - \bw_j)}^T\bx + (w_{k0} - w_{j0}) = 0
+\end{equation}
+
+Note: The decision regions of such a discriminant are always singly
+connected and convex.
+
+To show this, we just prove that if $\bx_A$ and $\bx_B$ line inside
+$\mathcal{R}_k$, then any point $\hat{\bx}$ lies on the line connecting
+them is also inside $\mathcal{R}_k$.
+
+\subsubsection{Least Square for classification}
+By 
+\begin{equation}
+    y_k(\bx) = \bw_k^T \bx + w_{k0}
+\end{equation}
+Where $k = 1, \dots, K$. We can group these together using vector notation
+so that
+\begin{equation}
+    \by(\bx) = \widetilde{\bW}^T\widetilde{\bx}
+\end{equation}
+Where the kth column of $\widetilde{\bW}$ is:
+\begin{equation}
+    \widetilde{w}_k = {(w_{k0}, \bw_k^T)}^T
+\end{equation}
+
+\begin{equation}
+    \widetilde{\bx} = {(1, \bx^T)}^T
+\end{equation}
+
+The goal: to determine the parameter matrix $\widetilde{\bW}$, by
+minimizing a sum-of-squares error function:
+\begin{itemize}
+    \item Training data set ${\bx_n, \bt_n}$, $n = 1, \dots, N$
+    \item Matrix $\bT$, whose $n^{\text{th}}$ row is the vector $\bt^T_n$
+    \item A matrix $\widetilde{\bX}$ whose nth row is
+        $\widetilde{\bx}^T_n$
+\end{itemize}
+The sum-of-square error function:
+\begin{equation}
+    E_D(\widetilde{W}) = \frac{1}{2}\text{Tr}\left\{ {(\tbX\tbW -
+    \bT)}^T(\tbX\tbW - \bT) \right\}
+\end{equation}
+
+Setting \textbf{derivative w.r.t.} $\tbW$ and rearrange:
+\begin{equation}
+    \tbW = {(\tbX^T\tbX)}^{-1}\tbX^T\bT  = \tbX^{\dagger}\bT
+\end{equation}
+Note that $\tbX^{\dagger}{(\tbX^T\tbX)}^{-1}\tbX^T$ is pseudo-inverse of matrix $\tbX$
+
+So the discriminant function:
+\begin{equation}
+    y(\bx) = \tbW^T\tbx = \bT^T{\left(\tbX^{\dagger}\right)}^T\tbx
+\end{equation}
+
+An interesting property: if for every target vector $\bt_n$, satifies
+\begin{equation}
+    \ba^T\bt_n + b = 0
+\end{equation}
+For some constants $\ba$ and $b$, then the prediction will satisfy the
+same constraint so that:
+\begin{equation}
+    \ba^T \by(\bx) + b = 0
+\end{equation}
+
+\section{Probabilistic Discriminative Models}
+\begin{itemize}
+    \item Use the functional form of the generalized linear model
+        explicitly
+    \item Determine its parameters directly by using maximum likelihood.
+    \item Algorithm finding such solution: \emph{iterative reweighted least squares}
+
+    \item Generative modeling: fitting class-conditional densities
+        $p(\bx|C_k)$ and class priors $p(\bx)$ separately.
+    \item We could take such a model and generate synthetic data by
+        drawing values of $\bx$ from the marginal distribution $p(\bx)$.
+    \item We are maximizing a likelihood function $p(C_k|\bx)$
+\end{itemize}
+
+\subsection{Fixed basis functions}
+\begin{itemize}
+    \item First make a fixed \textbf{nonlinear} transformation using a
+        vector of basis function $\bphi(\bx)$
+    \item The resulting decision boundaries will be linear in feature
+        space $\bphi$, and corresponding to nonlinear in original $\bx$
+        space.
+    \item Linearly separable in $\bphi$ may not be linearly separable in
+        $\bx$
+\end{itemize}
+
+\subsection{Logistic regression}
+\subsubsection{The model}
+Under rather general assumptions, the posterior probability of class $C_1$
+can be written as as \emph{a logistic sigmoid acting on a linear function
+of feature vector}
+\begin{equation}
+    p(C_1| \bphi) = y(\bphi) = \sigma(\bw^T \bphi)
+\end{equation}
+With $p(C_2|\bphi) = 1 - p(C_1|\bphi)$. $\sigma(\cdot)$ is the
+\emph{logistic sigmoid} function:
+\[
+    \sigma(a) = \frac{1}{1+\exp(-a)}
+\]
+
+The model is known as \emph{logistic regression} (although it is a model
+for classification rather than regression)
+
+\begin{framed}
+Note: For an M-dimensional feature space $\bphi$, this model has $M$
+parameters.
+
+If we had fitted Gaussian class conditional densities ($p(\bx|C_k)$), we
+would have used $2M$ parameters for the means and $M(M+1)$ for the shared
+covariance matrix. 
+
+For large values of $M$, there is a clear advantage in working with
+logistic regression model directly.
+\end{framed}
+
+\subsubsection{Max Likelihood To determine Parameters}
+\begin{equation}
+    \frac{d\sigma}{da} = \sigma(1-\sigma)
+\end{equation}
+
+Dataset $\left\{ \bphi_n, t_n \right\}$, where $t_n \in \left\{ 0, 1
+\right\}$ and $\bphi_n = \bphi(\bx_n)$, with $n = 1, \dots, N$ ($N$
+data points), the likelihood:
+\begin{equation}
+    p(\bt|\bw) = \prod_{n=1}^N y_n^{t_n}{\left\{ 1-y_n \right\}}^{1-t_n}
+\end{equation}
+Where $\bt = {(t_1, \dots, t_N)}^T$ and $y_n = p(C_1|\bphi_n)$
+
+The \emph{cross-entropy} error function:
+\begin{equation}
+    E(\bw) = -\ln{p(\bt|\bw)} = - \sum_{n=1}^N\left\{
+        t_n\ln{y_n}+(1-t_n)\ln{(1-y_n)} \right\}
+\end{equation}
+
+The gradient of error:
+\begin{equation}
+    \nabla E(\bw) = \sum_{n=1}^N(y_n - t_n)\bphi_n
+\end{equation}
+In particular, the contribution to the gradient from data point is given
+by the error $y_n - t_n$, times the basis function vector $\bphi_n$
+
+The maximum likelihood solution occurs when $\sigma = 0.5$, equivalent to
+$\bw^T\bphi = 0$
